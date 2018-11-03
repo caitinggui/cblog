@@ -10,3 +10,6 @@
 [submodule "ref/wblog"]
 	path = ref/wblog
 	url = https://github.com/wangsongyan/wblog.git
+[submodule "ref/Blog"]
+	path = ref/Blog
+	url = https://github.com/caitinggui/Blog.git
