@@ -13,3 +13,6 @@
 [submodule "ref/Blog"]
 	path = ref/Blog
 	url = https://github.com/caitinggui/Blog.git
+[submodule "ref/go-gin-example"]
+	path = ref/go-gin-example
+	url = https://github.com/EDDYCJY/go-gin-example
