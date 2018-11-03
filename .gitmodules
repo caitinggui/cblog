@@ -1,18 +1,18 @@
-[submodule "ref/blog"]
-	path = ref/blog
+[submodule "_ref/blog"]
+	path = _ref/blog
 	url = https://github.com/Momo733/blog.git
-[submodule "ref/goblog"]
-	path = ref/goblog
+[submodule "_ref/goblog"]
+	path = _ref/goblog
 	url = https://github.com/fifsky/goblog
-[submodule "ref/gorush"]
-	path = ref/gorush
+[submodule "_ref/gorush"]
+	path = _ref/gorush
 	url = https://github.com/appleboy/gorush.git
-[submodule "ref/wblog"]
-	path = ref/wblog
+[submodule "_ref/wblog"]
+	path = _ref/wblog
 	url = https://github.com/wangsongyan/wblog.git
-[submodule "ref/Blog"]
-	path = ref/Blog
+[submodule "_ref/Blog"]
+	path = _ref/Blog
 	url = https://github.com/caitinggui/Blog.git
-[submodule "ref/go-gin-example"]
-	path = ref/go-gin-example
+[submodule "_ref/go-gin-example"]
+	path = _ref/go-gin-example
 	url = https://github.com/EDDYCJY/go-gin-example
