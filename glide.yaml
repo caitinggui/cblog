@@ -1,0 +1,6 @@
+package: .
+import:
+- package: github.com/cihub/seelog
+  version: v2.6
+- package: github.com/gin-gonic/gin
+  version: v1.3.0

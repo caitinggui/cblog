@@ -1,2 +1,2 @@
 # cblog
-用go重写golang
+用go重写cblog
