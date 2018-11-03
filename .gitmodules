@@ -1,0 +1,12 @@
+[submodule "ref/blog"]
+	path = ref/blog
+	url = https://github.com/Momo733/blog.git
+[submodule "ref/goblog"]
+	path = ref/goblog
+	url = https://github.com/fifsky/goblog
+[submodule "ref/gorush"]
+	path = ref/gorush
+	url = https://github.com/appleboy/gorush.git
+[submodule "ref/wblog"]
+	path = ref/wblog
+	url = https://github.com/wangsongyan/wblog.git

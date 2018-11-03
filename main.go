@@ -11,9 +11,15 @@ func Health(c *gin.Context) {
 	c.Writer.WriteHeader(http.StatusOK)
 }
 
+func Hello(c *gin.Context) {
+	c.HTML(http.StatusOK, "hello.tmpl", gin.H{"title": "world"})
+}
+
 func main() {
 	logger.Info("start cblog...")
 	router := gin.Default()
+	router.LoadHTMLGlob("templates/*")
 	router.GET("/health", Health)
+	router.GET("/hello", Hello)
 	router.Run("0.0.0.0:8089")
 }
