@@ -5,6 +5,8 @@ import (
 
 	logger "github.com/cihub/seelog"
 	"github.com/gin-gonic/gin"
+
+	"./models"
 )
 
 func Health(c *gin.Context) {
@@ -12,7 +14,7 @@ func Health(c *gin.Context) {
 }
 
 func Hello(c *gin.Context) {
-	c.HTML(http.StatusOK, "blog/hello.tmpl", gin.H{"title": "world"})
+	c.HTML(http.StatusOK, "blog/hello.tmpl", gin.H{"title": models.MyName()})
 }
 
 func main() {
