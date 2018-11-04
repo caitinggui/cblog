@@ -1,6 +1,9 @@
 package: .
 import:
+- package: golang.org/x/sys
 - package: github.com/cihub/seelog
   version: v2.6
 - package: github.com/gin-gonic/gin
   version: v1.3.0
+- package: github.com/jinzhu/gorm
+  version: v1.9.1
