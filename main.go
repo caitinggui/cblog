@@ -6,7 +6,7 @@ import (
 	logger "github.com/cihub/seelog"
 	"github.com/gin-gonic/gin"
 
-	"./models"
+	"cblog/models"
 )
 
 func Health(c *gin.Context) {
@@ -19,6 +19,8 @@ func Hello(c *gin.Context) {
 
 func main() {
 	logger.Info("start cblog...")
+	db := models.InitDB()
+	defer db.Close()
 	router := gin.Default()
 	router.LoadHTMLGlob("templates/**/*")
 	router.GET("/health", Health)

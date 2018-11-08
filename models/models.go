@@ -1,6 +1,11 @@
 package models
 
-import "time"
+import (
+	"time"
+
+	"github.com/jinzhu/gorm"
+	_ "github.com/jinzhu/gorm/dialects/sqlite"
+)
 
 type Article struct {
 	Id         uint32     `gorm:"primary_key;auto_increment"  json:"id"`
@@ -34,4 +39,19 @@ type Category struct {
 func MyName() (Name string) {
 	Name = "models"
 	return Name
+}
+
+var DB *gorm.DB
+
+func InitDB() (db *gorm.DB) {
+	db, err := gorm.Open("sqlite3", "./foo.db")
+	//db, err := gorm.Open("mysql", "root:mysql@/wblog?charset=utf8&parseTime=True&loc=Asia/Shanghai")
+	if err == nil {
+		DB = db
+		//db.LogMode(true)
+		db.AutoMigrate(&Article{}, Category{})
+		//db.Model(&PostTag{}).AddUniqueIndex("uk_post_tag", "post_id", "tag_id")
+		return db
+	}
+	panic(err)
 }

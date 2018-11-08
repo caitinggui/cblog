@@ -1,4 +1,9 @@
-package: .
+package: cblog
+ignore:
+- golang.org/x/sys/unix
+- database/sql
+excludeDirs:
+- models
 import:
 - package: golang.org/x/sys
 - package: github.com/cihub/seelog
@@ -7,3 +12,6 @@ import:
   version: v1.3.0
 - package: github.com/jinzhu/gorm
   version: v1.9.1
+- package: github.com/gin-contrib/sessions
+  subpackages:
+  - cookie
