@@ -10,8 +10,6 @@ import:
   version: v2.6
 - package: github.com/gin-gonic/gin
   version: v1.3.0
+- package: github.com/gin-contrib/sessions
 - package: github.com/jinzhu/gorm
   version: v1.9.1
-- package: github.com/gin-contrib/sessions
-  subpackages:
-  - cookie

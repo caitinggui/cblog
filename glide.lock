@@ -1,5 +1,5 @@
-hash: 2a2f035cc60119b42a79b4e372eac6c327246d8fd3829bb827b0db2ea5f548a1
-updated: 2018-11-08T20:18:09.602931821+08:00
+hash: 4311759d1bd096f748865fec8c1e69ec39a9a29821b3c07ee36ed95a2ec27c68
+updated: 2018-11-08T20:45:37.70774635+08:00
 imports:
 - name: github.com/cihub/seelog
   version: d2c6e5aa9fbfdd1c624e140287063c7730654115
@@ -19,8 +19,16 @@ imports:
   version: d3de96c4c28ef8af3aa1a892fc481e0f103c01ff
   subpackages:
   - proto
+- name: github.com/gorilla/context
+  version: 51ce91d2eaddeca0ef29a71d766bb3634dadf729
+- name: github.com/gorilla/securecookie
+  version: e65cf8c5df817c89aeb47ecb46064e802e2de943
+- name: github.com/gorilla/sessions
+  version: 68d1edeb366b66bdd5d714e32d7a065f74b03b9b
 - name: github.com/jinzhu/gorm
   version: 6ed508ec6a4ecb3531899a69cbc746ccf65a4166
+- name: github.com/jinzhu/inflection
+  version: 04140366298a54a039076d798123ffa108fff46c
 - name: github.com/json-iterator/go
   version: 05d041de1043ba04b678fb046bd35455a9b1b33b
 - name: github.com/mattn/go-isatty
