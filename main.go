@@ -16,7 +16,7 @@ func Health(c *gin.Context) {
 }
 
 func Hello(c *gin.Context) {
-	c.HTML(http.StatusOK, "blog/hello.tmpl", gin.H{"title": models.MyName()})
+	c.HTML(http.StatusOK, "blog/hello.tmpl", gin.H{"title": "ctg"})
 }
 
 func Login(c *gin.Context) {
@@ -38,6 +38,23 @@ func Login(c *gin.Context) {
 		session.Save()
 		c.JSON(http.StatusOK, gin.H{"msg": "login success"})
 	}
+}
+
+func CreateCategory(c *gin.Context) {
+	category := models.Category{Name: "test"}
+	err := category.Insert()
+	// TODO 要设计怎么返回
+	if err != nil {
+		c.JSON(http.StatusOK, gin.H{"errMsg": "创建失败", "reason": err})
+	}
+	c.JSON(http.StatusOK, gin.H{"errMsg": "创建成功", "id": category.ID})
+
+}
+
+func GetCategory(c *gin.Context) {
+	var category []models.Category
+	models.DB.Find(&category)
+	c.JSON(http.StatusOK, category)
 }
 
 func LoginRequired() gin.HandlerFunc {
@@ -86,5 +103,7 @@ func main() {
 	router.POST("/login", Login)
 	router.GET("/health", Health)
 	router.GET("/hello", Hello)
+	router.GET("/create", CreateCategory)
+	router.GET("/get", GetCategory)
 	router.Run("0.0.0.0:8089")
 }

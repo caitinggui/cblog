@@ -13,3 +13,6 @@ import:
 - package: github.com/gin-contrib/sessions
 - package: github.com/jinzhu/gorm
   version: v1.9.1
+- package: github.com/satori/go.uuid
+  version: v1.2.0
+- package: github.com/jinzhu/inflection
