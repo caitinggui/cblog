@@ -29,27 +29,33 @@ type StrIdModel struct {
 }
 
 type Article struct {
-	IntIdModel
-	UniqueId   string `json:"unique_id"`                               //唯一id 防止遍历
-	CategoryId uint32 `json:"category_id"`                             //所属目录
-	Title      string `gorm:"size:50" json:"title"`                    //文章标题
-	Label      string `gorm:"size:100" json:"label"`                   //文章标签
-	Status     uint8  `json:"status"`                                  //文章状态 1:完结，2:更新
-	Body       string `gorm:"type:longtext;not null" json:"body"`      //富文本
-	PureText   string `gorm:"type:longtext;not null" json:"pure_text"` //纯粹的文章文本
-	ImageURL   string `gorm:"size:100" json:"image_url"`               //图片地址
-	FileURL    string `gorm:":size:100" json:"file_url"`               //附件文件地址
-	Original   uint8  `gorm:"default:0" json:"original"`               //是否原创 1原创，2转载
-	Source     string `gorm:"size:100" json:"source"`                  //文章资源地址，如果原创为空，非原创必须带有地址
-	Operator   string `gorm:"size:50" json:"operator"`                 //创建者
-	Disabled   bool   `gorm:"default:true" json:"disabled"`
+	StrIdModel
+	Title         string   `gorm:"size:70" json:"title"`            //文章标题
+	Body          string   `gorm:"type:longtext" json:"body"`       //富文本
+	Status        uint8    `json:"status" json:"status"`            //文章状态 0:未发布 1:发布
+	Abstract      string   `gorm:"size:128" json:"abstract"`        //摘要
+	Views         uint     `gorm:"default:0" "json:"views"`         //浏览数
+	Likes         uint     `gorm:"default:0" json:"likes"`          //点赞数
+	UserLikes     string   `gorm:"type:text" json:"user_likes"`     //点赞的用户
+	Weight        uint     `gorm:"default:0" json:"weight"`         //推荐权重
+	Topped        bool     `gorm:"default:0" json:"topped"`         //是否置顶
+	AttachmentUrl string   `gorm:"type:text" json:"attachment_url"` // 附件地址
+	Category      Category `gorm:"ForeignKey:ProfileRefer""`
+	CategoryId    uint     `json:"category_id"`
+	Tags          []Tag    `gorm:"many2many:article_tags" json:"tags"`
 }
 
 // 用uuid代替主键
-// TODO 这里要参考category中的
 func (article *Article) BeforeCreate(scope *gorm.Scope) error {
-	scope.SetColumn("ID", uuid.NewV1())
-	return nil
+	logger.Info("set uuid to id")
+	uuid_s := uuid.NewV1().String()
+	logger.Debug("uuid.NewV1: ", uuid_s)
+	uuid_s = strings.Replace(uuid_s, "-", "", -1)
+	err := scope.SetColumn("ID", uuid_s)
+	if err != nil {
+		logger.Info("set uuid to id failed: ", err)
+	}
+	return err
 }
 
 func (article *Article) Insert() error {
@@ -64,21 +70,8 @@ func (article *Article) Insert() error {
 
 // 文章类型
 type Category struct {
-	StrIdModel
+	IntIdModel
 	Name string `gorm:"size:20" json:"name"`
-}
-
-// 用uuid代替主键
-func (category *Category) BeforeCreate(scope *gorm.Scope) error {
-	logger.Info("set id to uuid")
-	uuid_s := uuid.NewV1().String()
-	logger.Debug("uuid.NewV1: ", uuid_s)
-	uuid_s = strings.Replace(uuid_s, "-", "", -1)
-	err := scope.SetColumn("ID", uuid_s)
-	if err != nil {
-		logger.Info("set id to uuid failed: ", err)
-	}
-	return err
 }
 
 func (category *Category) Insert() error {
@@ -91,6 +84,76 @@ func (category *Category) Insert() error {
 	return db.Error
 }
 
+// 文章标签
+type Tag struct {
+	IntIdModel
+	Name string `gorm:"size:20" json:"name"`
+}
+
+// 评论
+type Comment struct {
+	StrIdModel
+	Content string `json:"content"` // 内容
+	Article Article
+	User    User // 用户id
+}
+
+// 用户信息
+type User struct {
+	StrIdModel
+	Email         string    `gorm:"unique_index;default:null"` //邮箱
+	Telephone     string    `gorm:"unique_index;default:null"` //手机号码
+	Password      string    `gorm:"default:null"`              //密码
+	VerifyState   string    `gorm:"default:'0'"`               //邮箱验证状态
+	SecretKey     string    `gorm:"default:null"`              //密钥
+	OutTime       time.Time //过期时间
+	GithubLoginId string    `gorm:"unique_index;default:null"` // github唯一标识
+	GithubUrl     string    //github地址
+	IsAdmin       bool      //是否是管理员
+	AvatarUrl     string    // 头像链接
+	NickName      string    // 昵称
+	LockState     bool      `gorm:"default:'0'"` //锁定状态
+}
+
+// 用uuid代替主键
+func (user *User) BeforeCreate(scope *gorm.Scope) error {
+	logger.Info("set uuid to id")
+	uuid_s := uuid.NewV1().String()
+	logger.Debug("uuid.NewV1: ", uuid_s)
+	uuid_s = strings.Replace(uuid_s, "-", "", -1)
+	err := scope.SetColumn("ID", uuid_s)
+	if err != nil {
+		logger.Info("set uuid to id failed: ", err)
+	}
+	return err
+}
+
+type VisitorIP struct {
+	IntIdModel
+	IP      string `gorm:"size:64" json:"ip"`       // 访问者IP
+	Country string `gorm:"size:128" json:"country"` // 国家
+	City    string `gorm:"size:128" json:"city"`    // 城市
+	Referer string `gorm:"size:255" json:"referer"` // 来源地
+	Article Article
+}
+
+type Link struct {
+	IntIdModel
+	Name   string `gorm:"size:128" json:"name"` // 网站名
+	Url    string `gorm:"size:512" json:"url"`  // 链接地址
+	Desc   string `gorm:"size:512" json:"desc"` // 链接描述
+	Weight uint   `json:"weight"`               // 排序
+	Views  uint   `json:"views"`                // 访问次数
+}
+
+type Permission struct {
+	IntIdModel
+}
+
+type Role struct {
+	IntIdModel
+}
+
 func InitDB() (db *gorm.DB) {
 	db, err := gorm.Open("sqlite3", "./foo.db")
 	if err != nil {
@@ -101,8 +164,8 @@ func InitDB() (db *gorm.DB) {
 	db.SingularTable(true) //全局设置表名不可以为复数形式。
 	db.DB().SetMaxIdleConns(10)
 	db.DB().SetMaxOpenConns(100)
-	//db.LogMode(true)
-	db.AutoMigrate(&Article{}, Category{})
-	//db.Model(&PostTag{}).AddUniqueIndex("uk_post_tag", "post_id", "tag_id")
+	db.DB().SetConnMaxLifetime(time.Hour * 6)
+	db.LogMode(true)
+	db.AutoMigrate(&Article{}, &Category{}, &Comment{}, &Tag{}, &Link{}, &VisitorIP{}, &User{}, &Permission{}, &Role{})
 	return
 }
