@@ -9,6 +9,7 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"cblog/models"
+	"cblog/service"
 )
 
 func Health(c *gin.Context) {
@@ -19,6 +20,7 @@ func Hello(c *gin.Context) {
 	c.HTML(http.StatusOK, "blog/hello.tmpl", gin.H{"title": "ctg"})
 }
 
+// 登陆
 func Login(c *gin.Context) {
 	username := c.PostForm("username")
 	passwd := c.PostForm("passwd")
@@ -40,21 +42,12 @@ func Login(c *gin.Context) {
 	}
 }
 
-func CreateCategory(c *gin.Context) {
-	category := models.Category{Name: "test"}
-	err := category.Insert()
-	// TODO 要设计怎么返回
-	if err != nil {
-		c.JSON(http.StatusOK, gin.H{"errMsg": "创建失败", "reason": err})
-	}
-	c.JSON(http.StatusOK, gin.H{"errMsg": "创建成功", "id": category.ID})
-
-}
-
-func GetCategory(c *gin.Context) {
-	var category []models.Category
-	models.DB.Find(&category)
-	c.JSON(http.StatusOK, category)
+// 登出
+func Logout(c *gin.Context) {
+	session := sessions.Default(c)
+	session.Clear()
+	session.Save()
+	c.JSON(http.StatusOK, gin.H{"msg": "logout success"})
 }
 
 func LoginRequired() gin.HandlerFunc {
@@ -97,13 +90,15 @@ func main() {
 	admin := router.Group("/admin")
 	admin.Use(LoginRequired())
 	{
-		admin.GET("/blog", Hello)
+		admin.GET("/hello", Hello)
 	}
 
 	router.POST("/login", Login)
+	router.GET("/logout", Logout)
 	router.GET("/health", Health)
-	router.GET("/hello", Hello)
-	router.GET("/create", CreateCategory)
-	router.GET("/get", GetCategory)
+	//router.GET("/hello", Hello)
+	router.POST("/category", service.CreateCategory)
+	router.GET("/category", service.GetCategories)
+	//router.GET("/get", GetCategory)
 	router.Run("0.0.0.0:8089")
 }

@@ -17,7 +17,7 @@ type IntIdModel struct {
 	ID        uint       `gorm:"primary_key" json:"id"`
 	CreatedAt time.Time  `json:"created_at"`
 	UpdatedAt time.Time  `json:"updated_at"`
-	DeletedAt *time.Time `sql:"index" json:"deleted_at"`
+	DeletedAt *time.Time `sql:"index" json:"-"`
 }
 
 // 用来覆盖gorm.Model，主要对json方式做出改变, 主键为string
@@ -25,7 +25,7 @@ type StrIdModel struct {
 	ID        string     `gorm:"primary_key" json:"id"`
 	CreatedAt time.Time  `json:"created_at"`
 	UpdatedAt time.Time  `json:"updated_at"`
-	DeletedAt *time.Time `sql:"index" json:"deleted_at"`
+	DeletedAt *time.Time `sql:"index" json:"-"`
 }
 
 type Article struct {
@@ -58,6 +58,7 @@ func (article *Article) BeforeCreate(scope *gorm.Scope) error {
 	return err
 }
 
+// 增删改查在业务端记录log
 func (article *Article) Insert() error {
 	logger.Info("insert article")
 	db := DB.Create(article)
@@ -65,7 +66,21 @@ func (article *Article) Insert() error {
 		logger.Error("insert article error: ", db.Error)
 	}
 	return db.Error
+}
 
+// 所有字段都更新
+func (article *Article) Save() error {
+	return DB.Model(article).Save(article).Error
+}
+
+// 只更新给定的字段，不用struct是因为它会忽略0,""或者false等
+func (article *Article) Update(data map[string]interface{}) error {
+	return DB.Model(article).Updates(data).Error
+}
+
+// 删除
+func (article *Article) Delete() error {
+	return DB.Delete(article).Error
 }
 
 // 文章类型
@@ -82,6 +97,16 @@ func (category *Category) Insert() error {
 		logger.Error("insert category error:", db.Error)
 	}
 	return db.Error
+}
+
+func GetCategoryByName(name string) (cate Category, err error) {
+	err = DB.Where("name = ?", name).First(&cate).Error
+	return
+}
+
+func GetAllCategories() (cates []Category, err error) {
+	err = DB.Find(&cates).Error
+	return
 }
 
 // 文章标签
