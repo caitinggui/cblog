@@ -13,8 +13,9 @@ import (
 var DB *gorm.DB
 
 // 用来覆盖gorm.Model，主要对json方式做出改变, 主键为int
+// TODO form忽略id等字段,但是bindjson会读取到ID
 type IntIdModel struct {
-	ID        uint       `gorm:"primary_key" json:"id"`
+	ID        uint       `gorm:"primary_key" json:"id" form:"-"`
 	CreatedAt time.Time  `json:"created_at"`
 	UpdatedAt time.Time  `json:"updated_at"`
 	DeletedAt *time.Time `sql:"index" json:"-"`
@@ -141,9 +142,10 @@ func GetAllCategories() (cates []Category, err error) {
 }
 
 // 文章标签
+// form，json，binding都可用于c.Bind
 type Tag struct {
 	IntIdModel
-	Name string `gorm:"size:20" json:"name"`
+	Name string `gorm:"size:20" json:"name" form:"name" binding:"required"`
 }
 
 // 评论
