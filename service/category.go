@@ -11,19 +11,21 @@ import (
 
 func CreateCategory(c *gin.Context) {
 	name := c.PostForm("name")
+	if name == "" {
+		c.AbortWithStatusJSON(http.StatusOK, gin.H{"errMsg": "名字不能为空"})
+		return
+	}
 	logger.Info("find if exist ", name, " in database")
-	cate, err := models.GetCategoryByName(name)
-	logger.Info("cate:", cate, ", err:", err)
-	// TODO record not found要判断一下
+	ifExist, err := models.FindIfExistCategoryByName(name)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"errMsg": "数据库异常"})
 		return
 	}
-	if cate.ID != 0 {
+	if ifExist {
 		c.JSON(http.StatusOK, gin.H{"errMsg": "该类型已存在"})
 		return
 	}
-	cate = models.Category{Name: name}
+	cate := models.Category{Name: name}
 	err = cate.Insert()
 	// TODO 要设计怎么返回
 	if err != nil {
@@ -38,4 +40,21 @@ func GetCategories(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"errMsg": "数据库异常"})
 	}
 	c.JSON(http.StatusOK, cates)
+}
+
+func UpdateCategory(c *gin.Context) {
+	name := c.PostForm("name")
+	id := c.PostForm("id")
+	if id == "" || name == "" {
+		c.JSON(http.StatusOK, gin.H{"errMsg": "参数错误"})
+		return
+	}
+	cate, err := models.GetCategoryById(id)
+	if err != nil {
+		c.JSON(http.StatusOK, gin.H{"errMsg": err})
+		return
+	}
+	cate.Name = name
+	err = cate.UpdateAllField()
+	c.JSON(http.StatusOK, gin.H{"errMsg": err})
 }

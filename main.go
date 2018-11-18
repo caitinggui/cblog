@@ -99,6 +99,7 @@ func main() {
 	//router.GET("/hello", Hello)
 	router.POST("/category", service.CreateCategory)
 	router.GET("/category", service.GetCategories)
+	router.PUT("/category", service.UpdateCategory)
 	//router.GET("/get", GetCategory)
 	router.Run("0.0.0.0:8089")
 }

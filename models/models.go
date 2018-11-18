@@ -99,6 +99,37 @@ func (category *Category) Insert() error {
 	return db.Error
 }
 
+// 更新所有字段时忽略创建时间
+func (category *Category) UpdateAllField() error {
+	return DB.Omit("CreatedAt").Save(&category).Error
+}
+
+// 更新传进来的字段
+// 用struct传进来会忽略掉0值，所以不能用struct
+func (category *Category) UpdateByField(target map[string]interface{}) error {
+	return DB.Model(&category).Updates(target).Error
+}
+
+func FindIfExistCategoryByName(name string) (ifExist bool, err error) {
+	var num int
+	// 用struct会忽略空字符串，所以少用
+	//err = DB.Model(&Category{}).Where(&Category{Name: name}).Count(&num).Error
+	err = DB.Model(&Category{}).Where("name = ?", name).Count(&num).Error
+	if num > 0 {
+		ifExist = true
+	} else {
+		ifExist = false
+	}
+	return
+}
+
+func GetCategoryById(id string) (cate Category, err error) {
+	err = DB.First(&cate, id).Error
+	return
+
+}
+
+// 找不到会返回record not find的错误
 func GetCategoryByName(name string) (cate Category, err error) {
 	err = DB.Where("name = ?", name).First(&cate).Error
 	return
