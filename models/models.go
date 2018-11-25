@@ -13,12 +13,12 @@ import (
 var DB *gorm.DB
 
 // 用来覆盖gorm.Model，主要对json方式做出改变, 主键为int
-// TODO form忽略id等字段,但是bindjson会读取到ID
+// 忽略DeleteAt
 type IntIdModel struct {
-	ID        uint       `gorm:"primary_key" json:"id" form:"-"`
+	ID        uint64     `gorm:"primary_key" json:"id"`
 	CreatedAt time.Time  `json:"created_at"`
 	UpdatedAt time.Time  `json:"updated_at"`
-	DeletedAt *time.Time `sql:"index" json:"-"`
+	DeletedAt *time.Time `sql:"index" json:"-", form:"-"`
 }
 
 // 用来覆盖gorm.Model，主要对json方式做出改变, 主键为string
@@ -26,7 +26,7 @@ type StrIdModel struct {
 	ID        string     `gorm:"primary_key" json:"id"`
 	CreatedAt time.Time  `json:"created_at"`
 	UpdatedAt time.Time  `json:"updated_at"`
-	DeletedAt *time.Time `sql:"index" json:"-"`
+	DeletedAt *time.Time `sql:"index" json:"-" form:"-"`
 }
 
 type Article struct {
@@ -35,14 +35,14 @@ type Article struct {
 	Body          string   `gorm:"type:longtext" json:"body"`       //富文本
 	Status        uint8    `json:"status" json:"status"`            //文章状态 0:未发布 1:发布
 	Abstract      string   `gorm:"size:128" json:"abstract"`        //摘要
-	Views         uint     `gorm:"default:0" "json:"views"`         //浏览数
-	Likes         uint     `gorm:"default:0" json:"likes"`          //点赞数
+	Views         uint64   `gorm:"default:0" "json:"views"`         //浏览数
+	Likes         uint64   `gorm:"default:0" json:"likes"`          //点赞数
 	UserLikes     string   `gorm:"type:text" json:"user_likes"`     //点赞的用户
-	Weight        uint     `gorm:"default:0" json:"weight"`         //推荐权重
+	Weight        uint64   `gorm:"default:0" json:"weight"`         //推荐权重
 	Topped        bool     `gorm:"default:0" json:"topped"`         //是否置顶
 	AttachmentUrl string   `gorm:"type:text" json:"attachment_url"` // 附件地址
 	Category      Category `gorm:"ForeignKey:ProfileRefer""`
-	CategoryId    uint     `json:"category_id"`
+	CategoryId    uint64   `json:"category_id"`
 	Tags          []Tag    `gorm:"many2many:article_tags" json:"tags"`
 }
 
@@ -70,12 +70,12 @@ func (article *Article) Insert() error {
 }
 
 // 所有字段都更新
-func (article *Article) Save() error {
-	return DB.Model(article).Save(article).Error
+func (article *Article) UpdateAllField() error {
+	return DB.Omit("CreatedAt", "DeletedAt").Save(article).Error
 }
 
 // 只更新给定的字段，不用struct是因为它会忽略0,""或者false等
-func (article *Article) Update(data map[string]interface{}) error {
+func (article *Article) UpdateByField(data map[string]interface{}) error {
 	return DB.Model(article).Updates(data).Error
 }
 
@@ -102,7 +102,7 @@ func (category *Category) Insert() error {
 
 // 更新所有字段时忽略创建时间
 func (category *Category) UpdateAllField() error {
-	return DB.Omit("CreatedAt").Save(&category).Error
+	return DB.Omit("CreatedAt", "DeletedAt").Save(&category).Error
 }
 
 // 更新传进来的字段
@@ -111,23 +111,16 @@ func (category *Category) UpdateByField(target map[string]interface{}) error {
 	return DB.Model(&category).Updates(target).Error
 }
 
-func FindIfExistCategoryByName(name string) (ifExist bool, err error) {
-	var num int
+func CountCategoryByName(name string) (num int64, err error) {
 	// 用struct会忽略空字符串，所以少用
 	//err = DB.Model(&Category{}).Where(&Category{Name: name}).Count(&num).Error
 	err = DB.Model(&Category{}).Where("name = ?", name).Count(&num).Error
-	if num > 0 {
-		ifExist = true
-	} else {
-		ifExist = false
-	}
 	return
 }
 
 func GetCategoryById(id string) (cate Category, err error) {
 	err = DB.First(&cate, id).Error
 	return
-
 }
 
 // 找不到会返回record not find的错误
@@ -145,7 +138,34 @@ func GetAllCategories() (cates []Category, err error) {
 // form，json，binding都可用于c.Bind
 type Tag struct {
 	IntIdModel
-	Name string `gorm:"size:20" json:"name" form:"name" binding:"required"`
+	Name string `gorm:"size:20" json:"name" form:"name"`
+}
+
+func (tag *Tag) UpdateNonzero(data Tag) error {
+	return DB.Model(tag).Updates(data).Error
+}
+
+func CountTagByName(name string) (num int64, err error) {
+	err = DB.Model(&Tag{}).Where("name = ?", name).Count(&num).Error
+	return
+}
+
+func CreateTag(tag *Tag) error {
+	return DB.Omit("DeletedAt").Create(tag).Error
+}
+
+func GetAllTags() (tags []Tag, err error) {
+	err = DB.Find(&tags).Error
+	return
+}
+
+func GetTagById(id uint64) (tag Tag, err error) {
+	err = DB.First(&tag, id).Error
+	return
+}
+
+func DeleteTagById(id uint64) error {
+	return DB.Where("id = ?", id).Delete(&Tag{}).Error
 }
 
 // 评论
@@ -200,8 +220,8 @@ type Link struct {
 	Name   string `gorm:"size:128" json:"name"` // 网站名
 	Url    string `gorm:"size:512" json:"url"`  // 链接地址
 	Desc   string `gorm:"size:512" json:"desc"` // 链接描述
-	Weight uint   `json:"weight"`               // 排序
-	Views  uint   `json:"views"`                // 访问次数
+	Weight uint64 `json:"weight"`               // 排序
+	Views  uint64 `json:"views"`                // 访问次数
 }
 
 type Permission struct {

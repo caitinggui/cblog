@@ -16,12 +16,12 @@ func CreateCategory(c *gin.Context) {
 		return
 	}
 	logger.Info("find if exist ", name, " in database")
-	ifExist, err := models.FindIfExistCategoryByName(name)
+	cateNum, err := models.CountCategoryByName(name)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"errMsg": "数据库异常"})
 		return
 	}
-	if ifExist {
+	if cateNum != 0 {
 		c.JSON(http.StatusOK, gin.H{"errMsg": "该类型已存在"})
 		return
 	}
