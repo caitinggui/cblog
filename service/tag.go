@@ -30,7 +30,7 @@ func CreateTag(c *gin.Context) {
 	// bind会优先json，xml，然后匹配不到才找form
 	err := c.Bind(form)
 	logger.Info("origin form: ", form, " err: ", err)
-	if err != nil || len(form.Name) == 20 || form.Name == "" {
+	if err != nil || len(form.Name) > 20 || form.Name == "" {
 		c.JSON(http.StatusBadRequest, gin.H{})
 		return
 	}
@@ -54,7 +54,7 @@ func UpdateTag(c *gin.Context) {
 	err := c.Bind(&form)
 	logger.Info("origin form: ", form, " err: ", err)
 	if err != nil || form.ID == utils.V.EmptyIntId {
-		c.JSON(http.StatusOK, gin.H{"errMsg": "参数错误", "data": err})
+		c.JSON(http.StatusOK, gin.H{"errMsg": err, "data": "参数错误"})
 		return
 	}
 	tag, err = models.GetTagById(form.ID)
