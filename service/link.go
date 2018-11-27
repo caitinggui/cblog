@@ -74,6 +74,7 @@ func DeleteLink(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"errMsg": err})
 }
 
+// 检查Link的表单,要和models对应
 func checkLinkForm(form *models.Link) error {
 	if len(form.Name) > 128 || len(form.Url) > 512 || len(form.Desc) > 512 {
 		return errors.New("parameter too long")

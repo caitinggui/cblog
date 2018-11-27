@@ -38,6 +38,6 @@ func InitDB() (db *gorm.DB) {
 	db.DB().SetMaxOpenConns(100)
 	db.DB().SetConnMaxLifetime(time.Hour * 6)
 	db.LogMode(true)
-	db.AutoMigrate(&Article{}, &Category{}, &Comment{}, &Tag{}, &Link{}, &VisitorIP{}, &User{}, &Permission{}, &Role{})
+	db.AutoMigrate(&Article{}, &Category{}, &Comment{}, &Tag{}, &Link{}, &Visitor{}, &User{}, &Permission{}, &Role{})
 	return
 }

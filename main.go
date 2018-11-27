@@ -8,6 +8,7 @@ import (
 	"github.com/gin-contrib/sessions/cookie"
 	"github.com/gin-gonic/gin"
 
+	"cblog/config"
 	"cblog/models"
 	"cblog/service"
 )
@@ -71,6 +72,14 @@ func LoginRequired() gin.HandlerFunc {
 }
 
 func main() {
+	log, err := logger.LoggerFromConfigAsBytes(config.LoggerConfig)
+	if err != nil {
+		panic(err)
+	}
+	err = logger.ReplaceLogger(log)
+	if err != nil {
+		panic(err)
+	}
 	logger.Info("start cblog...")
 	db := models.InitDB()
 	defer db.Close()
@@ -112,6 +121,8 @@ func main() {
 	router.POST("/link", service.CreateLink)
 	router.PUT("/link", service.UpdateLink)
 	router.DELETE("/link/:id", service.DeleteLink)
+
+	router.GET("/visitor", service.GetVisitors)
 
 	//router.GET("/get", GetCategory)
 	router.Run("0.0.0.0:8089")

@@ -1,0 +1,14 @@
+<!--默认是async loop，性能一般够用，性能差距：sync < async loop < async timer-->
+<seelog minlevel="trace">
+  <outputs formatid="common">
+    <filter levels="info,debug,warn,error,critical">
+      <console />
+      <!--<rollingfile type="size" filename="logs/uniauth.log" maxsize="102400" maxrolls="5"/>-->
+      <!--在golang中，2006代表年份，01代表月份，02代表日，因为golang是2016-01-02诞生的-->
+      <rollingfile type="date" filename="logs/cblog.log" datepattern="2006.01.02" maxrolls="7"/>
+    </filter>
+  </outputs>
+  <formats>
+    <format id="common" format="%Date(2006-01-02 15:04:05.000) [%LEV][%File:%Line][%Func] %Msg%n" />
+  </formats>
+</seelog>

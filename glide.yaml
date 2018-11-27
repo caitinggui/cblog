@@ -4,6 +4,7 @@ ignore:
 - database/sql
 excludeDirs:
 - models
+- config
 import:
 - package: golang.org/x/sys
 - package: github.com/cihub/seelog
