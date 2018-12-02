@@ -17,3 +17,4 @@ import:
 - package: github.com/satori/go.uuid
   version: v1.2.0
 - package: github.com/jinzhu/inflection
+- package: github.com/gin-contrib/multitemplate

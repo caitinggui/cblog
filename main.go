@@ -2,8 +2,10 @@ package main
 
 import (
 	"net/http"
+	"path/filepath"
 
 	logger "github.com/cihub/seelog"
+	"github.com/gin-contrib/multitemplate"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-contrib/sessions/cookie"
 	"github.com/gin-gonic/gin"
@@ -18,28 +20,69 @@ func Health(c *gin.Context) {
 }
 
 func Hello(c *gin.Context) {
-	c.HTML(http.StatusOK, "blog/hello.tmpl", gin.H{"title": "ctg"})
+	c.HTML(http.StatusOK, "blog/hello.html", gin.H{"title": "ctg"})
+}
+
+func Index(c *gin.Context) {
+	c.HTML(http.StatusOK, "admin-index.html", gin.H{"test": "test"})
+}
+
+func LoadTemplates(templatesDir string) multitemplate.Renderer {
+	r := multitemplate.NewRenderer()
+
+	adminBase, err := filepath.Glob(templatesDir + "/layouts/admin-base.html")
+	if err != nil {
+		panic(err.Error())
+
+	}
+
+	includes, err := filepath.Glob(templatesDir + "/admin/*.html")
+	if err != nil {
+		panic(err.Error())
+
+	}
+	logger.Info("adminBase: ", adminBase)
+	logger.Info("includes: ", includes)
+
+	// Generate our templates map from our adminBase/ and admin/ directories
+	for _, include := range includes {
+		layoutCopy := make([]string, len(adminBase))
+		copy(layoutCopy, adminBase)
+		files := append(layoutCopy, include)
+		r.AddFromFiles(filepath.Base(include), files...)
+
+	}
+	// login.html模板不使用base.html渲染
+	r.AddFromFiles("login.html", templatesDir+"/login.html")
+
+	r.AddFromFiles("blog/hello.html", templatesDir+"/blog/hello.html")
+	return r
+
+}
+
+func GetLogin(c *gin.Context) {
+	logger.Info("get login page")
+	c.HTML(http.StatusOK, "login.html", gin.H{})
 }
 
 // 登陆
-func Login(c *gin.Context) {
+func PostLogin(c *gin.Context) {
 	username := c.PostForm("username")
-	passwd := c.PostForm("passwd")
+	password := c.PostForm("password")
 	session := sessions.Default(c)
-	if username != "test" || passwd != "test" {
+	if username != "test" || password != "test" {
 		// 密码错误则清空session, 一定要Save，否则前端不响应.本质上是通过Set-Cookie
 		//这个http header生效
 		session.Clear()
 		session.Save()
-		logger.Info("error user try to login: ", username, "@", passwd)
-		c.JSON(http.StatusUnauthorized, gin.H{"msg": "账号或者密码错误"})
-
+		logger.Info("error user try to login: ", username, " @", password)
+		c.Redirect(http.StatusMovedPermanently, "/login")
 	} else {
 		logger.Info("set login user:", username)
 		// 设置cookie
 		session.Set("user", username)
 		session.Save()
-		c.JSON(http.StatusOK, gin.H{"msg": "login success"})
+		c.Redirect(http.StatusMovedPermanently, "/")
 	}
 }
 
@@ -48,7 +91,7 @@ func Logout(c *gin.Context) {
 	session := sessions.Default(c)
 	session.Clear()
 	session.Save()
-	c.JSON(http.StatusOK, gin.H{"msg": "logout success"})
+	c.Redirect(http.StatusMovedPermanently, "/")
 }
 
 func LoginRequired() gin.HandlerFunc {
@@ -61,7 +104,8 @@ func LoginRequired() gin.HandlerFunc {
 			// 清空session
 			session.Clear()
 			session.Save()
-			c.JSON(http.StatusUnauthorized, gin.H{"msg": "Login required"})
+			c.Redirect(http.StatusMovedPermanently, "/login")
+			//c.JSON(http.StatusUnauthorized, gin.H{"msg": "Login required"})
 			c.Abort()
 
 		} else {
@@ -84,7 +128,10 @@ func main() {
 	db := models.InitDB()
 	defer db.Close()
 	router := gin.Default()
-	router.LoadHTMLGlob("templates/**/*")
+
+	router.HTMLRender = LoadTemplates("templates")
+	// router.Static相当于用router.Group为静态链接的请求建立了路由，所以/static就是路由地址"./static"就是指当前目录的static/目录
+	router.Static("/static", "static")
 
 	store := cookie.NewStore([]byte("I'am a very secert string"))
 	// 前端的document.cookie无法获取我们设置的session值
@@ -100,10 +147,13 @@ func main() {
 	admin.Use(LoginRequired())
 	{
 		admin.GET("/hello", Hello)
+		admin.GET("/", Index)
 	}
 
-	router.POST("/login", Login)
+	router.POST("/login", PostLogin)
+	router.GET("/login", GetLogin)
 	router.GET("/logout", Logout)
+
 	router.GET("/health", Health)
 	//router.GET("/hello", Hello)
 	router.POST("/category", service.CreateCategory)
@@ -123,6 +173,10 @@ func main() {
 	router.DELETE("/link/:id", service.DeleteLink)
 
 	router.GET("/visitor", service.GetVisitors)
+
+	router.GET("/", Hello)
+
+	//router.GET("/admin", Index)
 
 	//router.GET("/get", GetCategory)
 	router.Run("0.0.0.0:8089")
