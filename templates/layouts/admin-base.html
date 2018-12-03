@@ -120,21 +120,35 @@
 
       <!-- Sidebar Menu -->
       <ul class="sidebar-menu" data-widget="tree">
-        <li class="header">HEADER</li>
+        <li class="header">主导航</li>
         <!-- Optionally, you can add icons to the links -->
-        <li><a href="everyday"><i class="fa fa-link"></i> <span>博客列表</span></a></li>
-        <li><a href="users"><i class="fa fa-link"></i> <span>用户统计</span></a></li>
         <li class="treeview">
-          <a href="#"><i class="fa fa-link"></i> <span>祝福语</span>
+          <a href="#"><i class="fa fa-link"></i> <span>文章管理</span>
             <span class="pull-right-container">
                 <i class="fa fa-angle-left pull-right"></i>
               </span>
           </a>
           <ul class="treeview-menu">
-            <li><a href="greetings">默认祝福语</a></li>
-            <li><a href="commongreetings">常用祝福语</a></li>
-            <li><a href="usergreetings">最近使用祝福语</a></li>
+            <li><a href="article/add">添加文章</a></li>
+            <li><a href="article/list">文章列表</a></li>
           </ul>
+        </li>
+        <li class="treeview">
+          <a href="#"><i class="fa fa-link"></i> <span>类别/标签</span>
+            <span class="pull-right-container">
+                <i class="fa fa-angle-left pull-right"></i>
+              </span>
+          </a>
+          <ul class="treeview-menu">
+            <li><a href="/category">类别</a></li>
+            <li><a href="/tag">标签</a></li>
+          </ul>
+        </li>
+        <li class="header">系统配置</li>
+					<li><a href="/link"><i class="fa fa-link"></i> <span>友情链接</span></a></li>
+					<li><a href="/visitor"><i class="fa fa-link"></i> <span>访客列表</span></a></li>
+					<li><a href="/user"><i class="fa fa-link"></i> <span>用户列表</span></a></li>
+					<li><a href="/visitor"><i class="fa fa-link"></i> <span>个人信息</span></a></li>
         </li>
       </ul>
       <!-- /.sidebar-menu -->

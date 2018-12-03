@@ -24,10 +24,11 @@ func Hello(c *gin.Context) {
 }
 
 func Index(c *gin.Context) {
-	c.HTML(http.StatusOK, "admin-index.html", gin.H{"test": "test"})
+	c.HTML(http.StatusOK, "admin/index.html", gin.H{"test": "test"})
 }
 
 func LoadTemplates(templatesDir string) multitemplate.Renderer {
+	var relativePath string
 	r := multitemplate.NewRenderer()
 
 	adminBase, err := filepath.Glob(templatesDir + "/layouts/admin-base.html")
@@ -36,20 +37,25 @@ func LoadTemplates(templatesDir string) multitemplate.Renderer {
 
 	}
 
-	includes, err := filepath.Glob(templatesDir + "/admin/*.html")
+	adminHtmls, err := filepath.Glob(templatesDir + "/admin/*.html")
 	if err != nil {
 		panic(err.Error())
 
 	}
 	logger.Info("adminBase: ", adminBase)
-	logger.Info("includes: ", includes)
+	logger.Info("adminHtmls: ", adminHtmls)
 
 	// Generate our templates map from our adminBase/ and admin/ directories
-	for _, include := range includes {
+	for _, adminHtml := range adminHtmls {
 		layoutCopy := make([]string, len(adminBase))
 		copy(layoutCopy, adminBase)
-		files := append(layoutCopy, include)
-		r.AddFromFiles(filepath.Base(include), files...)
+		files := append(layoutCopy, adminHtml)
+		relativePath, err = filepath.Rel(templatesDir, adminHtml)
+		if err != nil {
+			panic(err)
+		}
+		logger.Info("template name: ", relativePath)
+		r.AddFromFiles(relativePath, files...)
 
 	}
 	// login.html模板不使用base.html渲染
