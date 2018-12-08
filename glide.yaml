@@ -18,3 +18,5 @@ import:
   version: v1.2.0
 - package: github.com/jinzhu/inflection
 - package: github.com/gin-contrib/multitemplate
+- package: github.com/patrickmn/go-cache
+  version: v2.1.0

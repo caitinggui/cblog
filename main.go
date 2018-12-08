@@ -131,6 +131,7 @@ func main() {
 		panic(err)
 	}
 	logger.Info("start cblog...")
+	defer logger.Flush()
 	db := models.InitDB()
 	defer db.Close()
 	router := gin.Default()
@@ -182,8 +183,30 @@ func main() {
 
 	router.GET("/", Hello)
 
+	err = models.InitCache("/home/ctg/go/src/cblog/cache.dump")
+	defer func() {
+		logger.Info("start dump cache")
+		err = models.DumpCache("/home/ctg/go/src/cblog/cache.dump")
+		logger.Info("dump cache result: ", err)
+	}()
+	if err != nil {
+		logger.Warn("load cache file error: ", err)
+	} else {
+		logger.Info("load cache file success")
+	}
+	router.GET("/testadd", func(c *gin.Context) {
+		models.SetCache("test", 100, 0)
+		models.DumpCache("cache.dump")
+		c.String(200, "ok")
+	})
+	router.GET("/testget", func(c *gin.Context) {
+		data, ok := models.GetCache("test")
+		c.JSON(200, gin.H{"data": data, "ok": ok})
+	})
+
 	//router.GET("/admin", Index)
 
 	//router.GET("/get", GetCategory)
-	router.Run("0.0.0.0:8089")
+	err = router.Run("0.0.0.0:8089")
+	logger.Errorf("stop server: %2v", err)
 }
