@@ -39,7 +39,7 @@ func GetCategories(c *gin.Context) {
 	if err != nil {
 		c.JSON(http.StatusOK, gin.H{"errMsg": "数据库异常"})
 	}
-	c.JSON(http.StatusOK, cates)
+	c.HTML(http.StatusOK, "admin/category.html", gin.H{"Cates": cates})
 }
 
 func UpdateCategory(c *gin.Context) {
@@ -56,5 +56,9 @@ func UpdateCategory(c *gin.Context) {
 	}
 	cate.Name = name
 	err = cate.UpdateAllField()
-	c.JSON(http.StatusOK, gin.H{"errMsg": err})
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"errCode": 4001, "errMsg": err, "data": gin.H{}})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"errCode": 0, "errMsg": "success", "data": gin.H{"name": cate.Name}})
 }

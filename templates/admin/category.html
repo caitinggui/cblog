@@ -1,0 +1,147 @@
+{{define "header"}}
+<link rel="stylesheet" href="static/libs/AdminLTE/bower_components/datatables.net-bs/css/dataTables.bootstrap.min.css">
+{{end}}
+
+{{define "content"}}
+<!-- Content Wrapper. Contains page content -->
+<div class="content-wrapper">
+  <!-- Content Header (Page header) -->
+  <section class="content-header">
+    <h1>
+      祝福语
+      <!--<small>Optional description</small>-->
+    </h1>
+  </section>
+
+  <!-- Main content -->
+  <section class="content container-fluid">
+    <section class="content">
+      <div class="row">
+        <div class="col-xs-12">
+            <div class="box">
+                <!-- /.box-header -->
+                <div class="box-body">
+                    <table id="greetingList" class="table table-bordered table-striped">
+                        <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>名称</th>
+														<th>修改时间</th>
+                            <th>操作</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                          {{range .Cates}}
+                          <tr id="LinkID{{.ID}}">
+                            <td>{{.ID}}</td>
+                            <td>
+                              <span id="LinkDataDesc{{.ID}}">{{.Name}}</span>
+                              <input id="LinkDesc{{.ID}}" style="display: none;width: 100%" value={{.Name}}></input>
+                            </td>
+                            <td>{{.UpdatedAt}}</td>
+                            <td>
+                              <div id="ModifyDelete{{.ID}}">
+                                <button onclick="ModifyLink({{.ID}})" id="LinkData" type="button" class="btn btn-info" style="font-size: 12px">修改</button>
+                                <button onclick="DeleteLink({{.ID}})" id="LinkData" type="button" class="btn btn-danger" style="font-size: 12px">删除</button>
+                              </div>
+                              <div id="SaveCancel{{.ID}}" style="display: none">
+                                <button onclick="SaveLink({{.ID}})" id="ModifyLink{{.ID}}" type="button" class="btn btn-primary" style="font-size: 12px">保存</button>
+                                <button onclick="CancelLink({{.ID}})" id="DeleteLink{{.ID}}" type="button" class="btn btn-success" style="font-size: 12px">取消</button>
+                              </div>
+                            </td>
+                          </tr>
+                        {{end}}
+                        </tbody>
+                    </table>
+                </div>
+                <!-- /.box-body -->
+            </div>
+            <!-- /.box -->
+        </div>
+        <!-- /.col -->
+      </div>
+      <!-- /.row -->
+    </section>
+  </section>
+    <!-- /.content -->
+</div>
+<!-- /.content-wrapper -->
+<!-- /.content -->
+{{end}}
+
+{{define "footer"}}
+<!--jquery.dataTables要在前面-->
+<script src='static/libs/AdminLTE/bower_components/datatables.net/js/jquery.dataTables.min.js'></script>
+<script src='static/libs/AdminLTE/bower_components/datatables.net-bs/js/dataTables.bootstrap.min.js'></script>
+<script>
+  $(function () {
+    $("#greetingList").DataTable({
+      'ordering': false,
+      'bStateSave': true, //记录所在页数
+      'aLengthMenu': [[20, 40, 80, -1], [20, 40, 80, "All"]], //定义每页显示数据数量
+    });
+})
+        // TODO 解析json有问题
+        function DeleteLink(ID) {
+          var really = confirm('确定删除吗？');
+          if (really == false) {
+            return
+          }
+          $.ajax({
+              type: "DELETE",
+              url: window.location.href + "?id=" + ID,
+              success: function (data) {
+                  $('#LinkID' + ID).remove();
+              }
+          });
+        }
+        function ModifyLink(ID) {
+            $('#ModifyDelete' + ID).css(
+                "display", "none"
+            );
+            $('#SaveCancel' + ID).css(
+                "display", "block"
+            );
+
+            $('#LinkDataDesc' + ID).css(
+                "display", "none"
+            );
+            $('#LinkDesc' + ID).css(
+                "display", "block"
+            );
+        }
+        function CancelLink(ID) {
+            $('#ModifyDelete' + ID).css(
+                "display", "block"
+            );
+            $('#SaveCancel' + ID).css(
+                "display", "none"
+            );
+
+            $('#LinkDataDesc' + ID).css(
+                "display", "block"
+            );
+            $('#LinkDesc' + ID).css(
+                "display", "none"
+            );
+        }
+        function SaveLink(ID) {
+            $.ajax({
+                type: "PUT",
+                url: window.location.href,
+                data: {
+                    id: ID,
+                    name: $('#LinkDesc' + ID).val()
+                },
+                success: function (data) {
+                    console.log("data: ", data);
+                    $('#LinkDataDesc' + ID).text(values = data.data.name);
+                    CancelLink(ID)
+                },
+                error: function (jqXHR, textStatus, errorThrown) {
+                    alert(jqXHR, textStatus, errorThrown);
+                }
+            });
+        }
+</script>
+{{end}}
