@@ -1,0 +1,5 @@
+listen: 0.0.0.0:8088 # rpproxy监听地址
+mysql:
+  server: root:123456@(127.0.0.1:3306)/redpacket?parseTime=true&charset=utf8mb4
+  maxidle: 20 # zero means defaultMaxIdleConns; negative means 0
+  maxopen: 200 # <= 0 means unlimited
