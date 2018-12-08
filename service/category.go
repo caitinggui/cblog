@@ -7,12 +7,15 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"cblog/models"
+	"cblog/utils/e"
 )
 
 func CreateCategory(c *gin.Context) {
+	mc := Gin{C: c}
 	name := c.PostForm("name")
 	if name == "" {
-		c.AbortWithStatusJSON(http.StatusOK, gin.H{"errMsg": "名字不能为空"})
+		mc.WebJson(e.ERR_INVALID_PARAM, nil)
+		//c.AbortWithStatusJSON(http.StatusOK, gin.H{"errMsg": "名字不能为空"})
 		return
 	}
 	logger.Info("find if exist ", name, " in database")
