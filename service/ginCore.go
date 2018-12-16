@@ -1,8 +1,10 @@
 package service
 
 import (
+	"html/template"
 	"net/http"
 	"path/filepath"
+	"time"
 
 	logger "github.com/cihub/seelog"
 	"github.com/gin-contrib/multitemplate"
@@ -19,7 +21,7 @@ type Gin struct {
 // 返回html code 为200的json response
 func (self *Gin) WebJson(code int, data interface{}) {
 	logger.Info("json response: ", code, data)
-	self.C.JSON(http.StatusOK, gin.H{"errCode": code, "ErrMsg": e.GetMsg(code), "data": data})
+	self.C.JSON(http.StatusOK, gin.H{"errCode": code, "errMsg": e.GetMsg(code), "data": data})
 }
 
 // 返回html code为200的html response
@@ -51,6 +53,10 @@ func (self *Gin) CheckGormErr(err error) error {
 func LoadTemplates(templatesDir string) multitemplate.Renderer {
 	var relativePath string
 	r := multitemplate.NewRenderer()
+	// 定义模板函数
+	funcMap := template.FuncMap{
+		"FormatAsDate": FormatAsDate,
+	}
 
 	adminBase, err := filepath.Glob(templatesDir + "/layouts/admin-base.html")
 	if err != nil {
@@ -76,13 +82,17 @@ func LoadTemplates(templatesDir string) multitemplate.Renderer {
 			panic(err)
 		}
 		logger.Info("template name: ", relativePath)
-		r.AddFromFiles(relativePath, files...)
+		r.AddFromFilesFuncs(relativePath, funcMap, files...)
 
 	}
 	// login.html模板不使用base.html渲染
-	r.AddFromFiles("login.html", templatesDir+"/login.html")
+	r.AddFromFilesFuncs("login.html", funcMap, templatesDir+"/login.html")
 
-	r.AddFromFiles("blog/hello.html", templatesDir+"/blog/hello.html")
+	r.AddFromFilesFuncs("blog/hello.html", funcMap, templatesDir+"/blog/hello.html")
 	return r
 
+}
+
+func FormatAsDate(t time.Time) string {
+	return t.Format("2006-01-02 15:04:05")
 }

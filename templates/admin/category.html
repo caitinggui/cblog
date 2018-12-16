@@ -21,11 +21,12 @@
             <div class="box">
                 <!-- /.box-header -->
                 <div class="box-body">
-                    <table id="greetingList" class="table table-bordered table-striped">
+                    <table id="categoryList" class="table table-bordered table-striped">
                         <thead>
                         <tr>
                             <th>ID</th>
                             <th>名称</th>
+														<th>创建时间</th>
 														<th>修改时间</th>
                             <th>操作</th>
                         </tr>
@@ -38,7 +39,8 @@
                               <span id="LinkDataDesc{{.ID}}">{{.Name}}</span>
                               <input id="LinkDesc{{.ID}}" style="display: none;width: 100%" value={{.Name}}></input>
                             </td>
-                            <td>{{.UpdatedAt}}</td>
+                            <td>{{.CreatedAt | FormatAsDate }}</td>
+                            <td>{{.UpdatedAt | FormatAsDate }}</td>
                             <td>
                               <div id="ModifyDelete{{.ID}}">
                                 <button onclick="ModifyLink({{.ID}})" id="LinkData" type="button" class="btn btn-info" style="font-size: 12px">修改</button>
@@ -58,6 +60,19 @@
             </div>
             <!-- /.box -->
         </div>
+        <div class="col-xs-12">
+            <div class="box box-warning">
+                <div class="box-header with-border">
+                    <h4 class="box-title">添加分类</h4>
+                </div>
+                <div class="box-body">
+                    <div class="form-group">
+                        <textarea id="LinkName" class="form-control" rows="1" placeholder="添加单个分类" name="name"></textarea>
+                    </div>
+                    <button onclick="CreateLink()" class="btn btn-primary" type="button">添加</button>
+                </div>
+            </div>
+        </div>
         <!-- /.col -->
       </div>
       <!-- /.row -->
@@ -75,73 +90,104 @@
 <script src='static/libs/AdminLTE/bower_components/datatables.net-bs/js/dataTables.bootstrap.min.js'></script>
 <script>
   $(function () {
-    $("#greetingList").DataTable({
+    $("#categoryList").DataTable({
       'ordering': false,
       'bStateSave': true, //记录所在页数
       'aLengthMenu': [[20, 40, 80, -1], [20, 40, 80, "All"]], //定义每页显示数据数量
     });
 })
-        // TODO 解析json有问题
-        function DeleteLink(ID) {
-          var really = confirm('确定删除吗？');
-          if (really == false) {
-            return
+function DeleteLink(ID) {
+  var really = confirm('确定删除吗？');
+  if (really == false) {
+    return
+  }
+  $.ajax({
+      type: "DELETE",
+      url: window.location.href + "/" + ID,
+      success: function (data) {
+          $('#LinkID' + ID).remove();
+      }
+  });
+}
+function ModifyLink(ID) {
+  $('#ModifyDelete' + ID).css(
+      "display", "none"
+  );
+  $('#SaveCancel' + ID).css(
+      "display", "block"
+  );
+
+  $('#LinkDataDesc' + ID).css(
+      "display", "none"
+  );
+  $('#LinkDesc' + ID).css(
+      "display", "block"
+  );
+}
+function CancelLink(ID) {
+  $('#ModifyDelete' + ID).css(
+      "display", "block"
+  );
+  $('#SaveCancel' + ID).css(
+      "display", "none"
+  );
+
+  $('#LinkDataDesc' + ID).css(
+      "display", "block"
+  );
+  $('#LinkDesc' + ID).css(
+      "display", "none"
+  );
+}
+function SaveLink(ID) {
+  $.ajax({
+      type: "PUT",
+      url: window.location.href,
+      data: {
+          id: ID,
+          name: $('#LinkDesc' + ID).val()
+      },
+      success: function (data) {
+          console.log("data: ", data);
+          if (data.errCode == 0) {
+            $('#LinkDataDesc' + ID).text(values = data.data.name);
+            CancelLink(ID)
+          } else {
+            CancelLink(ID)
+            alert(data.errMsg)
           }
-          $.ajax({
-              type: "DELETE",
-              url: window.location.href + "?id=" + ID,
-              success: function (data) {
-                  $('#LinkID' + ID).remove();
-              }
-          });
-        }
-        function ModifyLink(ID) {
-            $('#ModifyDelete' + ID).css(
-                "display", "none"
-            );
-            $('#SaveCancel' + ID).css(
-                "display", "block"
-            );
+        },
+      error: function (jqXHR, textStatus, errorThrown) {
+          alert(jqXHR, textStatus, errorThrown);
+      }
+    });
+}
 
-            $('#LinkDataDesc' + ID).css(
-                "display", "none"
-            );
-            $('#LinkDesc' + ID).css(
-                "display", "block"
-            );
+function CreateLink() {
+  console.log("start create")
+  var name = $("#LinkName").val()
+  if (name == "") {
+    alert("类型名称不能为空")
+    return
+  }
+  $.ajax({
+      type: "POST",
+      url: window.location.href,
+      data: {
+          name: name
+      },
+      success: function (data) {
+        console.log("data: ", data);
+        if (data.errCode != 0) {
+          alert(data.errMsg)
+        } else {
+          window.location.href = window.location.href
         }
-        function CancelLink(ID) {
-            $('#ModifyDelete' + ID).css(
-                "display", "block"
-            );
-            $('#SaveCancel' + ID).css(
-                "display", "none"
-            );
-
-            $('#LinkDataDesc' + ID).css(
-                "display", "block"
-            );
-            $('#LinkDesc' + ID).css(
-                "display", "none"
-            );
-        }
-        function SaveLink(ID) {
-            $.ajax({
-                type: "PUT",
-                url: window.location.href,
-                data: {
-                    id: ID,
-                    name: $('#LinkDesc' + ID).val()
-                },
-                success: function (data) {
-                    console.log("data: ", data);
-                    $('#LinkDataDesc' + ID).text(values = data.data.name);
-                    CancelLink(ID)
-                },
-                error: function (jqXHR, textStatus, errorThrown) {
-                    alert(jqXHR, textStatus, errorThrown);
-                }
-            });
-        }
+      },
+      error: function (jqXHR, textStatus, errorThrown) {
+            alert(jqXHR, textStatus, errorThrown);
+      }
+  })
+}
 </script>
 {{end}}

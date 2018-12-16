@@ -26,7 +26,7 @@ func GetAllTags() (tags []Tag, err error) {
 }
 
 func GetTagById(id uint64) (tag Tag, err error) {
-	err = DB.First(&tag, id).Error
+	err = DB.Where("id = ?", id).First(&tag).Error
 	return
 }
 

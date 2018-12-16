@@ -22,7 +22,7 @@ func CreateLink(link *Link) error {
 }
 
 func GetAllLinks() (links []Link, err error) {
-	err = DB.Find(&links).Error
+	err = DB.Order("weight desc").Find(&links).Error
 	return
 }
 

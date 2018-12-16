@@ -2,6 +2,7 @@ package models
 
 import (
 	logger "github.com/cihub/seelog"
+	"github.com/jinzhu/gorm"
 )
 
 // 文章类型
@@ -31,6 +32,20 @@ func (category *Category) UpdateByField(target map[string]interface{}) error {
 	return DB.Model(&category).Updates(target).Error
 }
 
+// 找不到就返回false，包括数据库异常也是false
+func CheckIsExistCategoryByName(name string) bool {
+	cate := Category{}
+	err := DB.Select("name").Where("name = ?", name).First(&cate).Error
+	if err == nil {
+		return true
+	}
+	// 如果不是没找到，说明是操作数据库失败，要记录，但也是表示找不到
+	if !gorm.IsRecordNotFoundError(err) {
+		logger.Error("check category error: ", err)
+	}
+	return false
+}
+
 func CountCategoryByName(name string) (num int64, err error) {
 	// 用struct会忽略空字符串，所以少用
 	//err = DB.Model(&Category{}).Where(&Category{Name: name}).Count(&num).Error
@@ -47,6 +62,10 @@ func GetCategoryById(id string) (cate Category, err error) {
 func GetCategoryByName(name string) (cate Category, err error) {
 	err = DB.Where("name = ?", name).First(&cate).Error
 	return
+}
+
+func DeleteCategoryById(id string) error {
+	return DB.Where("id = ?", id).Delete(&Category{}).Error
 }
 
 func GetAllCategories() (cates []Category, err error) {

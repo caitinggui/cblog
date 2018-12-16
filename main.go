@@ -70,6 +70,7 @@ func main() {
 	router.POST("/category", service.CreateCategory)
 	router.GET("/category", service.GetCategories)
 	router.PUT("/category", service.UpdateCategory)
+	router.DELETE("/category/:id", service.DeleteCategory)
 
 	router.GET("/tag/:id", service.GetTag)
 	router.GET("/tag", service.GetTags)

@@ -6,6 +6,8 @@ import (
 	logger "github.com/cihub/seelog"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
+
+	"cblog/utils"
 )
 
 // 登陆
@@ -23,7 +25,7 @@ func PostLogin(c *gin.Context) {
 	} else {
 		logger.Info("set login user:", username)
 		// 设置cookie
-		session.Set("user", username)
+		session.Set(utils.V.CurrentUser, username)
 		session.Save()
 		c.Redirect(http.StatusMovedPermanently, "/")
 	}
