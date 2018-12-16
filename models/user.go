@@ -38,3 +38,7 @@ func (user *User) BeforeCreate(scope *gorm.Scope) error {
 	}
 	return err
 }
+
+func IsAdminExistByUid(uid string) bool {
+	return true
+}

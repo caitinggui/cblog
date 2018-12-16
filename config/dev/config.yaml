@@ -3,3 +3,7 @@ mysql:
   server: root:123456@(127.0.0.1:3306)/redpacket?parseTime=true&charset=utf8mb4
   maxidle: 20 # zero means defaultMaxIdleConns; negative means 0
   maxopen: 200 # <= 0 means unlimited
+  maxlife: 6  # 单位为小时
+  logmode: true  # 记录sql语句
+cachefile: "cache.dump"
+secret: 3697ae54f90811e8ba2c60f81dad53c8

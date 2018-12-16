@@ -5,6 +5,8 @@ import (
 
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/sqlite"
+
+	"cblog/config"
 )
 
 var DB *gorm.DB
@@ -34,10 +36,10 @@ func InitDB() (db *gorm.DB) {
 	//db, err := gorm.Open("mysql", "root:mysql@/wblog?charset=utf8&parseTime=True&loc=Asia/Shanghai")
 	DB = db
 	db.SingularTable(true) //全局设置表名不可以为复数形式。
-	db.DB().SetMaxIdleConns(10)
-	db.DB().SetMaxOpenConns(100)
-	db.DB().SetConnMaxLifetime(time.Hour * 6)
-	db.LogMode(true)
+	db.DB().SetMaxIdleConns(config.Config.Mysql.MaxIdle)
+	db.DB().SetMaxOpenConns(config.Config.Mysql.MaxOpen)
+	db.DB().SetConnMaxLifetime(time.Hour * config.Config.Mysql.MaxLife)
+	db.LogMode(config.Config.Mysql.LogMode)
 	db.AutoMigrate(&Article{}, &Category{}, &Comment{}, &Tag{}, &Link{}, &Visitor{}, &User{}, &Permission{}, &Role{})
 	return
 }

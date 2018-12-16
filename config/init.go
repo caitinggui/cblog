@@ -3,6 +3,7 @@ package config
 import (
 	"io/ioutil"
 	"os"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"gopkg.in/yaml.v2"
@@ -10,13 +11,17 @@ import (
 
 type mysql struct {
 	Server  string
-	MaxIdle int64
-	MaxOpen int64
+	MaxIdle int
+	MaxOpen int
+	MaxLife time.Duration
+	LogMode bool
 }
 
 type config struct {
-	Listen string
-	Mysql  mysql
+	Listen    string
+	Mysql     mysql
+	CacheFile string
+	Secret    string
 }
 
 var Config config
