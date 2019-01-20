@@ -11,25 +11,31 @@ type Category struct {
 	Name string `gorm:"size:20" json:"name"`
 }
 
-func (category *Category) Insert() error {
+func (self *Category) Insert() error {
 	logger.Info("insert category")
-	db := DB.Create(category)
-	logger.Info("category after insert:", category)
-	if db.Error != nil {
-		logger.Error("insert category error:", db.Error)
-	}
+	db := DB.Omit("DeletedAt").Create(category)
 	return db.Error
 }
 
 // 更新所有字段时忽略创建时间
-func (category *Category) UpdateAllField() error {
-	return DB.Omit("CreatedAt", "DeletedAt").Save(&category).Error
+func (self *Category) UpdateAllField() error {
+	return DB.Omit("CreatedAt", "DeletedAt").Save(category).Error
 }
 
 // 更新传进来的字段
 // 用struct传进来会忽略掉0值，所以不能用struct
-func (category *Category) UpdateByField(target map[string]interface{}) error {
-	return DB.Model(&category).Updates(target).Error
+func (self *Category) UpdateByField(target map[string]interface{}) error {
+	return DB.Model(self).Updates(target).Error
+}
+
+// 更新时忽略0值
+func (self *Category) UpdateNoneZero(data Category) error {
+	return DB.Model(self).Updates(data).Error
+}
+
+// 删除
+func (self *Category) Delete() error {
+	return DB.Delete(supplier).Error
 }
 
 // 找不到就返回false，包括数据库异常也是false

@@ -7,7 +7,7 @@ type Tag struct {
 	Name string `gorm:"size:20" json:"name" form:"name"`
 }
 
-func (tag *Tag) UpdateNonzero(data Tag) error {
+func (self *Tag) UpdateNoneZero(data Tag) error {
 	return DB.Model(tag).Updates(data).Error
 }
 

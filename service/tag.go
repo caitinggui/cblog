@@ -72,12 +72,12 @@ func UpdateTag(c *gin.Context) {
 		logger.Warn("get tag failed: ", tag)
 		return
 	}
-	err = tag.UpdateNonzero(form)
+	err = tag.UpdateNoneZero(form)
 	if mc.CheckGormErr(err) != nil {
 		logger.Warn("update tag failed: ", err)
 		return
 	}
-	logger.Info("update resule: ", err)
+	logger.Info("update result: ", err)
 	mc.WebJson(e.SUCCESS, form)
 }
 
