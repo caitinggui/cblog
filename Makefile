@@ -19,3 +19,7 @@ build-linux:
 build:
 	echo "build local"
 	go build -o cblog-service main.go
+
+docs:
+	type apidoc || echo "请 npm i -g apidoc"
+	apidoc -e ./_ref/ -o ./doc/

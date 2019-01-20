@@ -8,6 +8,20 @@ import (
 	"cblog/utils/e"
 )
 
+/**
+* @api {post} /v1/category 创建博客类别
+* @apiGroup 类别
+* @apiVersion 0.1.0
+*
+* @apiParam {string} name 类别名称
+*
+* @apiSuccessExample {json} Success-Response:
+*   {
+*     "errCode": "0",
+*     "errMsg": "请求成功",
+*     "data": 21            // 类别id
+*    }
+ */
 func CreateCategory(c *gin.Context) {
 	mc := Gin{C: c}
 	name := c.PostForm("name")
@@ -28,7 +42,7 @@ func CreateCategory(c *gin.Context) {
 	if err != nil {
 		mc.WebJson(e.ERR_SQL, err)
 	}
-	mc.WebJson(e.SUCCESS, nil)
+	mc.WebJson(e.SUCCESS, cate.ID)
 }
 
 func GetCategories(c *gin.Context) {
