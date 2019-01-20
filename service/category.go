@@ -10,7 +10,7 @@ import (
 
 /**
 * @api {post} /v1/category 创建博客类别
-* @apiGroup 类别
+* @apiGroup Category
 * @apiVersion 0.1.0
 *
 * @apiParam {string} name 类别名称
@@ -45,6 +45,18 @@ func CreateCategory(c *gin.Context) {
 	mc.WebJson(e.SUCCESS, cate.ID)
 }
 
+/**
+* @api {get} /v1/category 获取所有博客类别
+* @apiGroup Category
+* @apiVersion 0.1.0
+*
+* @apiSuccessExample {json} Success-Response:
+*   {
+*     "errCode": "0",
+*     "errMsg": "请求成功",
+*     "data": [object, object]
+*    }
+ */
 func GetCategories(c *gin.Context) {
 	mc := Gin{C: c}
 	cates, err := models.GetAllCategories()
@@ -54,6 +66,22 @@ func GetCategories(c *gin.Context) {
 	mc.SuccessHtml("admin/category.html", gin.H{"Cates": cates})
 }
 
+/**
+* @api {put} /v1/category 更新某个博客类别
+* @apiGroup Category
+* @apiVersion 0.1.0
+
+* @apiParam {string} name 类别名称
+* @apiParam {string} id 类别id
+*
+* @apiSuccessExample {json} Success-Response:
+*   {
+*     "errCode": "0",
+*     "errMsg": "请求成功",
+*     "data": object   // object 为类别详情对象
+*
+}
+*/
 func UpdateCategory(c *gin.Context) {
 	mc := Gin{C: c}
 	name := c.PostForm("name")
@@ -80,6 +108,19 @@ func UpdateCategory(c *gin.Context) {
 	mc.WebJson(e.SUCCESS, cate)
 }
 
+/**
+* @api {delete} /v1/category/:id 删除某个博客类别
+* @apiGroup Category
+* @apiVersion 0.1.0
+*
+* @apiSuccessExample {json} Success-Response:
+*   {
+*     "errCode": "0",
+*     "errMsg": "请求成功",
+*     "data": null
+*
+}
+*/
 func DeleteCategory(c *gin.Context) {
 	mc := Gin{C: c}
 	id := c.Param("id")
