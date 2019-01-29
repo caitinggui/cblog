@@ -68,7 +68,7 @@ func UpdateLink(c *gin.Context) {
 	if mc.CheckGormErr(err) != nil {
 		return
 	}
-	err = link.UpdateNonzero(form)
+	err = link.UpdateNoneZero(form)
 	logger.Info("update resule: ", err)
 	if mc.CheckGormErr(err) != nil {
 		return

@@ -8,7 +8,7 @@ type Tag struct {
 }
 
 func (self *Tag) UpdateNoneZero(data Tag) error {
-	return DB.Model(tag).Updates(data).Error
+	return DB.Model(self).Updates(data).Error
 }
 
 func CountTagByName(name string) (num int64, err error) {

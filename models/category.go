@@ -13,13 +13,13 @@ type Category struct {
 
 func (self *Category) Insert() error {
 	logger.Info("insert category")
-	db := DB.Omit("DeletedAt").Create(category)
+	db := DB.Omit("DeletedAt").Create(self)
 	return db.Error
 }
 
 // 更新所有字段时忽略创建时间
 func (self *Category) UpdateAllField() error {
-	return DB.Omit("CreatedAt", "DeletedAt").Save(category).Error
+	return DB.Omit("CreatedAt", "DeletedAt").Save(self).Error
 }
 
 // 更新传进来的字段
@@ -35,7 +35,7 @@ func (self *Category) UpdateNoneZero(data Category) error {
 
 // 删除
 func (self *Category) Delete() error {
-	return DB.Delete(supplier).Error
+	return DB.Delete(self).Error
 }
 
 // 找不到就返回false，包括数据库异常也是false

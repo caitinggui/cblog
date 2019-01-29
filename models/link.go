@@ -9,8 +9,7 @@ type Link struct {
 }
 
 func (self *Link) Insert() error {
-	err := DB.Omit("DeletedAt").Create(self)
-	return err
+	return DB.Omit("DeletedAt").Create(self).Error
 }
 
 // 更新所有字段时忽略创建时间
@@ -21,11 +20,11 @@ func (self *Link) UpdateAllField() error {
 // 更新传进来的字段
 // 用struct传进来会忽略掉0值，所以不能用struct
 func (self *Link) UpdateByField(target map[string]interface{}) error {
-	return DB.Model(category).Updates(target).Error
+	return DB.Model(self).Updates(target).Error
 }
 
 // 更新时忽略0值
-func (self *Link) UpdateNonZero(data Link) error {
+func (self *Link) UpdateNoneZero(data Link) error {
 	return DB.Model(self).Updates(data).Error
 }
 
