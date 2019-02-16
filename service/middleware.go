@@ -39,8 +39,8 @@ func AdminRequierd() gin.HandlerFunc {
 		session := sessions.Default(c)
 		uid, _ := session.Get(utils.V.CurrentUser).(string)
 		logger.Info("check if ", uid, " is admin")
-		ifExist := models.IsAdminExistByUid(uid)
-		if !ifExist {
+		isAdmin := models.IsAdminByUid(uid)
+		if !isAdmin {
 			logger.Warn(uid, " is not admin")
 			c.String(http.StatusBadRequest, "非管理员")
 			c.Abort()

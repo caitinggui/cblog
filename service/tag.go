@@ -9,6 +9,18 @@ import (
 	"cblog/utils/e"
 )
 
+/**
+* @api {get} /v1/tags 获取所有博客标签
+* @apiGroup Tag
+* @apiVersion 0.1.0
+*
+* @apiSuccessExample {json} Success-Response:
+*   {
+*     "errCode": "0",
+*     "errMsg": "请求成功",
+*     "data": [object]            // 标签
+*    }
+ */
 func GetTags(c *gin.Context) {
 	mc := Gin{C: c}
 	tags, err := models.GetAllTags()
@@ -19,6 +31,18 @@ func GetTags(c *gin.Context) {
 	mc.WebJson(e.SUCCESS, tags)
 }
 
+/**
+* @api {get} /v1/tag/:id 获取某个博客标签
+* @apiGroup Tag
+* @apiVersion 0.1.0
+*
+* @apiSuccessExample {json} Success-Response:
+*   {
+*     "errCode": "0",
+*     "errMsg": "请求成功",
+*     "data": object
+*}
+ */
 func GetTag(c *gin.Context) {
 	mc := Gin{C: c}
 	id := utils.StrToUnit64(c.Param("id"))
@@ -31,6 +55,20 @@ func GetTag(c *gin.Context) {
 	mc.WebJson(e.SUCCESS, tag)
 }
 
+/**
+* @api {post} /v1/tag 创建博客标签
+* @apiGroup Tag
+* @apiVersion 0.1.0
+*
+* @apiParam {string} name 类别名称
+*
+* @apiSuccessExample {json} Success-Response:
+*   {
+*     "errCode": "0",
+*     "errMsg": "请求成功",
+*     "data": 21            // 标签的id
+*    }
+ */
 // 为避免字段改变影响到业务，所以不用c.PostForm来获取参数，统一用c.Bind
 func CreateTag(c *gin.Context) {
 	var tagNum int64
@@ -58,6 +96,21 @@ func CreateTag(c *gin.Context) {
 	mc.WebJson(e.SUCCESS, form)
 }
 
+/**
+* @api {put} /v1/tag 更新某个博客标签
+* @apiGroup Tag
+* @apiVersion 0.1.0
+
+* @apiParam {string} name 标签名称
+* @apiParam {string} id 标签id
+*
+* @apiSuccessExample {json} Success-Response:
+*   {
+*     "errCode": "0",
+*     "errMsg": "请求成功",
+*     "data": object   // object 为标签详情对象
+*}
+ */
 func UpdateTag(c *gin.Context) {
 	var form, tag models.Tag
 	mc := Gin{C: c}
@@ -81,6 +134,18 @@ func UpdateTag(c *gin.Context) {
 	mc.WebJson(e.SUCCESS, form)
 }
 
+/**
+* @api {delete} /v1/tg/:id 删除某个博客标签
+* @apiGroup Tag
+* @apiVersion 0.1.0
+*
+* @apiSuccessExample {json} Success-Response:
+*   {
+*     "errCode": "0",
+*     "errMsg": "请求成功",
+*     "data": null
+*}
+ */
 func DeleteTag(c *gin.Context) {
 	mc := Gin{C: c}
 	id := utils.StrToUnit64(c.Param("id"))

@@ -79,9 +79,8 @@ func GetCategories(c *gin.Context) {
 *     "errCode": "0",
 *     "errMsg": "请求成功",
 *     "data": object   // object 为类别详情对象
-*
-}
-*/
+*}
+ */
 func UpdateCategory(c *gin.Context) {
 	mc := Gin{C: c}
 	name := c.PostForm("name")
@@ -118,9 +117,8 @@ func UpdateCategory(c *gin.Context) {
 *     "errCode": "0",
 *     "errMsg": "请求成功",
 *     "data": null
-*
-}
-*/
+*}
+ */
 func DeleteCategory(c *gin.Context) {
 	mc := Gin{C: c}
 	id := c.Param("id")
