@@ -1,16 +1,21 @@
-hash: 1f5aaeadce6fc84b7e1ba429fb54799463636fe3695a48e826c7bae6613f4531
-updated: 2018-12-08T19:06:37.576054995+08:00
+hash: bca0d5801480592ce56806eba5ce9010c0b6c5a920e60f8c7ee264845edbb9cd
+updated: 2019-02-18T23:07:24.572957596+08:00
 imports:
-- name: github.com/cihub/seelog
-  version: d2c6e5aa9fbfdd1c624e140287063c7730654115
+- name: github.com/caitinggui/seelog
+  version: 2189d465f641d87176941698dc4046225fea47f0
+  subpackages:
+  - archive
+  - archive/gzip
+  - archive/tar
+  - archive/zip
 - name: github.com/gin-contrib/multitemplate
-  version: 00e8d5e7d32717deae36e0ce4f0069842a93aec8
+  version: 542ef922db4b0f48815cea2373013e97f4fb1990
 - name: github.com/gin-contrib/sessions
-  version: 7687b645ca6b8b80eb1b45dc16bfb026e9c04c7d
+  version: a38112fffc50b0fb82fda3565d98a7d482584855
   subpackages:
   - cookie
 - name: github.com/gin-contrib/sse
-  version: 22d885f9ecc78bf4ee5d72b937e4bbcdc58e8cae
+  version: a7658810eb745c2f22927282dea478278103a897
 - name: github.com/gin-gonic/gin
   version: b869fe1415e4b9eb52f247441830d502aece2d4d
   subpackages:
@@ -18,7 +23,7 @@ imports:
   - json
   - render
 - name: github.com/golang/protobuf
-  version: d3de96c4c28ef8af3aa1a892fc481e0f103c01ff
+  version: c823c79ea1570fb5ff454033735a8e68575d1d0f
   subpackages:
   - proto
 - name: github.com/gorilla/context
@@ -26,13 +31,13 @@ imports:
 - name: github.com/gorilla/securecookie
   version: e65cf8c5df817c89aeb47ecb46064e802e2de943
 - name: github.com/gorilla/sessions
-  version: b72c0abcab34f0952f00939c330c2effccf57423
+  version: 12bd4761fc66ac946e16fcc2a32b1e0b066f6177
 - name: github.com/jinzhu/gorm
   version: 6ed508ec6a4ecb3531899a69cbc746ccf65a4166
 - name: github.com/jinzhu/inflection
   version: 04140366298a54a039076d798123ffa108fff46c
 - name: github.com/json-iterator/go
-  version: 05d041de1043ba04b678fb046bd35455a9b1b33b
+  version: 5bc93205020f6311d7e4a34f82c5616a18ec35e5
 - name: github.com/mattn/go-isatty
   version: 3fb116b820352b7f0c281308a4d6250c22d94e27
 - name: github.com/modern-go/concurrent
@@ -44,13 +49,11 @@ imports:
 - name: github.com/satori/go.uuid
   version: f58768cc1a7a7e77a3bd49e98cdd21419399b6a3
 - name: github.com/ugorji/go
-  version: e5e69e061d4f7ee3a69b793cf9c1b41afe21918e
+  version: e444a5086c436778cf9281a7059a3d58b9e17935
   subpackages:
   - codec
-- name: golang.org/x/sys
-  version: 731415f00dce967a133e841b3079eda31c996761
 - name: gopkg.in/go-playground/validator.v8
   version: 5f1438d3fca68893a817e4a66806cea46a9e4ebf
 - name: gopkg.in/yaml.v2
-  version: 5420a8b6744d3b0345ab293f6fcba19c978f1183
+  version: 51d6538a90f86fe93ac480b35f37b2be17fef232
 testImports: []

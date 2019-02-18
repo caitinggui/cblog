@@ -2,23 +2,28 @@ language: go
 sudo: false
 
 go:
-  - 1.6.x
-  - 1.7.x
   - 1.8.x
   - 1.9.x
   - 1.10.x
   - 1.11.x
-  - tip
+  - master
 
 services:
   - redis
   - memcached
   - mongodb
 
-install:
-  - go get github.com/kardianos/govendor
+matrix:
+  fast_finish: true
+  include:
+  - go: 1.11.x
+    env: GO111MODULE=on
+
+before_install:
   - go get github.com/campoy/embedmd
-  - govendor sync
+
+install:
+  - go get -t -v .
 
 script:
   - embedmd -d *.md

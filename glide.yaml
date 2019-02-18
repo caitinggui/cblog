@@ -6,9 +6,6 @@ excludeDirs:
 - models
 - config
 import:
-- package: golang.org/x/sys
-- package: github.com/cihub/seelog
-  version: v2.6
 - package: github.com/gin-gonic/gin
   version: v1.3.0
 - package: github.com/gin-contrib/sessions
@@ -20,3 +17,4 @@ import:
 - package: github.com/gin-contrib/multitemplate
 - package: github.com/patrickmn/go-cache
   version: v2.1.0
+- package: github.com/caitinggui/seelog
