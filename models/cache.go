@@ -6,13 +6,13 @@ import (
 	logger "github.com/cihub/seelog"
 	"github.com/patrickmn/go-cache"
 
-	"cblog/utils"
+	"cblog/utils/V"
 )
 
 var Cache *cache.Cache
 
 func InitCache(fname string) error {
-	Cache = cache.New(utils.V.DefaultExpiration, utils.V.CleanupInterval)
+	Cache = cache.New(V.DefaultExpiration, V.CleanupInterval)
 	if fname == "" {
 		return nil
 	}

@@ -8,6 +8,7 @@ import (
 
 	"cblog/models"
 	"cblog/utils"
+	"cblog/utils/V"
 	"cblog/utils/e"
 )
 
@@ -96,7 +97,7 @@ func checkLinkForm(form *models.Link) error {
 	if form.Url == "" {
 		return errors.New("empty url")
 	}
-	if form.ID != utils.V.EmptyIntId {
+	if form.ID != V.EmptyIntId {
 		return errors.New("id error")
 	}
 	return nil

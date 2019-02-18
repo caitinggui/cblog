@@ -6,6 +6,7 @@ import (
 
 	"cblog/models"
 	"cblog/utils"
+	"cblog/utils/V"
 	"cblog/utils/e"
 )
 
@@ -116,7 +117,7 @@ func UpdateTag(c *gin.Context) {
 	mc := Gin{C: c}
 	err := c.Bind(&form)
 	logger.Info("origin form: ", form, " err: ", err)
-	if err != nil || form.ID == utils.V.EmptyIntId {
+	if err != nil || form.ID == V.EmptyIntId {
 		mc.WebJson(e.ERR_INVALID_PARAM, nil)
 		return
 	}

@@ -8,12 +8,13 @@ import (
 
 	"cblog/models"
 	"cblog/utils"
+	"cblog/utils/V"
 )
 
 func GetVisitors(c *gin.Context) {
 	page := utils.StrToUnit64(c.Query("page"))
 	pageSize := utils.StrToUnit64(c.Query("pageSize"))
-	if pageSize == 0 || pageSize > utils.V.MaxPageSize {
+	if pageSize == 0 || pageSize > V.MaxPageSize {
 		c.JSON(http.StatusBadRequest, gin.H{"errMsg": "pageSize error"})
 		return
 	}
@@ -44,7 +45,7 @@ func UpdateVisitor(c *gin.Context) {
 	var form, visitor models.Visitor
 	err := c.Bind(&form)
 	logger.Info("origin form: ", form, " err: ", err)
-	if err != nil || form.ID == utils.V.EmptyIntId {
+	if err != nil || form.ID == V.EmptyIntId {
 		c.JSON(http.StatusOK, gin.H{"errMsg": err, "data": "参数错误"})
 		return
 	}

@@ -8,7 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"cblog/models"
-	"cblog/utils"
+	"cblog/utils/V"
 )
 
 // 从cookie检查是否已登录
@@ -16,7 +16,7 @@ func LoginRequired() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		session := sessions.Default(c)
 		// 检查cookie
-		uid := session.Get(utils.V.CurrentUser)
+		uid := session.Get(V.CurrentUser)
 		if uid == nil || uid == "" {
 			logger.Warnf("user %s not authorized to visit %s", uid, c.Request.RequestURI)
 			// 清空session
@@ -37,7 +37,7 @@ func LoginRequired() gin.HandlerFunc {
 func AdminRequierd() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		session := sessions.Default(c)
-		uid, _ := session.Get(utils.V.CurrentUser).(string)
+		uid, _ := session.Get(V.CurrentUser).(string)
 		logger.Info("check if ", uid, " is admin")
 		isAdmin := models.IsAdminByUid(uid)
 		if !isAdmin {
