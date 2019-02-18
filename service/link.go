@@ -3,7 +3,7 @@ package service
 import (
 	"errors"
 
-	logger "github.com/cihub/seelog"
+	logger "github.com/caitinggui/seelog"
 	"github.com/gin-gonic/gin"
 
 	"cblog/models"

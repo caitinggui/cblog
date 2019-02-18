@@ -6,7 +6,7 @@ import (
 	"os"
 	"time"
 
-	logger "github.com/cihub/seelog"
+	logger "github.com/caitinggui/seelog"
 	"github.com/gin-gonic/gin"
 	"gopkg.in/yaml.v2"
 )

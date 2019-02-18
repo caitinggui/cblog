@@ -1,7 +1,7 @@
 package service
 
 import (
-	logger "github.com/cihub/seelog"
+	logger "github.com/caitinggui/seelog"
 	"github.com/gin-gonic/gin"
 
 	"cblog/models"

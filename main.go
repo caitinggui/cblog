@@ -3,7 +3,7 @@ package main
 import (
 	"net/http"
 
-	logger "github.com/cihub/seelog"
+	logger "github.com/caitinggui/seelog"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-contrib/sessions/cookie"
 	"github.com/gin-gonic/gin"
@@ -38,6 +38,12 @@ func main() {
 	defer logger.Flush()
 	db := models.InitDB()
 	defer db.Close()
+
+	// 用logger 的trace记录gin框架的日志
+	var lg service.GinLog
+	gin.DisableConsoleColor()
+	gin.DefaultWriter = lg
+	gin.DefaultErrorWriter = lg
 	router := gin.Default()
 
 	router.HTMLRender = service.LoadTemplates("templates")

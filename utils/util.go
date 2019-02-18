@@ -12,7 +12,7 @@ import (
 	"strings"
 	"time"
 
-	logger "github.com/cihub/seelog"
+	logger "github.com/caitinggui/seelog"
 )
 
 func StrToUnit64(s string) (n uint64) {

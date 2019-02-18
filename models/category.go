@@ -1,7 +1,7 @@
 package models
 
 import (
-	logger "github.com/cihub/seelog"
+	logger "github.com/caitinggui/seelog"
 	"github.com/jinzhu/gorm"
 )
 

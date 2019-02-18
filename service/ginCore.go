@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 	"time"
 
-	logger "github.com/cihub/seelog"
+	logger "github.com/caitinggui/seelog"
 	"github.com/gin-contrib/multitemplate"
 	"github.com/gin-gonic/gin"
 	"github.com/jinzhu/gorm"
@@ -95,4 +95,12 @@ func LoadTemplates(templatesDir string) multitemplate.Renderer {
 
 func FormatAsDate(t time.Time) string {
 	return t.Format("2006-01-02 15:04:05")
+}
+
+// 用来logger记录gin框架的log
+type GinLog struct{}
+
+func (self GinLog) Write(p []byte) (n int, err error) {
+	logger.Trace(string(p))
+	return len(p), nil
 }

@@ -4,7 +4,7 @@ import (
 	"errors"
 	"strings"
 
-	logger "github.com/cihub/seelog"
+	logger "github.com/caitinggui/seelog"
 	"github.com/jinzhu/gorm"
 	"github.com/satori/go.uuid"
 )

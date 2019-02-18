@@ -3,7 +3,7 @@ package models
 import (
 	"time"
 
-	logger "github.com/cihub/seelog"
+	logger "github.com/caitinggui/seelog"
 	"github.com/patrickmn/go-cache"
 
 	"cblog/utils/V"

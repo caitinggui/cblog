@@ -3,7 +3,7 @@ package service
 import (
 	"net/http"
 
-	logger "github.com/cihub/seelog"
+	logger "github.com/caitinggui/seelog"
 	"github.com/gin-gonic/gin"
 	//"cblog/models"
 )

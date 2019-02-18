@@ -1,16 +1,24 @@
 <!--默认是async loop，性能一般够用，性能差距：sync < async loop < async timer-->
 <seelog minlevel="trace">
   <outputs formatid="common">
+
+    <!--用来记录gin的log-->
+    <filter levels="trace">
+      <rollingfile formatid="access" type="size" filename="logs/access_log.log" maxsize="102400000" maxrolls="7"/>
+    </filter>
+
     <filter levels="info,debug,warn,error,critical">
       <!--在golang中，2006代表年份，01代表月份，02代表日，因为golang是2016-01-02诞生的-->
-      <rollingfile type="date" filename="logs/cblog.log" datepattern="2006.01.02" maxrolls="7"/>
+      <rollingfile type="date" filename="logs/glides.log" datepattern="2006.01.02" maxrolls="7"/>
     </filter>
-    <filter levels="warn,error,critical">
-      <!--maxsize的单位是字节，102400大概为100k大小-->
-	  <rollingfile type="size" filename="logs/cblog.error" maxsize="102400000" maxrolls="3"/>
+    <filter levels="error,critical">
+      <!--maxsize单位是字节，102400大概是100k大小-->
+      <rollingfile type="size" filename="logs/glides.error" maxsize="102400000" maxrolls="7"/>
     </filter>
+
   </outputs>
   <formats>
-    <format id="common" format="%Date(2006-01-02 15:04:05.000) [%LEV][%File:%Line][%Func] %Msg%n" />
+    <format id="common" format="%Date(2006-01-02 15:04:05.000) [%LEV][%File:%Line][%Func][%Tid] %Msg%n" />
+    <format id="access" format="[%Tid] %Msg" />
   </formats>
 </seelog>
