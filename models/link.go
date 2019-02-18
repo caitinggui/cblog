@@ -14,7 +14,7 @@ func (self *Link) Insert() error {
 
 // 更新所有字段时忽略创建时间
 func (self *Link) UpdateAllField() error {
-	return DB.Omit("CreatedAt", "DeletedAt").Save(self).Error
+	return DB.Model(self).Omit("CreatedAt", "DeletedAt").Save(self).Error
 }
 
 // 更新传进来的字段

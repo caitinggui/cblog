@@ -58,7 +58,7 @@ func (self *Article) Update() error {
 
 // 所有字段都更新
 func (article *Article) UpdateAllField() error {
-	return DB.Omit("CreatedAt", "DeletedAt").Save(article).Error
+	return DB.Model(article).Omit("CreatedAt", "DeletedAt").Save(article).Error
 }
 
 // 只更新给定的字段，不用struct是因为它会忽略0,""或者false等

@@ -17,9 +17,13 @@ func (self *Category) Insert() error {
 	return db.Error
 }
 
+func (self *Category) Update() error {
+	return DB.Model(self).Omit("DeletedAt").Updates(self).Error
+}
+
 // 更新所有字段时忽略创建时间
 func (self *Category) UpdateAllField() error {
-	return DB.Omit("CreatedAt", "DeletedAt").Save(self).Error
+	return DB.Model(self).Omit("CreatedAt", "DeletedAt").Save(self).Error
 }
 
 // 更新传进来的字段

@@ -1,10 +1,11 @@
 GOPATH:=$(CURDIR):$(GOPATH)
 
 test:
-	go test
+	# 加上-v就会输出详细信息（包括自定义日志）
+	go test -v ./... -configPath $(CURDIR)/config/dev/
 
 test-bench:
-	go test -test.bench=".*" 
+	go test -test.bench=".*" ./... -configPath $(CURDIR)/config/dev/
 
 debug:
 	gin --appPort 8089 main.go
