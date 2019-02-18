@@ -43,7 +43,7 @@ func (self *User) Update() error {
 	if self.ID == "" {
 		errors.New("Empty ID")
 	}
-	return DB.Model(self).Updates(self).Error
+	return DB.Model(self).Omit("DeletedAt", "CreatedAt").Updates(self).Error
 }
 
 func CreateUser(user *User) error {

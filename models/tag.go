@@ -21,7 +21,7 @@ func (self *Tag) Update() error {
 	if self.ID == 0 {
 		errors.New("Empty ID")
 	}
-	return DB.Model(self).Updates(self).Error
+	return DB.Model(self).Omit("DeletedAt", "CreatedAt").Updates(self).Error
 }
 
 func CountTagByName(name string) (num int64, err error) {

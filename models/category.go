@@ -18,7 +18,7 @@ func (self *Category) Insert() error {
 }
 
 func (self *Category) Update() error {
-	return DB.Model(self).Omit("DeletedAt").Updates(self).Error
+	return DB.Model(self).Omit("DeletedAt", "CreatedAt").Updates(self).Error
 }
 
 // 更新所有字段时忽略创建时间

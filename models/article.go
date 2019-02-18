@@ -53,7 +53,7 @@ func (self *Article) Update() error {
 	if self.ID == "" {
 		return errors.New("Empty ID")
 	}
-	return DB.Model(self).Updates(self).Error
+	return DB.Model(self).Omit("DeletedAt", "CreatedAt").Updates(self).Error
 }
 
 // 所有字段都更新

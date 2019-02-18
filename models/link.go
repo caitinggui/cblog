@@ -23,9 +23,13 @@ func (self *Link) UpdateByField(target map[string]interface{}) error {
 	return DB.Model(self).Updates(target).Error
 }
 
+func (self *Link) Update() error {
+	return DB.Model(self).Omit("DeletedAt", "CreatedAt").Updates(self).Error
+}
+
 // 更新时忽略0值
 func (self *Link) UpdateNoneZero(data Link) error {
-	return DB.Model(self).Updates(data).Error
+	return DB.Model(self).Omit("DeletedAt", "CreatedAt").Updates(data).Error
 }
 
 func CountLinkByName(name string) (num int64, err error) {

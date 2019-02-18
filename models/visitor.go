@@ -9,6 +9,13 @@ type Visitor struct {
 	Article Article
 }
 
+func (self *Visitor) Update() error {
+	if self.ID == 0 {
+		errors.New("Empty ID")
+	}
+	return DB.Model(self).Omit("DeletedAt", "CreatedAt").Updates(self).Error
+}
+
 func (visitor *Visitor) UpdateNonzero(data Visitor) error {
 	return DB.Model(visitor).Updates(data).Error
 }
