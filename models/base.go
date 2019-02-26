@@ -28,6 +28,20 @@ type StrIdModel struct {
 	DeletedAt *time.Time `sql:"index" json:"-" form:"-"`
 }
 
+// 忽略DeleteAt
+type IntIdModelWithoutDeletedAt struct {
+	ID        uint64    `gorm:"primary_key" json:"id"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
+}
+
+// 忽略DeleteAt
+type StrIdModelWithoutDeleteAt struct {
+	ID        string    `gorm:"primary_key" json:"id"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
+}
+
 func InitDB() (db *gorm.DB) {
 	db, err := gorm.Open("sqlite3", "./foo.db")
 	if err != nil {

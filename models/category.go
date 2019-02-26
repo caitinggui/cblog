@@ -1,14 +1,17 @@
 package models
 
 import (
+	"time"
+
 	logger "github.com/caitinggui/seelog"
 	"github.com/jinzhu/gorm"
 )
 
 // 文章类型
 type Category struct {
-	IntIdModel
-	Name string `gorm:"size:20" json:"name"`
+	IntIdModelWithoutDeletedAt
+	Name      string     `gorm:"size:20;unique_index:uk_name_deleted_at" json:"name"`
+	DeletedAt *time.Time `gorm:"unique_index:uk_name_deleted_at" json:"-", form:"-"`
 }
 
 func (self *Category) Insert() error {

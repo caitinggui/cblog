@@ -1,5 +1,9 @@
 package models
 
+import (
+	"errors"
+)
+
 type Visitor struct {
 	IntIdModel
 	IP      string `gorm:"size:64" json:"ip"`       // 访问者IP

@@ -21,7 +21,7 @@ type Article struct {
 	Weight        uint64   `gorm:"default:0" json:"weight"`         //推荐权重
 	Topped        int8     `gorm:"default:-1" json:"topped"`        //是否置顶, -1不置顶，1置顶
 	AttachmentUrl string   `gorm:"type:text" json:"attachment_url"` // 附件地址
-	Category      Category `gorm:"ForeignKey:ProfileRefer""`
+	Category      Category `gorm:"ForeignKey:CategoryId""`
 	CategoryId    uint64   `json:"category_id"`
 	Tags          []Tag    `gorm:"many2many:article_tags" json:"tags"`
 }
@@ -77,6 +77,6 @@ func GetArticleById(id string) (article Article, err error) {
 }
 
 func GetArticlesByCategory(category string) (articles []Article, err error) {
-	err = DB.Table("article al").Where("cg.name = ?", category).Joins("join category cg on al.category_id=cg.category_id").Find(&articles).Error
+	err = DB.Table("article ").Select("article.*").Where("cg.name = ?", category).Joins("join category cg on article.category_id=cg.id").Find(&articles).Error
 	return
 }

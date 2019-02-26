@@ -11,7 +11,7 @@ import (
 
 // 用户信息
 type User struct {
-	StrIdModel
+	StrIdModelWithoutDeleteAt
 	Email       string `gorm:"varchar(128);unique_index;default:null"`   //邮箱
 	UserName    string `gorm:"varchar(64);unique_index" json:"userName"` // 用户名
 	Password    string `gorm:"varchar(48);not null"`                     //密码

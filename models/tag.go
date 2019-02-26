@@ -2,13 +2,15 @@ package models
 
 import (
 	"errors"
+	"time"
 )
 
 // 文章标签
 // form，json，binding都可用于c.Bind
 type Tag struct {
-	IntIdModel
-	Name string `gorm:"size:20" json:"name" form:"name"`
+	IntIdModelWithoutDeletedAt
+	Name      string     `gorm:"size:20;unique_index:uk_name_deleted_at" json:"name"`
+	DeletedAt *time.Time `gorm:"unique_index:uk_name_deleted_at" json:"-", form:"-"`
 }
 
 func (self *Tag) UpdateNoneZero(data Tag) error {
