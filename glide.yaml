@@ -11,10 +11,11 @@ import:
 - package: github.com/gin-contrib/sessions
 - package: github.com/jinzhu/gorm
   version: v1.9.1
-- package: github.com/satori/go.uuid
-  version: v1.2.0
 - package: github.com/jinzhu/inflection
 - package: github.com/gin-contrib/multitemplate
 - package: github.com/patrickmn/go-cache
   version: v2.1.0
 - package: github.com/caitinggui/seelog
+- package: github.com/caitinggui/uniqueid
+- package: github.com/mattn/go-sqlite3
+  version: v1.10.0
