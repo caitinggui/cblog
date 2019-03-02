@@ -1,7 +1,6 @@
 package models
 
 import (
-	"errors"
 	"strings"
 
 	logger "github.com/caitinggui/seelog"
@@ -39,11 +38,40 @@ func (self *User) BeforeCreate(scope *gorm.Scope) error {
 	return err
 }
 
-func (self *User) Update() error {
-	if self.ID == "" {
-		errors.New("Empty ID")
+func (self *User) TableName() string {
+	return "user"
+}
+
+func (self *User) Insert() error {
+	if self.ID != "" {
+		return ERR_EXIST_ID
 	}
+	db := DB.Omit("DeletedAt").Create(self)
+	return db.Error
+}
+
+func (self *User) BeforeUpdate() error {
+	if self.ID == "" {
+		return ERR_EMPTY_ID
+	}
+	return nil
+}
+
+func (self *User) Update() error {
 	return DB.Model(self).Omit("DeletedAt", "CreatedAt").Updates(self).Error
+}
+
+func (self *User) BeforeDelete() error {
+	if self.ID == "" {
+		return ERR_EMPTY_ID
+	}
+	err := InsertToDeleteDataTable(self)
+	return err
+}
+
+// 删除
+func (self *User) Delete() error {
+	return DB.Delete(self).Error
 }
 
 func CreateUser(user *User) error {

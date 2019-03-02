@@ -1,7 +1,6 @@
 package models
 
 import (
-	"errors"
 	"strings"
 
 	logger "github.com/caitinggui/seelog"
@@ -10,7 +9,7 @@ import (
 )
 
 type Article struct {
-	StrIdModel
+	StrIdModelWithoutDeleteAt
 	Title         string   `gorm:"size:70" json:"title"`            //文章标题
 	Body          string   `gorm:"type:longtext" json:"body"`       //富文本
 	Status        int8     `json:"status" json:"status"`            //文章状态 -1:未发布 1:发布
@@ -28,32 +27,48 @@ type Article struct {
 
 // 用uuid代替主键
 func (article *Article) BeforeCreate(scope *gorm.Scope) error {
-	logger.Info("set uuid to id")
 	uuid_s := uuid.NewV1().String()
-	logger.Debug("uuid.NewV1: ", uuid_s)
 	uuid_s = strings.Replace(uuid_s, "-", "", -1)
 	err := scope.SetColumn("ID", uuid_s)
-	if err != nil {
-		logger.Info("set uuid to id failed: ", err)
-	}
 	return err
 }
 
+func (self *Article) TableName() string {
+	return "article"
+}
+
 // 增删改查在业务端记录log
-func (article *Article) Insert() error {
-	logger.Info("insert article")
-	db := DB.Omit("DeletedAt").Create(article)
-	if db.Error != nil {
-		logger.Error("insert article error: ", db.Error)
+func (self *Article) Insert() error {
+	if self.ID != "" {
+		return ERR_EXIST_ID
 	}
+	db := DB.Omit("DeletedAt").Create(self)
 	return db.Error
 }
 
-func (self *Article) Update() error {
+func (self *Article) BeforeUpdate() error {
 	if self.ID == "" {
-		return errors.New("Empty ID")
+		return ERR_EMPTY_ID
 	}
+	return nil
+}
+
+func (self *Article) Update() error {
 	return DB.Model(self).Omit("DeletedAt", "CreatedAt").Updates(self).Error
+}
+
+// 如果没有id，会删除整个表，所以要检查一下
+func (self *Article) BeforeDelete() error {
+	if self.ID == "" {
+		return ERR_EMPTY_ID
+	}
+	err := InsertToDeleteDataTable(self)
+	return err
+}
+
+// 删除
+func (self *Article) Delete() error {
+	return DB.Delete(self).Error
 }
 
 // 所有字段都更新
@@ -64,11 +79,6 @@ func (article *Article) UpdateAllField() error {
 // 只更新给定的字段，不用struct是因为它会忽略0,""或者false等
 func (article *Article) UpdateByField(data map[string]interface{}) error {
 	return DB.Model(article).Updates(data).Error
-}
-
-// 删除
-func (article *Article) Delete() error {
-	return DB.Delete(article).Error
 }
 
 func GetArticleById(id string) (article Article, err error) {

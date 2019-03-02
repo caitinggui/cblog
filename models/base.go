@@ -1,9 +1,11 @@
 package models
 
 import (
+	"encoding/json"
 	"errors"
 	"time"
 
+	logger "github.com/caitinggui/seelog"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/sqlite"
 
@@ -12,7 +14,16 @@ import (
 
 var DB *gorm.DB
 
-var EXIST_ID = errors.New("Exist ID")
+var ERR_EXIST_ID = errors.New("Exist ID")
+var ERR_EMPTY_ID = errors.New("Empty ID")
+
+// 定义数据表的接口
+type DataTable interface {
+	TableName() string
+	Insert() error
+	Update() error
+	Delete() error
+}
 
 // 用来覆盖gorm.Model，主要对json方式做出改变, 主键为int
 // 忽略DeleteAt
@@ -45,6 +56,33 @@ type StrIdModelWithoutDeleteAt struct {
 	UpdatedAt time.Time `json:"updated_at"`
 }
 
+type DeletedData struct {
+	IntIdModelWithoutDeletedAt
+	TableName string `gorm:"size:255"`
+	Data      string `gorm:"type:longtext"`
+}
+
+func (self *DeletedData) Insert() error {
+	if self.ID != 0 {
+		return ERR_EXIST_ID
+	}
+	db := DB.Omit("DeletedAt").Create(self)
+	return db.Error
+}
+
+func InsertToDeleteDataTable(data DataTable) error {
+	jsonData, err := json.Marshal(data)
+	if err != nil {
+		logger.Error("序列化要删除的数据失败: ", data, err)
+	}
+	deletedData := DeletedData{
+		TableName: data.TableName(),
+		Data:      string(jsonData),
+	}
+	err = deletedData.Insert()
+	return err
+}
+
 func InitDB() (db *gorm.DB) {
 	db, err := gorm.Open("sqlite3", "./foo.db")
 	if err != nil {
@@ -57,6 +95,6 @@ func InitDB() (db *gorm.DB) {
 	db.DB().SetMaxOpenConns(config.Config.Mysql.MaxOpen)
 	db.DB().SetConnMaxLifetime(time.Hour * config.Config.Mysql.MaxLife)
 	db.LogMode(config.Config.Mysql.LogMode)
-	db.AutoMigrate(&Article{}, &Category{}, &Comment{}, &Tag{}, &Link{}, &Visitor{}, &User{}, &Permission{}, &Role{})
+	db.AutoMigrate(&Article{}, &Category{}, &DeletedData{}, &Comment{}, &Tag{}, &Link{}, &Visitor{}, &User{}, &Permission{}, &Role{})
 	return
 }

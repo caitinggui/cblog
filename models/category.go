@@ -11,16 +11,40 @@ type Category struct {
 	Name string `gorm:"size:20;unique_index:uk_name" json:"name"`
 }
 
+func (self *Category) TableName() string {
+	return "category"
+}
+
 func (self *Category) Insert() error {
 	if self.ID != 0 {
-		return EXIST_ID
+		return ERR_EXIST_ID
 	}
 	db := DB.Omit("DeletedAt").Create(self)
 	return db.Error
 }
 
+func (self *Category) BeforeUpdate() error {
+	if self.ID == 0 {
+		return ERR_EMPTY_ID
+	}
+	return nil
+}
+
 func (self *Category) Update() error {
 	return DB.Model(self).Omit("DeletedAt", "CreatedAt").Updates(self).Error
+}
+
+func (self *Category) BeforeDelete() error {
+	if self.ID == 0 {
+		return ERR_EMPTY_ID
+	}
+	err := InsertToDeleteDataTable(self)
+	return err
+}
+
+// 删除
+func (self *Category) Delete() error {
+	return DB.Delete(self).Error
 }
 
 // 更新所有字段时忽略创建时间
@@ -37,11 +61,6 @@ func (self *Category) UpdateByField(target map[string]interface{}) error {
 // 更新时忽略0值
 func (self *Category) UpdateNoneZero(data Category) error {
 	return DB.Model(self).Updates(data).Error
-}
-
-// 删除
-func (self *Category) Delete() error {
-	return DB.Delete(self).Error
 }
 
 // 找不到就返回false，包括数据库异常也是false

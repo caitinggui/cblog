@@ -1,11 +1,9 @@
 package models
 
-import (
-	"errors"
-)
+import ()
 
 type Visitor struct {
-	IntIdModel
+	IntIdModelWithoutDeletedAt
 	IP      string `gorm:"size:64" json:"ip"`       // 访问者IP
 	Country string `gorm:"size:128" json:"country"` // 国家
 	City    string `gorm:"size:128" json:"city"`    // 城市
@@ -13,11 +11,40 @@ type Visitor struct {
 	Article Article
 }
 
-func (self *Visitor) Update() error {
-	if self.ID == 0 {
-		errors.New("Empty ID")
+func (self *Visitor) TableName() string {
+	return "visitor"
+}
+
+func (self *Visitor) Insert() error {
+	if self.ID != 0 {
+		return ERR_EXIST_ID
 	}
+	db := DB.Omit("DeletedAt").Create(self)
+	return db.Error
+}
+
+func (self *Visitor) BeforeUpdate() error {
+	if self.ID == 0 {
+		return ERR_EMPTY_ID
+	}
+	return nil
+}
+
+func (self *Visitor) Update() error {
 	return DB.Model(self).Omit("DeletedAt", "CreatedAt").Updates(self).Error
+}
+
+func (self *Visitor) BeforeDelete() error {
+	if self.ID == 0 {
+		return ERR_EMPTY_ID
+	}
+	err := InsertToDeleteDataTable(self)
+	return err
+}
+
+// 删除
+func (self *Visitor) Delete() error {
+	return DB.Delete(self).Error
 }
 
 func (visitor *Visitor) UpdateNonzero(data Visitor) error {

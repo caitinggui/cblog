@@ -1,15 +1,47 @@
 package models
 
 type Link struct {
-	IntIdModel
+	IntIdModelWithoutDeletedAt
 	Name   string `gorm:"size:128" json:"name" form:"name"` // 网站名
 	Url    string `gorm:"size:512" json:"url" form:"url"`   // 链接地址
 	Desc   string `gorm:"size:512" json:"desc" form:"desc"` // 链接描述
 	Weight uint64 `json:"weight" form:"weight"`             // 排序
 }
 
+func (self *Link) TableName() string {
+	return "link"
+}
+
 func (self *Link) Insert() error {
-	return DB.Omit("DeletedAt").Create(self).Error
+	if self.ID != 0 {
+		return ERR_EXIST_ID
+	}
+	db := DB.Omit("DeletedAt").Create(self)
+	return db.Error
+}
+
+func (self *Link) BeforeUpdate() error {
+	if self.ID == 0 {
+		return ERR_EMPTY_ID
+	}
+	return nil
+}
+
+func (self *Link) Update() error {
+	return DB.Model(self).Omit("DeletedAt", "CreatedAt").Updates(self).Error
+}
+
+func (self *Link) BeforeDelete() error {
+	if self.ID == 0 {
+		return ERR_EMPTY_ID
+	}
+	err := InsertToDeleteDataTable(self)
+	return err
+}
+
+// 删除
+func (self *Link) Delete() error {
+	return DB.Delete(self).Error
 }
 
 // 更新所有字段时忽略创建时间
@@ -21,10 +53,6 @@ func (self *Link) UpdateAllField() error {
 // 用struct传进来会忽略掉0值，所以不能用struct
 func (self *Link) UpdateByField(target map[string]interface{}) error {
 	return DB.Model(self).Updates(target).Error
-}
-
-func (self *Link) Update() error {
-	return DB.Model(self).Omit("DeletedAt", "CreatedAt").Updates(self).Error
 }
 
 // 更新时忽略0值

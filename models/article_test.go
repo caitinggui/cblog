@@ -57,7 +57,11 @@ func TestGetArticleByTag(t *testing.T) {
 		},
 	}
 	article1.Insert()
-	defer article1.Delete()
+	defer func() {
+		article1.Delete()
+		tag2, _ := GetTagByName("tag2")
+		tag2.Delete()
+	}()
 	article2 := Article{
 		Title: "TestGetArticleByTag2",
 		Tags:  []Tag{tag},
