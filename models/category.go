@@ -3,12 +3,19 @@ package models
 import (
 	logger "github.com/caitinggui/seelog"
 	"github.com/jinzhu/gorm"
+
+	"cblog/utils"
 )
 
 // 文章类型
 type Category struct {
 	IntIdModelWithoutDeletedAt
 	Name string `gorm:"size:20;unique_index:uk_name" json:"name"`
+}
+
+func (self *Category) BeforeCreate(scope *gorm.Scope) error {
+	err := scope.SetColumn("ID", utils.GenerateId())
+	return err
 }
 
 func (self *Category) TableName() string {

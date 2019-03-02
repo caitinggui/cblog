@@ -11,6 +11,7 @@ import (
 	"cblog/config"
 	"cblog/models"
 	"cblog/service"
+	"cblog/utils"
 )
 
 func Health(c *gin.Context) {
@@ -36,6 +37,10 @@ func main() {
 	}
 	logger.Info("start cblog...")
 	defer logger.Flush()
+
+	utils.InitUniqueId(config.Config.UniqueId.WorkerId, config.Config.UniqueId.ReserveId)
+	logger.Info("初始化唯一id生成器成功: ", utils.GenerateId())
+
 	db := models.InitDB()
 	defer db.Close()
 

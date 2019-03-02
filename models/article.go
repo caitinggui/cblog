@@ -1,15 +1,14 @@
 package models
 
 import (
-	"strings"
-
 	logger "github.com/caitinggui/seelog"
 	"github.com/jinzhu/gorm"
-	"github.com/satori/go.uuid"
+
+	"cblog/utils"
 )
 
 type Article struct {
-	StrIdModelWithoutDeleteAt
+	IntIdModelWithoutDeletedAt
 	Title         string   `gorm:"size:70" json:"title"`            //文章标题
 	Body          string   `gorm:"type:longtext" json:"body"`       //富文本
 	Status        int8     `json:"status" json:"status"`            //文章状态 -1:未发布 1:发布
@@ -19,17 +18,14 @@ type Article struct {
 	UserLikes     string   `gorm:"type:text" json:"user_likes"`     //点赞的用户
 	Weight        uint64   `gorm:"default:0" json:"weight"`         //推荐权重
 	Topped        int8     `gorm:"default:-1" json:"topped"`        //是否置顶, -1不置顶，1置顶
-	AttachmentUrl string   `gorm:"type:text" json:"attachment_url"` // 附件地址
+	AttachmentUrl string   `gorm:"type:text" json:"attachment_url"` //附件地址
 	Category      Category `gorm:"ForeignKey:CategoryId;association_autoupdate:false"`
 	CategoryId    uint64   `json:"category_id"`
 	Tags          []Tag    `gorm:"many2many:article_tag;association_autoupdate:false" json:"tags"`
 }
 
-// 用uuid代替主键
-func (article *Article) BeforeCreate(scope *gorm.Scope) error {
-	uuid_s := uuid.NewV1().String()
-	uuid_s = strings.Replace(uuid_s, "-", "", -1)
-	err := scope.SetColumn("ID", uuid_s)
+func (self *Article) BeforeCreate(scope *gorm.Scope) error {
+	err := scope.SetColumn("ID", utils.GenerateId())
 	return err
 }
 
@@ -39,7 +35,7 @@ func (self *Article) TableName() string {
 
 // 增删改查在业务端记录log
 func (self *Article) Insert() error {
-	if self.ID != "" {
+	if self.ID != 0 {
 		return ERR_EXIST_ID
 	}
 	db := DB.Omit("DeletedAt").Create(self)
@@ -47,7 +43,7 @@ func (self *Article) Insert() error {
 }
 
 func (self *Article) BeforeUpdate() error {
-	if self.ID == "" {
+	if self.ID == 0 {
 		return ERR_EMPTY_ID
 	}
 	return nil
@@ -59,7 +55,7 @@ func (self *Article) Update() error {
 
 // 如果没有id，会删除整个表，所以要检查一下
 func (self *Article) BeforeDelete() error {
-	if self.ID == "" {
+	if self.ID == 0 {
 		return ERR_EMPTY_ID
 	}
 	err := InsertToDeleteDataTable(self)

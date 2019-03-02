@@ -22,8 +22,14 @@ type mysql struct {
 type config struct {
 	Listen    string
 	Mysql     mysql
+	UniqueId  uniqueId
 	CacheFile string
 	Secret    string
+}
+
+type uniqueId struct {
+	WorkerId  uint16
+	ReserveId uint8
 }
 
 var Config config

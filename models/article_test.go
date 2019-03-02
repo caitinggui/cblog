@@ -40,7 +40,7 @@ func TestGetArticleByCategory(t *testing.T) {
 	defer article2.Delete()
 	t.Log("创建文章2的结果: ", err)
 	articles, err = GetArticlesByCategory("TestGetArticleByCategory")
-	if len(articles) == 0 {
+	if len(articles) != 2 {
 		t.Fatal("根据类型查询文章失败: ", articles)
 	}
 }

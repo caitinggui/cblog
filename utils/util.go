@@ -13,7 +13,10 @@ import (
 	"time"
 
 	logger "github.com/caitinggui/seelog"
+	"github.com/caitinggui/uniqueid"
 )
+
+var UID *uniqueid.UniqueId
 
 func StrToUnit64(s string) (n uint64) {
 	// 10进制，64位
@@ -29,6 +32,20 @@ func StrToInt64(s string) (n int64) {
 func StrToFloat64(s string) (n float64) {
 	n, _ = strconv.ParseFloat(s, 64)
 	return
+}
+
+func InitUniqueId(WorkerId uint16, ReserveId uint8) {
+	UID = uniqueid.NewUniqueId(WorkerId, ReserveId)
+}
+
+// 生成唯一id，要先调用InitUniqueId
+func GenerateId() uint64 {
+	uid, err := UID.NextId()
+	if err != nil {
+		logger.Error("生成uid失败")
+		panic(err)
+	}
+	return uid
 }
 
 // 生成人类易读随机字符串, 不包含0,1,l,o,I,O等字符

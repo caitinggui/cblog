@@ -1,11 +1,22 @@
 package models
 
+import (
+	"github.com/jinzhu/gorm"
+
+	"cblog/utils"
+)
+
 // 评论
 type Comment struct {
 	IntIdModelWithoutDeletedAt
 	Content string `json:"content"` // 内容
 	Article Article
 	User    User // 用户id
+}
+
+func (self *Comment) BeforeCreate(scope *gorm.Scope) error {
+	err := scope.SetColumn("ID", utils.GenerateId())
+	return err
 }
 
 func (self *Comment) TableName() string {

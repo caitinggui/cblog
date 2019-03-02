@@ -1,6 +1,10 @@
 package models
 
-import ()
+import (
+	"github.com/jinzhu/gorm"
+
+	"cblog/utils"
+)
 
 // 文章标签
 // form，json，binding都可用于c.Bind
@@ -8,6 +12,11 @@ type Tag struct {
 	IntIdModelWithoutDeletedAt
 	Name     string    `gorm:"size:20;unique_index" json:"name"`
 	Articles []Article `gorm:"many2many:article_tag;association_autoupdate:false" json:"tags"`
+}
+
+func (self *Tag) BeforeCreate(scope *gorm.Scope) error {
+	err := scope.SetColumn("ID", utils.GenerateId())
+	return err
 }
 
 func (self *Tag) TableName() string {

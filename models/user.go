@@ -1,16 +1,14 @@
 package models
 
 import (
-	"strings"
-
-	logger "github.com/caitinggui/seelog"
 	"github.com/jinzhu/gorm"
-	"github.com/satori/go.uuid"
+
+	"cblog/utils"
 )
 
 // 用户信息
 type User struct {
-	StrIdModelWithoutDeleteAt
+	IntIdModelWithoutDeletedAt
 	Email       string `gorm:"varchar(128);unique_index;default:null"`   //邮箱
 	UserName    string `gorm:"varchar(64);unique_index" json:"userName"` // 用户名
 	Password    string `gorm:"varchar(48);not null"`                     //密码
@@ -27,14 +25,7 @@ type User struct {
 
 // 用uuid代替主键
 func (self *User) BeforeCreate(scope *gorm.Scope) error {
-	logger.Info("set uuid to id")
-	uuid_s := uuid.NewV1().String()
-	logger.Debug("uuid.NewV1: ", uuid_s)
-	uuid_s = strings.Replace(uuid_s, "-", "", -1)
-	err := scope.SetColumn("ID", uuid_s)
-	if err != nil {
-		logger.Info("set uuid to id failed: ", err)
-	}
+	err := scope.SetColumn("ID", utils.GenerateId())
 	return err
 }
 
@@ -43,7 +34,7 @@ func (self *User) TableName() string {
 }
 
 func (self *User) Insert() error {
-	if self.ID != "" {
+	if self.ID != 0 {
 		return ERR_EXIST_ID
 	}
 	db := DB.Omit("DeletedAt").Create(self)
@@ -51,7 +42,7 @@ func (self *User) Insert() error {
 }
 
 func (self *User) BeforeUpdate() error {
-	if self.ID == "" {
+	if self.ID == 0 {
 		return ERR_EMPTY_ID
 	}
 	return nil
@@ -62,7 +53,7 @@ func (self *User) Update() error {
 }
 
 func (self *User) BeforeDelete() error {
-	if self.ID == "" {
+	if self.ID == 0 {
 		return ERR_EMPTY_ID
 	}
 	err := InsertToDeleteDataTable(self)
