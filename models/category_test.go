@@ -10,10 +10,13 @@ func TestCategoryInsert(t *testing.T) {
 	if err != nil {
 		t.Fatal("测试插入失败：", err)
 	}
+	cate.Delete()
 }
 
 func TestCategoryUpdate(t *testing.T) {
-	cate, err := GetCategoryByName("TestCategoryInsert")
+	cate := Category{Name: "TestCategoryInsert"}
+	err := cate.Insert()
+	cate, err = GetCategoryByName("TestCategoryInsert")
 	if err != nil {
 		t.Fatal("测试查询失败: ", err)
 	}
@@ -22,26 +25,27 @@ func TestCategoryUpdate(t *testing.T) {
 	if err != nil {
 		t.Fatal("测试更新失败: ", err)
 	}
+	cate.Delete()
 }
 
 func TestCategoryUnique(t *testing.T) {
-	cate := Category{Name: "TestCategoryUnique"}
-	err := cate.Insert()
+	cate1 := Category{Name: "TestCategoryUnique"}
+	err := cate1.Insert()
 	if err != nil {
-		t.Fatal("文章插入失败：", err)
+		t.Fatal("类型插入失败：", err)
 	}
-	cate = Category{Name: "TestCategoryUnique"}
-	err = cate.Insert()
+	cate2 := Category{Name: "TestCategoryUnique"}
+	err = cate2.Insert()
 	if err == nil {
-		t.Fatal("重复文章可插入, 唯一索引未生效：")
+		t.Fatal("重复类型可插入, 唯一索引未生效：")
 	}
-	err = cate.Delete()
+	err = cate1.Delete() // 要删除cate1, 因为cate2没有成功插入
 	if err != nil {
-		t.Fatal("文章删除失败：", err)
+		t.Fatal("文章类型失败：", err)
 	}
-	cate = Category{Name: "TestCategoryUnique"}
-	err = cate.Insert()
+	cate3 := Category{Name: "TestCategoryUnique"}
+	err = cate3.Insert()
 	if err != nil {
-		t.Fatal("已删除文章插入失败, 唯一索引设置有问题：", err)
+		t.Fatal("已删除类型插入失败, 唯一索引设置有问题：", err)
 	}
 }

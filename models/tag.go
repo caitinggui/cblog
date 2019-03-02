@@ -2,15 +2,23 @@ package models
 
 import (
 	"errors"
-	"time"
 )
 
 // 文章标签
 // form，json，binding都可用于c.Bind
 type Tag struct {
 	IntIdModelWithoutDeletedAt
-	Name      string     `gorm:"size:20;unique_index:uk_name_deleted_at" json:"name"`
-	DeletedAt *time.Time `gorm:"unique_index:uk_name_deleted_at" json:"-", form:"-"`
+	Name     string    `gorm:"size:20;unique_index:uk_name" json:"name"`
+	Articles []Article `gorm:"many2many:article_tag;association_autoupdate:false" json:"tags"`
+}
+
+func (self *Tag) Insert() error {
+	return DB.Omit("DeletedAt").Create(self).Error
+}
+
+// 删除
+func (self *Tag) Delete() error {
+	return DB.Delete(self).Error
 }
 
 func (self *Tag) UpdateNoneZero(data Tag) error {

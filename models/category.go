@@ -1,8 +1,6 @@
 package models
 
 import (
-	"time"
-
 	logger "github.com/caitinggui/seelog"
 	"github.com/jinzhu/gorm"
 )
@@ -10,12 +8,13 @@ import (
 // 文章类型
 type Category struct {
 	IntIdModelWithoutDeletedAt
-	Name      string     `gorm:"size:20;unique_index:uk_name_deleted_at" json:"name"`
-	DeletedAt *time.Time `gorm:"unique_index:uk_name_deleted_at" json:"-", form:"-"`
+	Name string `gorm:"size:20;unique_index:uk_name" json:"name"`
 }
 
 func (self *Category) Insert() error {
-	logger.Info("insert category")
+	if self.ID != 0 {
+		return EXIST_ID
+	}
 	db := DB.Omit("DeletedAt").Create(self)
 	return db.Error
 }

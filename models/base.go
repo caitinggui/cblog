@@ -1,6 +1,7 @@
 package models
 
 import (
+	"errors"
 	"time"
 
 	"github.com/jinzhu/gorm"
@@ -11,13 +12,15 @@ import (
 
 var DB *gorm.DB
 
+var EXIST_ID = errors.New("Exist ID")
+
 // 用来覆盖gorm.Model，主要对json方式做出改变, 主键为int
 // 忽略DeleteAt
 type IntIdModel struct {
-	ID        uint64     `gorm:"primary_key" json:"id"`
-	CreatedAt time.Time  `json:"created_at"`
-	UpdatedAt time.Time  `json:"updated_at"`
-	DeletedAt *time.Time `sql:"index" json:"-", form:"-"`
+	ID        uint64    `gorm:"primary_key" json:"id"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
+	DeletedAt time.Time `sql:"index" json:"-", form:"-"`
 }
 
 // 用来覆盖gorm.Model，主要对json方式做出改变, 主键为string

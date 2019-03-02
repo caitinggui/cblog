@@ -21,9 +21,9 @@ type Article struct {
 	Weight        uint64   `gorm:"default:0" json:"weight"`         //推荐权重
 	Topped        int8     `gorm:"default:-1" json:"topped"`        //是否置顶, -1不置顶，1置顶
 	AttachmentUrl string   `gorm:"type:text" json:"attachment_url"` // 附件地址
-	Category      Category `gorm:"ForeignKey:CategoryId""`
+	Category      Category `gorm:"ForeignKey:CategoryId;association_autoupdate:false"`
 	CategoryId    uint64   `json:"category_id"`
-	Tags          []Tag    `gorm:"many2many:article_tags" json:"tags"`
+	Tags          []Tag    `gorm:"many2many:article_tag;association_autoupdate:false" json:"tags"`
 }
 
 // 用uuid代替主键
@@ -42,7 +42,7 @@ func (article *Article) BeforeCreate(scope *gorm.Scope) error {
 // 增删改查在业务端记录log
 func (article *Article) Insert() error {
 	logger.Info("insert article")
-	db := DB.Create(article)
+	db := DB.Omit("DeletedAt").Create(article)
 	if db.Error != nil {
 		logger.Error("insert article error: ", db.Error)
 	}
@@ -78,5 +78,21 @@ func GetArticleById(id string) (article Article, err error) {
 
 func GetArticlesByCategory(category string) (articles []Article, err error) {
 	err = DB.Table("article ").Select("article.*").Where("cg.name = ?", category).Joins("join category cg on article.category_id=cg.id").Find(&articles).Error
+	return
+}
+
+func GetArticleByTag(tagName string) (articles []*Article, err error) {
+	tag := Tag{}
+	//articles = make([]Article, 3)
+	logger.Info(articles, &articles, tag, &tag)
+	err = DB.First(&tag, "name = ?", tagName).Error
+	if gorm.IsRecordNotFoundError(err) {
+		logger.Warn("找不到tag: ", tagName, err)
+		return nil, err
+	}
+	logger.Info(articles, &articles, tag, &tag)
+	//err = DB.Model(&tag).Association("article_tag").Find(&articles).Error
+	//err = DB.Model(&tag).Related(&articles, "article_tag").Error
+	err = DB.Table("article").Select("article.*").Where("ag.tag_id = ?", tag.ID).Joins("join article_tag ag on article.id=ag.article_id").Find(&articles).Error
 	return
 }
