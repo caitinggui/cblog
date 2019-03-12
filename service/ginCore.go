@@ -45,6 +45,7 @@ func (self *Gin) CheckGormErr(err error) error {
 		self.WebJson(e.ERR_NO_DATA, nil)
 		return err
 	}
+	logger.Error("sql error: ", err.Error())
 	self.WebJson(e.ERR_SQL, err.Error())
 	return err
 }

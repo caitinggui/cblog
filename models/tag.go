@@ -10,7 +10,7 @@ import (
 // form，json，binding都可用于c.Bind
 type Tag struct {
 	IntIdModelWithoutDeletedAt
-	Name     string    `gorm:"size:20;unique_index" json:"name"`
+	Name     string    `gorm:"size:20;unique_index" json:"name" binding:"lte=20,required"`
 	Articles []Article `gorm:"many2many:article_tag;association_autoupdate:false" json:"tags"`
 }
 

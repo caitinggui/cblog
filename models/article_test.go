@@ -76,3 +76,23 @@ func TestGetArticleByTag(t *testing.T) {
 		t.Fatal("获取的文章数少于2")
 	}
 }
+
+func TestGetArticleNames(t *testing.T) {
+	article1 := Article{
+		Title: "article1",
+		Body:  "body1",
+	}
+	article1.Insert()
+	defer article1.Delete()
+	article2 := Article{
+		Title: "article2",
+		Body:  "body2",
+	}
+	article2.Insert()
+	defer article2.Delete()
+	names, _ := GetArticleNames()
+	t.Log("文章名: ", names[0])
+	if len(names) != 2 {
+		t.Fatal("获取文章标题失败:", names)
+	}
+}

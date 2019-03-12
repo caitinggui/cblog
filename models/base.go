@@ -45,15 +45,15 @@ type StrIdModel struct {
 // 忽略DeleteAt
 type IntIdModelWithoutDeletedAt struct {
 	ID        uint64    `gorm:"primary_key" json:"id"` // 如果用"gorm:bigint"，在sqlite下无法自增
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
+	CreatedAt time.Time `json:"created_at" binding:"-"`
+	UpdatedAt time.Time `json:"updated_at" binding:"-"`
 }
 
 // 忽略DeleteAt
 type StrIdModelWithoutDeletedAt struct {
 	ID        string    `gorm:"primary_key" json:"id"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
+	CreatedAt time.Time `json:"created_at" binding:"-"`
+	UpdatedAt time.Time `json:"updated_at" binding:"-"`
 }
 
 type DeletedData struct {

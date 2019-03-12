@@ -9,9 +9,11 @@ import (
 // 评论
 type Comment struct {
 	IntIdModelWithoutDeletedAt
-	Content string `json:"content"` // 内容
-	Article Article
-	User    User // 用户id
+	Content   string  `gorm:"type:text" json:"content" binding:"required"` // 内容
+	Article   Article `gorm:"ForeignKey:ArticleId;association_autoupdate:false"`
+	ArticleId uint64  `json:"article_id"`
+	User      User    `gorm:"ForeignKey:UserId;association_autoupdate:false"` // 用户id
+	UserId    uint64
 }
 
 func (self *Comment) BeforeCreate(scope *gorm.Scope) error {

@@ -19,30 +19,33 @@ import (
 *   {
 *     "errCode": "0",
 *     "errMsg": "请求成功",
-*     "data": 21            // 类别id
+*     "data": Object           // 类别id
 *    }
  */
 func CreateCategory(c *gin.Context) {
+	var (
+		form models.Category
+		err  error
+	)
 	mc := Gin{C: c}
-	name := c.PostForm("name")
-	if name == "" || len(name) > 20 {
-		logger.Warn("create category param error: ", name)
+	err = c.ShouldBind(&form)
+	if err != nil {
+		logger.Warn("createCategory param error")
 		mc.WebJson(e.ERR_INVALID_PARAM, nil)
 		return
 	}
-	logger.Info("find if exist ", name, " in database")
-	ifExist := models.CheckIsExistCategoryByName(name)
+	logger.Info("find if exist ", form.Name, " in database")
+	ifExist := models.CheckIsExistCategoryByName(form.Name)
 	// 找到了
 	if ifExist {
-		mc.WebJson(e.ERR_SQL_DATA_DUPLICATED, nil)
+		mc.WebJson(e.ERR_PARAMETER_DUPLICATED, nil)
 		return
 	}
-	cate := models.Category{Name: name}
-	err := cate.Insert()
+	err = form.Insert()
 	if err != nil {
 		mc.WebJson(e.ERR_SQL, err)
 	}
-	mc.WebJson(e.SUCCESS, cate.ID)
+	mc.WebJson(e.SUCCESS, form)
 }
 
 /**
@@ -82,25 +85,30 @@ func GetCategories(c *gin.Context) {
 *}
  */
 func UpdateCategory(c *gin.Context) {
+	var (
+		form, cate models.Category
+		err        error
+	)
 	mc := Gin{C: c}
-	name := c.PostForm("name")
-	id := c.PostForm("id")
-	if id == "" || name == "" || len(name) > 20 {
+	err = c.ShouldBind(&form)
+	logger.Info("UpdateCategory form: ", form)
+	if err != nil || form.ID == 0 {
 		mc.WebJson(e.ERR_INVALID_PARAM, nil)
 		return
 	}
-	ifExist := models.CheckIsExistCategoryByName(name)
+
+	ifExist := models.CheckIsExistCategoryByName(form.Name)
 	// 找到了
 	if ifExist {
-		mc.WebJson(e.ERR_SQL_DATA_DUPLICATED, nil)
+		mc.WebJson(e.ERR_PARAMETER_DUPLICATED, nil)
 		return
 	}
-	cate, err := models.GetCategoryById(id)
+	cate, err = models.GetCategoryById(form.ID)
 	if mc.CheckGormErr(err) != nil {
 		return
 	}
-	cate.Name = name
-	err = cate.UpdateAllField()
+	cate.Name = form.Name
+	err = cate.Update()
 	if mc.CheckGormErr(err) != nil {
 		return
 	}

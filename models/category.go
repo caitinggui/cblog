@@ -10,7 +10,7 @@ import (
 // 文章类型
 type Category struct {
 	IntIdModelWithoutDeletedAt
-	Name string `gorm:"size:20;unique_index:uk_name" json:"name"`
+	Name string `gorm:"size:20;unique_index:uk_name" binding:"lte=20,required" json:"name"`
 }
 
 func (self *Category) BeforeCreate(scope *gorm.Scope) error {
@@ -91,7 +91,7 @@ func CountCategoryByName(name string) (num int64, err error) {
 	return
 }
 
-func GetCategoryById(id string) (cate Category, err error) {
+func GetCategoryById(id uint64) (cate Category, err error) {
 	err = DB.First(&cate, id).Error
 	return
 }

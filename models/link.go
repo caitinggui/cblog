@@ -2,10 +2,10 @@ package models
 
 type Link struct {
 	IntIdModelWithoutDeletedAt
-	Name   string `gorm:"size:128" json:"name" form:"name"` // 网站名
-	Url    string `gorm:"size:512" json:"url" form:"url"`   // 链接地址
-	Desc   string `gorm:"size:512" json:"desc" form:"desc"` // 链接描述
-	Weight uint64 `json:"weight" form:"weight"`             // 排序
+	Name   string `gorm:"size:128" json:"name" form:"name" binding:"lte=128,required"`   // 网站名
+	Url    string `gorm:"size:512" json:"url" form:"url" binding:"lte=512,url,required"` // 链接地址
+	Desc   string `gorm:"size:512" json:"desc" form:"desc" binding:"lte=512"`            // 链接描述
+	Weight uint64 `json:"weight" form:"weight"`                                          // 排序
 }
 
 func (self *Link) TableName() string {
