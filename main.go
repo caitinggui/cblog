@@ -83,7 +83,7 @@ func main() {
 	router.PUT("/category", service.UpdateCategory)
 	router.DELETE("/category/:id", service.DeleteCategory)
 
-	router.GET("/article", service.GetArticleNames)
+	router.GET("/article", service.GetArticles)
 
 	router.GET("/tag/:id", service.GetTag)
 	router.GET("/tag", service.GetTags)

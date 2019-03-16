@@ -90,9 +90,48 @@ func TestGetArticleNames(t *testing.T) {
 	}
 	article2.Insert()
 	defer article2.Delete()
-	names, _ := GetArticleNames()
+	names, _ := GetAllArticleNames()
 	t.Log("文章名: ", names[0])
 	if len(names) != 2 {
 		t.Fatal("获取文章标题失败:", names)
+	}
+}
+
+func TestGetArticleInfos(t *testing.T) {
+	article1 := Article{
+		Title: "article1",
+		Body:  "body1",
+	}
+	article1.Insert()
+	defer article1.Delete()
+	article2 := Article{
+		Title:  "article2",
+		Body:   "body2",
+		Topped: 1,
+	}
+	article2.Insert()
+	defer article2.Delete()
+	article3 := Article{
+		Title:  "article3",
+		Body:   "body3",
+		Topped: -1,
+	}
+	article3.Insert()
+	defer article3.Delete()
+
+	articles, _ := GetAllArticleInfos()
+	// 返回是有顺序的
+	if len(articles) != 3 || articles[0].Abstract != "body2" {
+		t.Fatal("获取文章信息失败:", articles[0], articles[1], articles[2])
+	}
+
+	form := ArticleListParam{
+		Offset: 1,
+		Size:   10,
+	}
+	articles, _ = GetArticleInfos(form)
+	// 返回是有顺序的
+	if len(articles) != 2 || articles[0].Abstract != "body3" {
+		t.Fatal("获取分页文章信息失败:", articles[0])
 	}
 }

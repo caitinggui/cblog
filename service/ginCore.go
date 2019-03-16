@@ -20,7 +20,7 @@ type Gin struct {
 
 // 返回html code 为200的json response
 func (self *Gin) WebJson(code int, data interface{}) {
-	logger.Info("json response: ", code, data)
+	logger.Info("json response: ", code, e.GetMsg(code), data)
 	self.C.JSON(http.StatusOK, gin.H{"errCode": code, "errMsg": e.GetMsg(code), "data": data})
 }
 
