@@ -1,10 +1,6 @@
 package models
 
-import (
-	"github.com/jinzhu/gorm"
-
-	"cblog/utils"
-)
+import ()
 
 // 用户信息
 type User struct {
@@ -23,12 +19,6 @@ type User struct {
 	GithubAvatar  string `gorm:"varchar(256)" json:"github_avatar" binding:"url"`                                  // github头像地址
 }
 
-// 用uuid代替主键
-func (self *User) BeforeCreate(scope *gorm.Scope) error {
-	err := scope.SetColumn("ID", utils.GenerateId())
-	return err
-}
-
 func (self *User) TableName() string {
 	return "user"
 }
@@ -41,23 +31,8 @@ func (self *User) Insert() error {
 	return db.Error
 }
 
-func (self *User) BeforeUpdate() error {
-	if self.ID == 0 {
-		return ERR_EMPTY_ID
-	}
-	return nil
-}
-
 func (self *User) Update() error {
 	return DB.Model(self).Omit("DeletedAt", "CreatedAt").Updates(self).Error
-}
-
-func (self *User) BeforeDelete() error {
-	if self.ID == 0 {
-		return ERR_EMPTY_ID
-	}
-	err := InsertToDeleteDataTable(self)
-	return err
 }
 
 // 删除

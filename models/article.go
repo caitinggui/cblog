@@ -5,8 +5,6 @@ import (
 
 	logger "github.com/caitinggui/seelog"
 	"github.com/jinzhu/gorm"
-
-	"cblog/utils"
 )
 
 type Article struct {
@@ -23,7 +21,7 @@ type Article struct {
 	AttachmentUrl string    `gorm:"type:text" json:"attachment_url"`                         //附件地址
 	Category      *Category `gorm:"ForeignKey:CategoryId;association_autoupdate:false" binding:"-"`
 	CategoryId    uint64    `json:"category_id"`
-	Tags          []*Tag    `gorm:"many2many:article_tag;association_autoupdate:false" json:"tags"`
+	Tags          []Tag     `gorm:"many2many:article_tag;association_autoupdate:false" json:"tags"`
 
 	TagsId []uint64 `gorm:"-" json:"tags_id" binding:"dive,omitempty"`
 }
@@ -37,11 +35,6 @@ type ArticleListParam struct {
 	Size       uint64 `gorm:"-" form:"size,default=10" binding:"lte=1000"` // 用于分页
 	CategoryId uint64 `gorm:"-" form:"category_id"`
 	TagId      uint64 `gorm:"-" form:"tag_id"` // 用于根据tag查找
-}
-
-func (self *Article) BeforeCreate(scope *gorm.Scope) error {
-	err := scope.SetColumn("ID", utils.GenerateId())
-	return err
 }
 
 func (self *Article) TableName() string {
@@ -60,28 +53,12 @@ func (self *Article) Insert() error {
 		}
 		self.Abstract = self.Body[:bodyLen]
 	}
-	db := DB.Omit("DeletedAt", "UpdatedAt").Create(self)
+	db := DB.Omit("DeletedAt").Create(self)
 	return db.Error
-}
-
-func (self *Article) BeforeUpdate() error {
-	if self.ID == 0 {
-		return ERR_EMPTY_ID
-	}
-	return nil
 }
 
 func (self *Article) Update() error {
 	return DB.Model(self).Omit("DeletedAt", "CreatedAt").Updates(self).Error
-}
-
-// 如果没有id，会删除整个表，所以要检查一下
-func (self *Article) BeforeDelete() error {
-	if self.ID == 0 {
-		return ERR_EMPTY_ID
-	}
-	err := InsertToDeleteDataTable(self)
-	return err
 }
 
 // 删除

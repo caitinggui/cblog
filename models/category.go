@@ -3,8 +3,6 @@ package models
 import (
 	logger "github.com/caitinggui/seelog"
 	"github.com/jinzhu/gorm"
-
-	"cblog/utils"
 )
 
 // 文章类型
@@ -13,40 +11,17 @@ type Category struct {
 	Name string `gorm:"size:20;unique_index:uk_name" binding:"lte=20,required" json:"name"`
 }
 
-func (self *Category) BeforeCreate(scope *gorm.Scope) error {
-	err := scope.SetColumn("ID", utils.GenerateId())
-	return err
-}
-
 func (self *Category) TableName() string {
 	return "category"
 }
 
 func (self *Category) Insert() error {
-	if self.ID != 0 {
-		return ERR_EXIST_ID
-	}
 	db := DB.Omit("DeletedAt").Create(self)
 	return db.Error
 }
 
-func (self *Category) BeforeUpdate() error {
-	if self.ID == 0 {
-		return ERR_EMPTY_ID
-	}
-	return nil
-}
-
 func (self *Category) Update() error {
 	return DB.Model(self).Omit("DeletedAt", "CreatedAt").Updates(self).Error
-}
-
-func (self *Category) BeforeDelete() error {
-	if self.ID == 0 {
-		return ERR_EMPTY_ID
-	}
-	err := InsertToDeleteDataTable(self)
-	return err
 }
 
 // 删除

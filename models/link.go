@@ -20,23 +20,8 @@ func (self *Link) Insert() error {
 	return db.Error
 }
 
-func (self *Link) BeforeUpdate() error {
-	if self.ID == 0 {
-		return ERR_EMPTY_ID
-	}
-	return nil
-}
-
 func (self *Link) Update() error {
 	return DB.Model(self).Omit("DeletedAt", "CreatedAt").Updates(self).Error
-}
-
-func (self *Link) BeforeDelete() error {
-	if self.ID == 0 {
-		return ERR_EMPTY_ID
-	}
-	err := InsertToDeleteDataTable(self)
-	return err
 }
 
 // 删除

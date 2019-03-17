@@ -1,10 +1,6 @@
 package models
 
-import (
-	"github.com/jinzhu/gorm"
-
-	"cblog/utils"
-)
+import ()
 
 // 文章标签
 // form，json，binding都可用于c.Bind
@@ -12,11 +8,6 @@ type Tag struct {
 	IntIdModelWithoutDeletedAt
 	Name     string    `gorm:"size:20;unique_index" json:"name" binding:"lte=20,required"`
 	Articles []Article `gorm:"many2many:article_tag;association_autoupdate:false" json:"tags"`
-}
-
-func (self *Tag) BeforeCreate(scope *gorm.Scope) error {
-	err := scope.SetColumn("ID", utils.GenerateId())
-	return err
 }
 
 func (self *Tag) TableName() string {
@@ -31,23 +22,8 @@ func (self *Tag) Insert() error {
 	return db.Error
 }
 
-func (self *Tag) BeforeUpdate() error {
-	if self.ID == 0 {
-		return ERR_EMPTY_ID
-	}
-	return nil
-}
-
 func (self *Tag) Update() error {
 	return DB.Model(self).Omit("DeletedAt", "CreatedAt").Updates(self).Error
-}
-
-func (self *Tag) BeforeDelete() error {
-	if self.ID == 0 {
-		return ERR_EMPTY_ID
-	}
-	err := InsertToDeleteDataTable(self)
-	return err
 }
 
 // 删除

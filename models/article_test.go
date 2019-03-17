@@ -34,7 +34,7 @@ func TestGetArticleByCategory(t *testing.T) {
 	article2 := Article{
 		Title:    "标题2",
 		Body:     "正文2",
-		Category: cate,
+		Category: &cate,
 	}
 	err = article2.Insert()
 	defer article2.Delete()

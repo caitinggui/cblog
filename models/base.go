@@ -17,6 +17,7 @@ var DB *gorm.DB
 
 var ERR_EXIST_ID = errors.New("Exist ID")
 var ERR_EMPTY_ID = errors.New("Empty ID")
+var ERR_INVALID_TIME = errors.New("Invalid Time")
 
 // 定义数据表的接口
 type DataTable interface {
@@ -45,10 +46,57 @@ type StrIdModel struct {
 
 // 忽略DeleteAt
 // TODO 截止到gin 1.3.0,在序列化json时不支持time_format
+// TODO 有个bug，没有检查传来的updated_at等参数，等validator升到V9再修复
 type IntIdModelWithoutDeletedAt struct {
 	ID        uint64    `gorm:"primary_key" json:"id"` // 如果用"gorm:bigint"，在sqlite下无法自增
 	CreatedAt time.Time `json:"created_at" binding:"-" time_format:"2006-01-02T15:04:05"`
 	UpdatedAt time.Time `json:"updated_at" binding:"-"`
+}
+
+func (self *IntIdModelWithoutDeletedAt) TableName() string {
+	return "base"
+}
+
+func (self *IntIdModelWithoutDeletedAt) BeforeCreate(scope *gorm.Scope) error {
+	if self.ID != 0 {
+		return ERR_EXIST_ID
+	}
+	if !self.UpdatedAt.IsZero() || !self.CreatedAt.IsZero() {
+		return ERR_INVALID_TIME
+	}
+	err := scope.SetColumn("ID", utils.GenerateId())
+	return err
+}
+
+func (self *IntIdModelWithoutDeletedAt) BeforeUpdate() error {
+	if self.ID == 0 {
+		return ERR_EMPTY_ID
+	}
+	if !self.UpdatedAt.IsZero() || !self.CreatedAt.IsZero() {
+		return ERR_INVALID_TIME
+	}
+	return nil
+}
+
+// 如果没有id，会删除整个表，所以要检查一下
+func (self *IntIdModelWithoutDeletedAt) BeforeDelete() error {
+	if self.ID == 0 {
+		return ERR_EMPTY_ID
+	}
+	err := InsertToDeleteDataTable(self)
+	return err
+}
+
+func (self *IntIdModelWithoutDeletedAt) Insert() error {
+	return nil
+}
+
+func (self *IntIdModelWithoutDeletedAt) Update() error {
+	return nil
+}
+
+func (self *IntIdModelWithoutDeletedAt) Delete() error {
+	return nil
 }
 
 // 忽略DeleteAt

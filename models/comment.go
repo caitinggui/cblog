@@ -1,10 +1,6 @@
 package models
 
-import (
-	"github.com/jinzhu/gorm"
-
-	"cblog/utils"
-)
+import ()
 
 // 评论
 type Comment struct {
@@ -14,11 +10,6 @@ type Comment struct {
 	ArticleId uint64  `json:"article_id"`
 	User      User    `gorm:"ForeignKey:UserId;association_autoupdate:false"` // 用户id
 	UserId    uint64
-}
-
-func (self *Comment) BeforeCreate(scope *gorm.Scope) error {
-	err := scope.SetColumn("ID", utils.GenerateId())
-	return err
 }
 
 func (self *Comment) TableName() string {
@@ -33,23 +24,8 @@ func (self *Comment) Insert() error {
 	return db.Error
 }
 
-func (self *Comment) BeforeUpdate() error {
-	if self.ID == 0 {
-		return ERR_EMPTY_ID
-	}
-	return nil
-}
-
 func (self *Comment) Update() error {
 	return DB.Model(self).Omit("DeletedAt", "CreatedAt").Updates(self).Error
-}
-
-func (self *Comment) BeforeDelete() error {
-	if self.ID == 0 {
-		return ERR_EMPTY_ID
-	}
-	err := InsertToDeleteDataTable(self)
-	return err
 }
 
 // 删除
