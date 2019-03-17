@@ -2,9 +2,11 @@ package models
 
 import (
 	"testing"
+	"time"
 )
 
 func TestCategoryInsert(t *testing.T) {
+	var zeroTime time.Time
 	cate := Category{Name: "TestCategoryInsert"}
 	err := cate.Insert()
 	if err != nil {
@@ -13,6 +15,8 @@ func TestCategoryInsert(t *testing.T) {
 	defer cate.Delete()
 	cate2 := cate
 	cate2.Name = "TestCategoryInsert2" // 不会改变cate的值
+	cate2.UpdatedAt = zeroTime
+	cate2.CreatedAt = zeroTime
 	err = cate2.Insert()
 	t.Log("重复插入的结果:", err)
 	if err != ERR_EXIST_ID {
@@ -21,20 +25,25 @@ func TestCategoryInsert(t *testing.T) {
 }
 
 func TestCategoryUpdate(t *testing.T) {
+	var zeroTime time.Time
 	cate := Category{Name: "TestCategoryInsert"}
 	err := cate.Insert()
+	defer cate.Delete()
 	cate, err = GetCategoryByName("TestCategoryInsert")
 	if err != nil {
 		t.Fatal("测试查询失败: ", err)
 	}
 	cate.Name = "TestCategoryUpdate"
+	cate.UpdatedAt = zeroTime
+	cate.CreatedAt = zeroTime
 	err = cate.Update()
 	if err != nil {
 		t.Fatal("测试更新失败: ", err)
 	}
-	defer cate.Delete()
 
 	cate2 := Category{Name: "TestCategoryUpdate2"}
+	cate2.UpdatedAt = zeroTime
+	cate2.CreatedAt = zeroTime
 	err = cate2.Update()
 	if err == nil {
 		t.Fatal("空id不允许被更新")
