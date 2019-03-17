@@ -10,6 +10,7 @@ import (
 	_ "github.com/jinzhu/gorm/dialects/sqlite"
 
 	"cblog/config"
+	"cblog/utils"
 )
 
 var DB *gorm.DB
@@ -28,32 +29,33 @@ type DataTable interface {
 // 用来覆盖gorm.Model，主要对json方式做出改变, 主键为int
 // 忽略DeleteAt
 type IntIdModel struct {
-	ID        uint64    `gorm:"primary_key" json:"id"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
-	DeletedAt time.Time `sql:"index" json:"-", form:"-"`
+	ID        uint64         `gorm:"primary_key" json:"id"`
+	CreatedAt utils.JsonTime `json:"created_at"`
+	UpdatedAt utils.JsonTime `json:"updated_at"`
+	DeletedAt utils.JsonTime `sql:"index" json:"-", form:"-"`
 }
 
 // 用来覆盖gorm.Model，主要对json方式做出改变, 主键为string
 type StrIdModel struct {
-	ID        string     `gorm:"primary_key" json:"id"`
-	CreatedAt time.Time  `json:"created_at"`
-	UpdatedAt time.Time  `json:"updated_at"`
-	DeletedAt *time.Time `sql:"index" json:"-" form:"-"`
+	ID        string          `gorm:"primary_key" json:"id"`
+	CreatedAt utils.JsonTime  `json:"created_at"`
+	UpdatedAt utils.JsonTime  `json:"updated_at"`
+	DeletedAt *utils.JsonTime `sql:"index" json:"-" form:"-"`
 }
 
 // 忽略DeleteAt
+// TODO 截止到gin 1.3.0,在序列化json时不支持time_format
 type IntIdModelWithoutDeletedAt struct {
 	ID        uint64    `gorm:"primary_key" json:"id"` // 如果用"gorm:bigint"，在sqlite下无法自增
-	CreatedAt time.Time `json:"created_at" binding:"-"`
+	CreatedAt time.Time `json:"created_at" binding:"-" time_format:"2006-01-02T15:04:05"`
 	UpdatedAt time.Time `json:"updated_at" binding:"-"`
 }
 
 // 忽略DeleteAt
 type StrIdModelWithoutDeletedAt struct {
-	ID        string    `gorm:"primary_key" json:"id"`
-	CreatedAt time.Time `json:"created_at" binding:"-"`
-	UpdatedAt time.Time `json:"updated_at" binding:"-"`
+	ID        string         `gorm:"primary_key" json:"id"`
+	CreatedAt utils.JsonTime `json:"created_at" binding:"-"`
+	UpdatedAt utils.JsonTime `json:"updated_at" binding:"-"`
 }
 
 type DeletedData struct {

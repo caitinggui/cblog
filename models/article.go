@@ -33,8 +33,8 @@ type ArticleListParam struct {
 	Status int8 `form:"status" binding:"omitempty,eq=-1|eq=1"` //文章状态 -1:未发布 1:发布
 	Topped int8 `form:"topped" binding:"omitempty,eq=-1|eq=1"` //是否置顶, -1不置顶，1置顶
 
-	Offset     uint64 `gorm:"-" form:"offset"`                  // 用于分页
-	Size       uint64 `gorm:"-" form:"size" binding:"lte=1000"` // 用于分页
+	Offset     uint64 `gorm:"-" form:"offset"`                             // 用于分页
+	Size       uint64 `gorm:"-" form:"size,default=10" binding:"lte=1000"` // 用于分页
 	CategoryId uint64 `gorm:"-" form:"category_id"`
 	TagId      uint64 `gorm:"-" form:"tag_id"` // 用于根据tag查找
 }
@@ -60,7 +60,7 @@ func (self *Article) Insert() error {
 		}
 		self.Abstract = self.Body[:bodyLen]
 	}
-	db := DB.Omit("DeletedAt").Create(self)
+	db := DB.Omit("DeletedAt", "UpdatedAt").Create(self)
 	return db.Error
 }
 
@@ -90,7 +90,7 @@ func (self *Article) Delete() error {
 }
 
 func (self *Article) GetInfoColumn() string {
-	return "id, title, abstract, likes, status, topped, views, weight"
+	return "id, title, abstract, likes, status, topped, views, weight, created_at, updated_at"
 }
 
 func (self *Article) GetDefaultOrder() string {

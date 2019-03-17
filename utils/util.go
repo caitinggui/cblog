@@ -7,6 +7,7 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"errors"
+	"fmt"
 	"math/rand"
 	"strconv"
 	"strings"
@@ -140,4 +141,11 @@ func HmacSha256(data, key string) string {
 	hm := hmac.New(sha256.New, []byte(key))
 	hm.Write([]byte(data))
 	return hex.EncodeToString(hm.Sum(nil))
+}
+
+type JsonTime time.Time
+
+func (self JsonTime) MarshalJSON() ([]byte, error) {
+	stamp := fmt.Sprintf("\"%s\"", time.Time(self).Format("2006-01-02T15:04:05.999"))
+	return []byte(stamp), nil
 }
