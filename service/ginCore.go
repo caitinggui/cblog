@@ -50,6 +50,15 @@ func (self *Gin) CheckGormErr(err error) error {
 	return err
 }
 
+func (self *Gin) CheckBindErr(err error) error {
+	if err != nil {
+		logger.Info("解析参数失败:", err)
+		self.WebJson(e.ERR_INVALID_PARAM, nil)
+		return err
+	}
+	return nil
+}
+
 // 加载模板
 func LoadTemplates(templatesDir string) multitemplate.Renderer {
 	var relativePath string

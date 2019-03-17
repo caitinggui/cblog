@@ -32,6 +32,84 @@ func GetArticle(c *gin.Context) {
 }
 
 /**
+* @api {post} /v1/article 创建文章
+* @apiGroup Article
+* @apiVersion 0.1.0
+*
+* @apiParam {string} title 文章标题
+* @apiParam {string} body 文章正文
+* @apiParam {int} status -1表示未发布，1表示已发布，默认为-1
+* @apiParam {string} abstract 文章摘要，为空就为body的前128字
+* @apiParam {int} topped -1表示不置顶，1表示置顶，默认为-1
+* @apiParam {int} category_id 类别id
+* @apiParam {list} tags_id 标签id，int型的列表
+*
+* @apiSuccessExample {json} Success-Response:
+*   {
+*     "errCode": "0",
+*     "errMsg": "请求成功",
+*     "data": Object
+*}
+ */
+func PostArticle(c *gin.Context) {
+	var (
+		err  error
+		form models.Article
+	)
+	mc := Gin{C: c}
+	err = c.ShouldBind(&form)
+	logger.Info("form: ", form)
+	if mc.CheckBindErr(err) != nil {
+		return
+	}
+	err = form.Insert()
+	if mc.CheckGormErr(err) != nil {
+		return
+	}
+	mc.WebJson(e.SUCCESS, form)
+}
+
+/**
+* @api {post} /v1/article 修改文章
+* apiDescription id不对时不报错
+* @apiGroup Article
+* @apiVersion 0.1.0
+*
+* @apiParam {int} id 文章id
+* @apiParam {string} title 文章标题
+* @apiParam {string} body 文章正文
+* @apiParam {int} status -1表示未发布，1表示已发布，默认为-1
+* @apiParam {string} abstract 文章摘要，为空就为body的前128字
+* @apiParam {int} topped -1表示不置顶，1表示置顶，默认为-1
+* @apiParam {int} category_id 类别id
+* @apiParam {list} tags_id 标签id，int型的列表
+*
+* @apiSuccessExample {json} Success-Response:
+*   {
+*     "errCode": "0",
+*     "errMsg": "请求成功",
+*     "data": Object
+*}
+ */
+func PutArticle(c *gin.Context) {
+	var (
+		err  error
+		form models.Article
+	)
+	mc := Gin{C: c}
+	err = c.ShouldBind(&form)
+	logger.Info("form: ", form)
+	if mc.CheckBindErr(err) != nil {
+		return
+	}
+	err = form.Update()
+	if mc.CheckGormErr(err) != nil {
+		return
+	}
+	mc.WebJson(e.SUCCESS, form)
+}
+
+/**
 * @api {get} /v1/article 获取文章列表
 * @apiGroup Article
 * @apiVersion 0.1.0
@@ -52,9 +130,7 @@ func GetArticles(c *gin.Context) {
 	mc := Gin{C: c}
 	err = c.ShouldBindQuery(&form)
 	logger.Info("form: ", form)
-	if err != nil {
-		logger.Info("解析参数失败:", err)
-		mc.WebJson(e.ERR_INVALID_PARAM, nil)
+	if mc.CheckBindErr(err) != nil {
 		return
 	}
 	articles, err = models.GetArticleInfos(form)

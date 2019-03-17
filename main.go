@@ -26,6 +26,61 @@ func Index(c *gin.Context) {
 	c.HTML(http.StatusOK, "admin/index.html", gin.H{"test": "test"})
 }
 
+func BindRoute(router *gin.Engine) {
+	// 可以注册根目录，不影响router在根目录继续添加路由
+	admin := router.Group("/admin")
+	admin.Use(service.LoginRequired())
+	{
+		admin.GET("/hello", Hello)
+		admin.GET("", Index)
+	}
+
+	router.POST("/login", service.PostLogin)
+	router.GET("/login", service.GetLogin)
+	router.GET("/logout", service.Logout)
+
+	router.GET("/health", Health)
+	//router.GET("/hello", Hello)
+	router.POST("/category", service.CreateCategory)
+	router.GET("/category", service.GetCategories)
+	router.PUT("/category", service.UpdateCategory)
+	router.DELETE("/category/:id", service.DeleteCategory)
+
+	router.GET("/article", service.GetArticles)
+	router.POST("/article", service.PostArticle)
+	router.PUT("/article", service.PutArticle)
+
+	router.GET("/tag/:id", service.GetTag)
+	router.GET("/tag", service.GetTags)
+	router.POST("/tag", service.CreateTag)
+	router.PUT("/tag", service.UpdateTag)
+	router.DELETE("/tag/:id", service.DeleteTag)
+
+	router.GET("/link/:id", service.GetLink)
+	router.GET("/link", service.GetLinks)
+	router.POST("/link", service.CreateLink)
+	router.PUT("/link", service.UpdateLink)
+	router.DELETE("/link/:id", service.DeleteLink)
+
+	router.GET("/visitor", service.GetVisitors)
+
+	router.GET("/", Hello)
+
+	router.GET("/testadd", func(c *gin.Context) {
+		models.SetCache("test", 100, 0)
+		models.DumpCache(config.Config.CacheFile)
+		c.String(200, "ok")
+	})
+	router.GET("/testget", func(c *gin.Context) {
+		data, ok := models.GetCache("test")
+		c.JSON(200, gin.H{"data": data, "ok": ok})
+	})
+
+	//router.GET("/admin", Index)
+
+	//router.GET("/get", GetCategory)
+}
+
 func main() {
 	log, err := logger.LoggerFromConfigAsBytes(config.LoggerConfig)
 	if err != nil {
@@ -64,43 +119,6 @@ func main() {
 	})
 	router.Use(sessions.Sessions("cblog", store))
 
-	// 可以注册根目录，不影响router在根目录继续添加路由
-	admin := router.Group("/admin")
-	admin.Use(service.LoginRequired())
-	{
-		admin.GET("/hello", Hello)
-		admin.GET("", Index)
-	}
-
-	router.POST("/login", service.PostLogin)
-	router.GET("/login", service.GetLogin)
-	router.GET("/logout", service.Logout)
-
-	router.GET("/health", Health)
-	//router.GET("/hello", Hello)
-	router.POST("/category", service.CreateCategory)
-	router.GET("/category", service.GetCategories)
-	router.PUT("/category", service.UpdateCategory)
-	router.DELETE("/category/:id", service.DeleteCategory)
-
-	router.GET("/article", service.GetArticles)
-
-	router.GET("/tag/:id", service.GetTag)
-	router.GET("/tag", service.GetTags)
-	router.POST("/tag", service.CreateTag)
-	router.PUT("/tag", service.UpdateTag)
-	router.DELETE("/tag/:id", service.DeleteTag)
-
-	router.GET("/link/:id", service.GetLink)
-	router.GET("/link", service.GetLinks)
-	router.POST("/link", service.CreateLink)
-	router.PUT("/link", service.UpdateLink)
-	router.DELETE("/link/:id", service.DeleteLink)
-
-	router.GET("/visitor", service.GetVisitors)
-
-	router.GET("/", Hello)
-
 	err = models.InitCache(config.Config.CacheFile)
 	defer func() {
 		logger.Info("start dump cache")
@@ -111,19 +129,8 @@ func main() {
 	} else {
 		logger.Info("load cache file success")
 	}
-	router.GET("/testadd", func(c *gin.Context) {
-		models.SetCache("test", 100, 0)
-		models.DumpCache(config.Config.CacheFile)
-		c.String(200, "ok")
-	})
-	router.GET("/testget", func(c *gin.Context) {
-		data, ok := models.GetCache("test")
-		c.JSON(200, gin.H{"data": data, "ok": ok})
-	})
 
-	//router.GET("/admin", Index)
-
-	//router.GET("/get", GetCategory)
+	BindRoute(router)
 	err = router.Run("0.0.0.0:8089")
 	logger.Errorf("stop server: %2v", err)
 }

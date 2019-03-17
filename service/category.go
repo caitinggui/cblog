@@ -44,6 +44,7 @@ func CreateCategory(c *gin.Context) {
 	err = form.Insert()
 	if err != nil {
 		mc.WebJson(e.ERR_SQL, err)
+		return
 	}
 	mc.WebJson(e.SUCCESS, form)
 }
@@ -86,8 +87,8 @@ func GetCategories(c *gin.Context) {
  */
 func UpdateCategory(c *gin.Context) {
 	var (
-		form, cate models.Category
-		err        error
+		form models.Category
+		err  error
 	)
 	mc := Gin{C: c}
 	err = c.ShouldBind(&form)
@@ -97,22 +98,11 @@ func UpdateCategory(c *gin.Context) {
 		return
 	}
 
-	ifExist := models.CheckIsExistCategoryByName(form.Name)
-	// 找到了
-	if ifExist {
-		mc.WebJson(e.ERR_PARAMETER_DUPLICATED, nil)
-		return
-	}
-	cate, err = models.GetCategoryById(form.ID)
+	err = form.Update()
 	if mc.CheckGormErr(err) != nil {
 		return
 	}
-	cate.Name = form.Name
-	err = cate.Update()
-	if mc.CheckGormErr(err) != nil {
-		return
-	}
-	mc.WebJson(e.SUCCESS, cate)
+	mc.WebJson(e.SUCCESS, form)
 }
 
 /**
