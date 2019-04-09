@@ -58,6 +58,7 @@ func (self *IntIdModelWithoutDeletedAt) TableName() string {
 }
 
 func (self *IntIdModelWithoutDeletedAt) BeforeCreate(scope *gorm.Scope) error {
+	//logger.Info("BeforeCreate table: ", self.TableName()) // table还是base
 	if self.ID != 0 {
 		return ERR_EXIST_ID
 	}
@@ -76,15 +77,6 @@ func (self *IntIdModelWithoutDeletedAt) BeforeUpdate() error {
 		return ERR_INVALID_TIME
 	}
 	return nil
-}
-
-// 如果没有id，会删除整个表，所以要检查一下
-func (self *IntIdModelWithoutDeletedAt) BeforeDelete() error {
-	if self.ID == 0 {
-		return ERR_EMPTY_ID
-	}
-	err := InsertToDeleteDataTable(self)
-	return err
 }
 
 func (self *IntIdModelWithoutDeletedAt) Insert() error {

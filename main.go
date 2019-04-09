@@ -49,6 +49,7 @@ func BindRoute(router *gin.Engine) {
 	router.GET("/article", service.GetArticles)
 	router.POST("/article", service.PostArticle)
 	router.PUT("/article", service.PutArticle)
+	router.DELETE("/article/:id", service.DeleteArticle)
 
 	router.GET("/tag/:id", service.GetTag)
 	router.GET("/tag", service.GetTags)

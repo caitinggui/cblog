@@ -11,6 +11,8 @@ func TestInsertArticle(t *testing.T) {
 		t.Fatal("TestInsertArticle error: ", err)
 	}
 	article.Delete()
+	arti2 := Article{Title: "TestInsertArticle2"}
+	arti2.Delete()
 }
 
 func TestGetArticleByCategory(t *testing.T) {

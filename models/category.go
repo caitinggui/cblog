@@ -24,6 +24,18 @@ func (self *Category) Update() error {
 	return DB.Model(self).Omit("DeletedAt", "CreatedAt").Updates(self).Error
 }
 
+//如果没有id，会删除整个表，所以要检查一下
+func (self *Category) BeforeDelete() error {
+	if self.ID == 0 {
+		return ERR_EMPTY_ID
+	}
+	if err := DB.First(self, self.ID).Error; err != nil {
+		return err
+	}
+	err := InsertToDeleteDataTable(self)
+	return err
+}
+
 // 删除
 func (self *Category) Delete() error {
 	return DB.Delete(self).Error
@@ -78,7 +90,17 @@ func GetCategoryByName(name string) (cate Category, err error) {
 }
 
 func DeleteCategoryById(id string) error {
-	return DB.Where("id = ?", id).Delete(&Category{}).Error
+	data := Category{}
+	// 先查出完整数据
+	if err := DB.First(&data, id).Error; err != nil {
+		return err
+	}
+	// 记录完整数据到另一个表
+	if err := InsertToDeleteDataTable(&data); err != nil {
+		return err
+	}
+	// 删除该条记录
+	return DB.Delete(data).Error
 }
 
 func GetAllCategories() (cates []Category, err error) {

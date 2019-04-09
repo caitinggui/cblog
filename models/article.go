@@ -61,8 +61,21 @@ func (self *Article) Update() error {
 	return DB.Model(self).Omit("DeletedAt", "CreatedAt").Updates(self).Error
 }
 
-// 删除
+//如果没有id，会删除整个表，所以要检查一下
+func (self *Article) BeforeDelete() error {
+	if self.ID == 0 {
+		return ERR_EMPTY_ID
+	}
+	if err := DB.First(self, self.ID).Error; err != nil {
+		return err
+	}
+	err := InsertToDeleteDataTable(self)
+	return err
+}
+
+//删除前要完整的查一遍数据
 func (self *Article) Delete() error {
+	// TODO 可以记录一下tag有哪些
 	return DB.Delete(self).Error
 }
 
@@ -130,4 +143,10 @@ func GetArticleByTag(tagName string) (articles []*Article, err error) {
 	//err = DB.Model(&tag).Related(&articles, "article_tag").Error
 	err = DB.Table("article").Select("article.*").Where("ag.tag_id = ?", tag.ID).Joins("join article_tag ag on article.id=ag.article_id").Find(&articles).Error
 	return
+}
+
+func DeleteArticleById(id uint64) error {
+	arti := Article{}
+	arti.ID = id
+	return arti.Delete()
 }

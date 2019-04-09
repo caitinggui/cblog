@@ -5,6 +5,7 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"cblog/models"
+	"cblog/utils"
 	"cblog/utils/e"
 )
 
@@ -107,6 +108,36 @@ func PutArticle(c *gin.Context) {
 		return
 	}
 	mc.WebJson(e.SUCCESS, form)
+}
+
+/**
+* @api {delete} /v1/article/:id 删除某个文章
+* @apiGroup Article
+* @apiVersion 0.1.0
+*
+* @apiSuccessExample {json} Success-Response:
+*   {
+*     "errCode": "0",
+*     "errMsg": "请求成功",
+*     "data": null
+*}
+ */
+func DeleteArticle(c *gin.Context) {
+	mc := Gin{C: c}
+	id := c.Param("id")
+	logger.Info("try to delete article: ", id)
+	intId := utils.StrToUnit64(id)
+	if intId == 0 {
+		mc.WebJson(e.ERR_INVALID_PARAM, nil)
+		return
+	}
+	err := models.DeleteArticleById(utils.StrToUnit64(id))
+	if mc.CheckGormErr(err) != nil {
+		logger.Error("delete category error: ", err)
+		return
+	}
+	mc.WebJson(e.SUCCESS, nil)
+
 }
 
 /**
