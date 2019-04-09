@@ -10,6 +10,80 @@ import (
 )
 
 /**
+* @api {post} /v1/article 创建文章
+* @apiGroup Article
+* @apiVersion 0.1.0
+*
+* @apiParam {string} title 文章标题
+* @apiParam {string} body 文章内容
+* @apiParam {string} abstract 摘要
+* @apiParam {int=-1, 1} status -1表示未发表，1表示已发表
+* @apiParam {int=-1, 1} topped -1表示不置顶，1表示置顶
+* @apiParam {int} category_id 类别id
+* @apiParam {int[]} [tags_id] 标签id
+*
+* @apiSuccessExample {json} Success-Response:
+*   {
+*     "errCode": "0",
+*     "errMsg": "请求成功",
+*     "data": Object
+*    }
+ */
+func CreateArticle(c *gin.Context) {
+	var (
+		form models.Article
+		err  error
+	)
+	mc := Gin{C: c}
+	err = c.ShouldBind(&form)
+	if mc.CheckBindErr(err) != nil {
+		return
+	}
+	err = form.Insert()
+	if err != nil {
+		mc.WebJson(e.ERR_SQL, err)
+	}
+	mc.WebJson(e.SUCCESS, form)
+}
+
+/**
+* @api {put} /v1/article 修改文章
+* @apiGroup Article
+* @apiVersion 0.1.0
+*
+* @apiParam {string} title 文章标题
+* @apiParam {string} body 文章内容
+* @apiParam {string} abstract 摘要
+* @apiParam {int=-1, 1} status -1表示未发表，1表示已发表
+* @apiParam {int=-1, 1} topped -1表示不置顶，1表示置顶
+* @apiParam {int} category_id 类别id
+* @apiParam {int[]} [tags_id] 标签id
+*
+* @apiSuccessExample {json} Success-Response:
+*   {
+*     "errCode": "0",
+*     "errMsg": "请求成功",
+*     "data": Object
+*    }
+ */
+func UpdateArticle(c *gin.Context) {
+	var (
+		form models.Article
+		err  error
+	)
+	mc := Gin{C: c}
+	err = c.ShouldBind(&form)
+	if mc.CheckBindErr(err) != nil {
+		return
+	}
+	err = form.Update()
+	if mc.CheckGormErr(err) != nil {
+		return
+	}
+	mc.WebJson(e.SUCCESS, form)
+}
+
+/**
 * @api {get} /v1/article/:id 获取单篇文章
 * @apiGroup Article
 * @apiVersion 0.1.0
@@ -33,84 +107,6 @@ func GetArticle(c *gin.Context) {
 }
 
 /**
-* @api {post} /v1/article 创建文章
-* @apiGroup Article
-* @apiVersion 0.1.0
-*
-* @apiParam {string} title 文章标题
-* @apiParam {string} body 文章正文
-* @apiParam {int} status -1表示未发布，1表示已发布，默认为-1
-* @apiParam {string} abstract 文章摘要，为空就为body的前128字
-* @apiParam {int} topped -1表示不置顶，1表示置顶，默认为-1
-* @apiParam {int} category_id 类别id
-* @apiParam {list} tags_id 标签id，int型的列表
-*
-* @apiSuccessExample {json} Success-Response:
-*   {
-*     "errCode": "0",
-*     "errMsg": "请求成功",
-*     "data": Object
-*}
- */
-func PostArticle(c *gin.Context) {
-	var (
-		err  error
-		form models.Article
-	)
-	mc := Gin{C: c}
-	err = c.ShouldBind(&form)
-	logger.Info("form: ", form)
-	if mc.CheckBindErr(err) != nil {
-		return
-	}
-	err = form.Insert()
-	if mc.CheckGormErr(err) != nil {
-		return
-	}
-	mc.WebJson(e.SUCCESS, form)
-}
-
-/**
-* @api {post} /v1/article 修改文章
-* apiDescription id不对时不报错
-* @apiGroup Article
-* @apiVersion 0.1.0
-*
-* @apiParam {int} id 文章id
-* @apiParam {string} title 文章标题
-* @apiParam {string} body 文章正文
-* @apiParam {int} status -1表示未发布，1表示已发布，默认为-1
-* @apiParam {string} abstract 文章摘要，为空就为body的前128字
-* @apiParam {int} topped -1表示不置顶，1表示置顶，默认为-1
-* @apiParam {int} category_id 类别id
-* @apiParam {list} tags_id 标签id，int型的列表
-*
-* @apiSuccessExample {json} Success-Response:
-*   {
-*     "errCode": "0",
-*     "errMsg": "请求成功",
-*     "data": Object
-*}
- */
-func PutArticle(c *gin.Context) {
-	var (
-		err  error
-		form models.Article
-	)
-	mc := Gin{C: c}
-	err = c.ShouldBind(&form)
-	logger.Info("form: ", form)
-	if mc.CheckBindErr(err) != nil {
-		return
-	}
-	err = form.Update()
-	if mc.CheckGormErr(err) != nil {
-		return
-	}
-	mc.WebJson(e.SUCCESS, form)
-}
-
-/**
 * @api {delete} /v1/article/:id 删除某个文章
 * @apiGroup Article
 * @apiVersion 0.1.0
@@ -131,7 +127,7 @@ func DeleteArticle(c *gin.Context) {
 		mc.WebJson(e.ERR_INVALID_PARAM, nil)
 		return
 	}
-	err := models.DeleteArticleById(utils.StrToUnit64(id))
+	err := models.DeleteArticleById(intId)
 	if mc.CheckGormErr(err) != nil {
 		logger.Error("delete category error: ", err)
 		return
