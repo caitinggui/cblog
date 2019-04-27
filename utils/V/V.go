@@ -18,4 +18,6 @@ const (
 	NoExpiration      time.Duration = cache.NoExpiration // 定期清理cache的间隔时间
 
 	CurrentUser string = "CurrentUser" // 保存当前用户的key
+
+	PraseIpTimeout time.Duration = 3 * time.Second // 解析ip地区的超时时间
 )

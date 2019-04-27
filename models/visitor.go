@@ -1,6 +1,13 @@
 package models
 
-import ()
+import (
+	"errors"
+
+	"cblog/utils"
+	"cblog/utils/V"
+)
+
+var ERR_EMPTY_IP = errors.New("Empty IP")
 
 type Visitor struct {
 	IntIdModelWithoutDeletedAt
@@ -46,6 +53,25 @@ func (self *Visitor) Delete() error {
 	return DB.Delete(self).Error
 }
 
+func (self *Visitor) PraseIp() error {
+	if self.IP == "" {
+		return ERR_EMPTY_IP
+	}
+	ip2Region := utils.Ip2Region{
+		IP:      self.IP,
+		Timeout: V.PraseIpTimeout,
+	}
+	err := ip2Region.PraseIp()
+	if err != nil {
+		return err
+	}
+	self.Country = ip2Region.Country
+	self.Province = ip2Region.Province
+	self.City = ip2Region.City
+	self.Isp = ip2Region.Isp
+	return nil
+}
+
 func (visitor *Visitor) UpdateNonzero(data Visitor) error {
 	return DB.Model(visitor).Updates(data).Error
 }
@@ -60,7 +86,7 @@ func CreateVisitor(visitor *Visitor) error {
 }
 
 func GetAllVisitors() (visitors []Visitor, err error) {
-	err = DB.Find(&visitors).Error
+	err = DB.Order("CreatedAt desc").Find(&visitors).Error
 	return
 }
 
