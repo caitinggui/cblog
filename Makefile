@@ -2,7 +2,9 @@ GOPATH:=$(CURDIR):$(GOPATH)
 
 test:
 	# 加上-v就会输出详细信息（包括自定义日志）
-	go test -v ./... -configPath $(CURDIR)/config/dev/
+	#go test -v ./service ./utils
+	#go test -v ./models ./main_test.go -configPath $(CURDIR)/config/dev/
+	export CBLOG_CONFIG_PATH=$(CURDIR)/config/dev/ && go test -v ./...
 
 test-bench:
 	go test -test.bench=".*" ./... -configPath $(CURDIR)/config/dev/

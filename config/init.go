@@ -1,7 +1,6 @@
 package config
 
 import (
-	"flag"
 	"io/ioutil"
 	"os"
 	"time"
@@ -50,8 +49,9 @@ func init() {
 	)
 
 	// 先定义，后Parse
-	flag.StringVar(&configPath, "configPath", "", "set configuration file path")
-	flag.Parse()
+	//flag.StringVar(&configPath, "configPath", "", "set configuration file path")
+	//flag.Parse()
+	configPath = os.Getenv("CBLOG_CONFIG_PATH")
 
 	// 如果指定了目录，就直接读取目录下配置，否则根据环境读取相应配置*/
 	if configPath != "" {
@@ -59,10 +59,8 @@ func init() {
 	} else if os.Getenv("GIN_MODE") == gin.ReleaseMode {
 		// 打包会合并到可执行文件中，所以目录以可执行文件为基准
 		configPath = "config/pro/"
-
 	} else {
 		configPath = "config/dev/"
-
 	}
 	logger.Info("configPath: ", configPath)
 	LoggerConfig, err = ioutil.ReadFile(configPath + "log.xml")

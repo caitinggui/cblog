@@ -47,8 +47,8 @@ func BindRoute(router *gin.Engine) {
 	router.DELETE("/category/:id", service.DeleteCategory)
 
 	router.GET("/article", service.GetArticles)
-	router.POST("/article", service.PostArticle)
-	router.PUT("/article", service.PutArticle)
+	router.POST("/article", service.CreateArticle)
+	router.PUT("/article", service.UpdateArticle)
 	router.DELETE("/article/:id", service.DeleteArticle)
 
 	router.GET("/tag/:id", service.GetTag)
