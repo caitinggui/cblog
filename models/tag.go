@@ -72,5 +72,7 @@ func GetTagById(id uint64) (tag Tag, err error) {
 }
 
 func DeleteTagById(id uint64) error {
-	return DB.Where("id = ?", id).Delete(&Tag{}).Error
+	tag := Tag{}
+	tag.ID = id
+	return tag.Delete()
 }

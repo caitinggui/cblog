@@ -77,5 +77,7 @@ func GetLinkById(id uint64) (link Link, err error) {
 }
 
 func DeleteLinkById(id uint64) error {
-	return DB.Where("id = ?", id).Delete(&Link{}).Error
+	link := Link{}
+	link.ID = id
+	return link.Delete()
 }

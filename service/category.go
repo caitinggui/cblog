@@ -5,6 +5,7 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"cblog/models"
+	"cblog/utils"
 	"cblog/utils/e"
 )
 
@@ -121,7 +122,12 @@ func DeleteCategory(c *gin.Context) {
 	mc := Gin{C: c}
 	id := c.Param("id")
 	logger.Info("try to delete category: ", id)
-	err := models.DeleteCategoryById(id)
+	intId := utils.StrToUnit64(id)
+	if intId == 0 {
+		mc.WebJson(e.ERR_INVALID_PARAM, nil)
+		return
+	}
+	err := models.DeleteCategoryById(intId)
 	if mc.CheckGormErr(err) != nil {
 		logger.Error("delete category error: ", err)
 		return

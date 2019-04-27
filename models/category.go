@@ -89,18 +89,10 @@ func GetCategoryByName(name string) (cate Category, err error) {
 	return
 }
 
-func DeleteCategoryById(id string) error {
+func DeleteCategoryById(id uint64) error {
 	data := Category{}
-	// 先查出完整数据
-	if err := DB.First(&data, id).Error; err != nil {
-		return err
-	}
-	// 记录完整数据到另一个表
-	if err := InsertToDeleteDataTable(&data); err != nil {
-		return err
-	}
-	// 删除该条记录
-	return DB.Delete(data).Error
+	data.ID = id
+	return data.Delete()
 }
 
 func GetAllCategories() (cates []Category, err error) {
