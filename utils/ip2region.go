@@ -1,8 +1,8 @@
 package utils
 
 import (
-	"io/ioutil"
-	"net/http"
+	//"io/ioutil"
+	//"net/http"
 	"time"
 
 	logger "github.com/caitinggui/seelog"
@@ -31,21 +31,22 @@ func (self *Ip2Region) Url() string {
 
 func (self *Ip2Region) PraseIp() error {
 	url := self.Url() + self.IP
-	client := http.Client{
-		Timeout: self.Timeout,
-	}
-	resp, err := client.Get(url)
+	//client := http.Client{
+	//Timeout: self.Timeout,
+	//}
+	//resp, err := client.Get(url)
+	body, err := HttpRetryGet(url)
 	if err != nil {
 		logger.Error("ip2Region request ip error: ", err)
 		return err
 	}
-	defer resp.Body.Close()
+	//defer resp.Body.Close()
 
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		logger.Error("ip2Region prase ip error: ", err)
-		return err
-	}
+	//body, err := ioutil.ReadAll(resp.Body)
+	//if err != nil {
+	//logger.Error("ip2Region prase ip error: ", err)
+	//return err
+	//}
 
 	json.Unmarshal([]byte(jsoniter.Get(body, "data").ToString()), &self)
 	return nil

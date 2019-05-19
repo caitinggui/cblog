@@ -8,7 +8,9 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"math/rand"
+	"net/http"
 	"strconv"
 	"strings"
 	"time"
@@ -18,6 +20,7 @@ import (
 )
 
 var UID *uniqueid.UniqueId
+var HttpClient = http.Client{Timeout: 3 * time.Second}
 
 func StrToUnit64(s string) (n uint64) {
 	// 10进制，64位
@@ -148,4 +151,74 @@ type JsonTime time.Time
 func (self JsonTime) MarshalJSON() ([]byte, error) {
 	stamp := fmt.Sprintf("\"%s\"", time.Time(self).Format("2006-01-02T15:04:05.999"))
 	return []byte(stamp), nil
+}
+
+// 3次重试
+func HttpRetryGet(url string) (body []byte, err error) {
+	var (
+		resp          *http.Response
+		maxRetryTimes = 3 // 3次重试
+	)
+
+	for i := 0; i < maxRetryTimes; i++ {
+		logger.Info(url, " retryTimes: ", i)
+		resp, err = HttpClient.Get(url)
+		// err == nil时才需要关闭body
+		if err == nil {
+			body, _ = ioutil.ReadAll(resp.Body)
+			resp.Body.Close()
+			if resp.StatusCode == http.StatusOK {
+				break
+			}
+		}
+	}
+	return
+}
+
+func HttpGet(url string) (body []byte, err error) {
+	var resp *http.Response
+	resp, err = HttpClient.Get(url)
+	if err != nil {
+		logger.Error("request get error: ", url, err)
+		return body, err
+	}
+	defer resp.Body.Close()
+	body, err = ioutil.ReadAll(resp.Body)
+	return
+}
+
+func HttpPost(url string, data *map[string]interface{}) (body []byte, err error) {
+	var resp *http.Response
+	var jsonValue []byte
+	contentType := "application/json"
+	jsonValue, err = json.Marshal(data)
+	if err != nil {
+		logger.Warn("request parameter error: ", err)
+		return
+	}
+
+	resp, err = HttpClient.Post(url, contentType, bytes.NewBuffer(jsonValue))
+	if err != nil {
+		logger.Error("request post error: ", url, err)
+		return
+	}
+	defer resp.Body.Close()
+	body, err = ioutil.ReadAll(resp.Body)
+	return
+}
+
+func PostJsonWithAuth(url string, values *map[string]interface{}, accessToken string) (body []byte, err error) {
+	contentType := "application/json"
+	jsonValue, _ := json.Marshal(values)
+	req, _ := http.NewRequest("POST", url, bytes.NewBuffer(jsonValue))
+	req.Header.Set("Content-Type", contentType)
+	req.Header.Set("Authorization", accessToken)
+
+	resp, err1 := HttpClient.Do(req)
+	if err1 != nil {
+		return
+	}
+	defer resp.Body.Close()
+	body, err = ioutil.ReadAll(resp.Body)
+	return
 }
