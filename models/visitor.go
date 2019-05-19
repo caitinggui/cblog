@@ -4,20 +4,20 @@ import (
 	"errors"
 
 	"cblog/utils"
-	"cblog/utils/V"
 )
 
 var ERR_EMPTY_IP = errors.New("Empty IP")
 
 type Visitor struct {
 	IntIdModelWithoutDeletedAt
-	IP       string `gorm:"size:64" json:"ip"`        // 访问者IP
-	Country  string `gorm:"size:128" json:"country"`  // 国家
-	Province string `gorm:"size:128" json:"province"` // 省份
-	City     string `gorm:"size:128" json:"city"`     // 城市
-	Isp      string `gorm:"size:128" json:"isp"`
-	Referer  string `gorm:"size:255" json:"referer"` // 来源地
-	Article  Article
+	IP        string   `gorm:"size:64" json:"ip"`        // 访问者IP
+	Country   string   `gorm:"size:128" json:"country"`  // 国家
+	Province  string   `gorm:"size:128" json:"province"` // 省份
+	City      string   `gorm:"size:128" json:"city"`     // 城市
+	Isp       string   `gorm:"size:128" json:"isp"`
+	Referer   string   `gorm:"size:255" json:"referer"` // 来源地
+	Article   *Article `gorm:"ForeignKey:ArticleId;association_autoupdate:false" binding:"-"`
+	ArticleId string   `json:"article_id"`
 }
 
 func (self *Visitor) TableName() string {
@@ -57,10 +57,7 @@ func (self *Visitor) PraseIp() error {
 	if self.IP == "" {
 		return ERR_EMPTY_IP
 	}
-	ip2Region := utils.Ip2Region{
-		IP:      self.IP,
-		Timeout: V.PraseIpTimeout,
-	}
+	ip2Region := utils.Ip2Region{IP: self.IP}
 	err := ip2Region.PraseIp()
 	if err != nil {
 		return err

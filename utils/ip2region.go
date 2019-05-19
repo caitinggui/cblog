@@ -3,7 +3,7 @@ package utils
 import (
 	//"io/ioutil"
 	//"net/http"
-	"time"
+	//"time"
 
 	logger "github.com/caitinggui/seelog"
 	"github.com/json-iterator/go"
@@ -12,12 +12,12 @@ import (
 var json = jsoniter.ConfigCompatibleWithStandardLibrary
 
 type Ip2Region struct {
-	IP       string        `json:"ip"`
-	Country  string        `json:"country"`
-	Province string        `json:"region"`
-	City     string        `json:"city"`
-	Isp      string        `json:"isp"`
-	Timeout  time.Duration // 请求的超时时间
+	IP       string `json:"ip"`
+	Country  string `json:"country"`
+	Province string `json:"region"`
+	City     string `json:"city"`
+	Isp      string `json:"isp"`
+	//Timeout  time.Duration // 请求的超时时间
 }
 
 // 用淘宝的接口去解析

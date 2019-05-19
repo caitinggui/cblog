@@ -2,6 +2,7 @@ package service
 
 import (
 	"net/http"
+	"strings"
 
 	logger "github.com/caitinggui/seelog"
 	"github.com/gin-contrib/sessions"
@@ -48,5 +49,34 @@ func AdminRequierd() gin.HandlerFunc {
 		}
 		logger.Info(uid, " is admin")
 		c.Next()
+	}
+}
+
+func RecordClientIp() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		var article_id string
+		clientIp := c.ClientIP()
+		url := c.Request.URL.String()
+		if strings.HasPrefix(url, "/article/") {
+			article_id = strings.Split(url, "/")[2]
+		}
+		logger.Debug("request url: ", c.Request.URL, " client Ip: ", clientIp)
+		visitor := models.Visitor{
+			IP:        clientIp,
+			Referer:   c.Request.Referer(),
+			ArticleId: article_id,
+		}
+		logger.Info("visitor: ", visitor)
+		go func() {
+			err := visitor.PraseIp()
+			if err != nil {
+				logger.Error("Prase visitor Ip failed: ", visitor, err)
+				return
+			}
+			err = visitor.Insert()
+			if err != nil {
+				logger.Error("Save visitor Ip failed: ", visitor, err)
+			}
+		}()
 	}
 }

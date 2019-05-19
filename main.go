@@ -47,6 +47,7 @@ func BindRoute(router *gin.Engine) {
 	router.DELETE("/category/:id", service.DeleteCategory)
 
 	router.GET("/article", service.GetArticles)
+	router.GET("/article/:id", service.GetArticle)
 	router.POST("/article", service.CreateArticle)
 	router.PUT("/article", service.UpdateArticle)
 	router.DELETE("/article/:id", service.DeleteArticle)
@@ -119,6 +120,7 @@ func main() {
 
 	})
 	router.Use(sessions.Sessions("cblog", store))
+	router.Use(service.RecordClientIp())
 
 	err = models.InitCache(config.Config.CacheFile)
 	defer func() {

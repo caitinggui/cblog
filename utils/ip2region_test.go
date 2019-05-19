@@ -14,10 +14,7 @@ func TestIp2Region(t *testing.T) {
 		t.Fatal("解析ip出错: ", err)
 	}
 	t.Log("ip2Region: ", ip2Region)
-	ip2Region = Ip2Region{
-		IP:      "119.123.179.47",
-		Timeout: 3 * time.Second,
-	}
+	ip2Region = Ip2Region{IP: "119.123.179.47"}
 	err = ip2Region.PraseIp()
 	if err != nil {
 		t.Fatal("解析ip出错: ", err)
