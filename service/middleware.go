@@ -8,9 +8,13 @@ import (
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 
+	"cblog/config"
 	"cblog/models"
+	"cblog/utils"
 	"cblog/utils/V"
 )
+
+var lm = utils.NewRateLimter(config.Config.PraseIp.Interval, config.Config.PraseIp.Capacity)
 
 // 从cookie检查是否已登录
 func LoginRequired() gin.HandlerFunc {
@@ -68,14 +72,20 @@ func RecordClientIp() gin.HandlerFunc {
 		}
 		logger.Info("visitor: ", visitor)
 		go func() {
-			err := visitor.PraseIp()
+			// 先创建，后更新，主要是为了保证createAt是正确的时间
+			err := visitor.Insert()
+			if err != nil {
+				logger.Error("Save visitor Ip failed: ", visitor, err)
+			}
+			lm.Wait()
+			err = visitor.PraseIp()
 			if err != nil {
 				logger.Error("Prase visitor Ip failed: ", visitor, err)
 				return
 			}
-			err = visitor.Insert()
+			err = visitor.Update()
 			if err != nil {
-				logger.Error("Save visitor Ip failed: ", visitor, err)
+				logger.Error("Update visitor Ip failed: ", visitor, err)
 			}
 		}()
 	}

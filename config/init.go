@@ -18,12 +18,18 @@ type mysql struct {
 	LogMode bool
 }
 
+type praseIp struct {
+	Interval time.Duration
+	Capacity int
+}
+
 type config struct {
 	Listen    string
 	Mysql     mysql
 	UniqueId  uniqueId
 	CacheFile string
 	Secret    string
+	PraseIp   praseIp
 }
 
 type uniqueId struct {

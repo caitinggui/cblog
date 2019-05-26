@@ -2,6 +2,7 @@ package utils
 
 import (
 	"bytes"
+	"context"
 	"crypto/des"
 	"crypto/hmac"
 	"crypto/sha256"
@@ -14,6 +15,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"golang.org/x/time/rate"
 
 	logger "github.com/caitinggui/seelog"
 	"github.com/caitinggui/uniqueid"
@@ -221,4 +224,26 @@ func PostJsonWithAuth(url string, values *map[string]interface{}, accessToken st
 	defer resp.Body.Close()
 	body, err = ioutil.ReadAll(resp.Body)
 	return
+}
+
+type RateLimiter struct {
+	Capacity int
+	Interval time.Duration
+	Limiter  *rate.Limiter
+	Ctx      context.Context
+}
+
+func (self RateLimiter) Wait() error {
+	return self.Limiter.Wait(self.Ctx)
+}
+
+func NewRateLimter(Interval time.Duration, Capacity int) *RateLimiter {
+	ctx := context.Background()
+	rlm := RateLimiter{
+		Capacity: Capacity,
+		Interval: Interval,
+		Ctx:      ctx,
+		Limiter:  rate.NewLimiter(rate.Every(Interval), Capacity),
+	}
+	return &rlm
 }

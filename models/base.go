@@ -73,9 +73,6 @@ func (self *IntIdModelWithoutDeletedAt) BeforeUpdate() error {
 	if self.ID == 0 {
 		return ERR_EMPTY_ID
 	}
-	if !self.UpdatedAt.IsZero() || !self.CreatedAt.IsZero() {
-		return ERR_INVALID_TIME
-	}
 	return nil
 }
 

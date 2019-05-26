@@ -10,3 +10,6 @@ secret: 3697ae54f90811e8ba2c60f81dad53c8
 uniqueid:  # 用作雪花算法生成唯一id
   workerid: 1
   reserveid: 1
+praseip:   # 解析来源IP的时间间隔
+  interval: 30s
+  capacity: 2
