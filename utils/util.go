@@ -247,3 +247,18 @@ func NewRateLimter(Interval time.Duration, Capacity int) *RateLimiter {
 	}
 	return &rlm
 }
+
+// 定时任务，指定每天几点几分几秒执行任务
+func CronFuncDaily(f func() error, hour, min, sec int) {
+	timer := time.NewTimer(time.Second)
+	for {
+		logger.Info("开始执行定时任务: ", f)
+		err := f()
+		now := time.Now()
+		nextDay := now.Add(time.Hour * 24)
+		nextDay = time.Date(nextDay.Year(), nextDay.Month(), nextDay.Day(), hour, min, sec, 0, nextDay.Location())
+		logger.Info("定时任务执行完成: ", err, " 开始下一次定时: ", nextDay)
+		timer.Reset(nextDay.Sub(now))
+		<-timer.C
+	}
+}
