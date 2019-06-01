@@ -27,9 +27,9 @@ func LoginRequired() gin.HandlerFunc {
 			// 清空session
 			session.Clear()
 			session.Save()
-			c.Redirect(http.StatusMovedPermanently, "/login")
+			logger.Info(c.Request.RequestURI, " 未登录")
+			c.Redirect(http.StatusMovedPermanently, "/login?redirect_uri="+c.Request.RequestURI)
 			c.Abort()
-
 		} else {
 			logger.Info("user logined:", uid)
 			c.Next()
@@ -47,15 +47,16 @@ func AdminRequierd() gin.HandlerFunc {
 		isAdmin := models.IsAdminByUid(uid)
 		if !isAdmin {
 			logger.Warn(uid, " is not admin")
-			c.String(http.StatusBadRequest, "非管理员")
+			Logout(c)
 			c.Abort()
 			return
 		}
 		logger.Info(uid, " is admin")
-		c.Next()
+		c.Next() // next并不是非得调用，在next之前的为handle处理的步骤，在next之后的就是hander处理完之后，middleware可以继续处理
 	}
 }
 
+// 记录访问者ip
 func RecordClientIp() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var article_id string
@@ -88,5 +89,14 @@ func RecordClientIp() gin.HandlerFunc {
 				logger.Error("Update visitor Ip failed: ", visitor, err)
 			}
 		}()
+	}
+}
+
+// 紧张浏览器缓存
+func AbortClientCache() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		c.Next()
+		logger.Debug("设置Cache-Control: no-cache")
+		c.Header("Cache-Control", "no-cache")
 	}
 }

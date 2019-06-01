@@ -14,6 +14,8 @@ import (
 func PostLogin(c *gin.Context) {
 	username := c.PostForm("username")
 	password := c.PostForm("password")
+	redirect_uri := c.DefaultQuery("redirect_uri", "/")
+	logger.Info("redirect_uri: ", redirect_uri)
 	session := sessions.Default(c)
 	if username != "test" || password != "test" {
 		// 密码错误则清空session, 一定要Save，否则前端不响应.本质上是通过Set-Cookie
@@ -27,7 +29,8 @@ func PostLogin(c *gin.Context) {
 		// 设置cookie
 		session.Set(V.CurrentUser, username)
 		session.Save()
-		c.Redirect(http.StatusMovedPermanently, "/")
+		logger.Info("登陆成功，重定向到: ", redirect_uri)
+		c.Redirect(http.StatusMovedPermanently, redirect_uri)
 	}
 }
 

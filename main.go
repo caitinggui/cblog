@@ -15,7 +15,11 @@ import (
 )
 
 func Health(c *gin.Context) {
-	c.Writer.WriteHeader(http.StatusOK)
+	if models.Ping() != nil {
+		c.String(http.StatusOK, "success")
+	} else {
+		c.String(http.StatusInternalServerError, "sql error")
+	}
 }
 
 func Hello(c *gin.Context) {
@@ -31,8 +35,28 @@ func BindRoute(router *gin.Engine) {
 	admin := router.Group("/admin")
 	admin.Use(service.LoginRequired())
 	{
-		admin.GET("/hello", Hello)
 		admin.GET("", Index)
+		admin.GET("/article", service.GetArticles)
+		admin.POST("/article", service.CreateArticle)
+		admin.PUT("/article", service.UpdateArticle)
+		admin.DELETE("/article/:id", service.DeleteArticle)
+
+		admin.GET("/category", service.GetCategories)
+		admin.POST("/category", service.CreateCategory)
+		admin.PUT("/category", service.UpdateCategory)
+		admin.DELETE("/category/:id", service.DeleteCategory)
+
+		admin.GET("/tag", service.GetTags)
+		admin.POST("/tag", service.CreateTag)
+		admin.PUT("/tag", service.UpdateTag)
+		admin.DELETE("/tag/:id", service.DeleteTag)
+
+		admin.GET("/link", service.GetLinks)
+		admin.POST("/link", service.CreateLink)
+		admin.PUT("/link", service.UpdateLink)
+		admin.DELETE("/link/:id", service.DeleteLink)
+
+		admin.GET("/visitor", service.GetVisitors)
 	}
 
 	router.POST("/login", service.PostLogin)
@@ -41,30 +65,12 @@ func BindRoute(router *gin.Engine) {
 
 	router.GET("/health", Health)
 	//router.GET("/hello", Hello)
-	router.POST("/category", service.CreateCategory)
-	router.GET("/category", service.GetCategories)
-	router.PUT("/category", service.UpdateCategory)
-	router.DELETE("/category/:id", service.DeleteCategory)
 
-	router.GET("/article", service.GetArticles)
 	router.GET("/article/:id", service.GetArticle)
-	router.POST("/article", service.CreateArticle)
-	router.PUT("/article", service.UpdateArticle)
-	router.DELETE("/article/:id", service.DeleteArticle)
 
 	router.GET("/tag/:id", service.GetTag)
-	router.GET("/tag", service.GetTags)
-	router.POST("/tag", service.CreateTag)
-	router.PUT("/tag", service.UpdateTag)
-	router.DELETE("/tag/:id", service.DeleteTag)
 
 	router.GET("/link/:id", service.GetLink)
-	router.GET("/link", service.GetLinks)
-	router.POST("/link", service.CreateLink)
-	router.PUT("/link", service.UpdateLink)
-	router.DELETE("/link/:id", service.DeleteLink)
-
-	router.GET("/visitor", service.GetVisitors)
 
 	router.GET("/", Hello)
 
@@ -121,6 +127,7 @@ func main() {
 	})
 	router.Use(sessions.Sessions("cblog", store))
 	router.Use(service.RecordClientIp())
+	router.Use(service.AbortClientCache())
 
 	err = models.InitCache(config.Config.CacheFile)
 	defer func() {

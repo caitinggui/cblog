@@ -122,6 +122,10 @@ func InsertToDeleteDataTable(data DataTable) error {
 	return err
 }
 
+func Ping() error {
+	return DB.DB().Ping()
+}
+
 func InitDB() (db *gorm.DB) {
 	db, err := gorm.Open("sqlite3", "./foo.db")
 	if err != nil {
