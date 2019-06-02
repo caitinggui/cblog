@@ -48,7 +48,7 @@ type StrIdModel struct {
 // TODO 截止到gin 1.3.0,在序列化json时不支持time_format
 // TODO 有个bug，没有检查传来的updated_at等参数，等validator升到V9再修复
 type IntIdModelWithoutDeletedAt struct {
-	ID        uint64    `gorm:"primary_key" json:"id"` // 如果用"gorm:bigint"，在sqlite下无法自增
+	ID        uint64    `gorm:"primary_key" json:"id" form:"id"` // 如果用"gorm:bigint"，在sqlite下无法自增
 	CreatedAt time.Time `json:"created_at" binding:"-" time_format:"2006-01-02T15:04:05"`
 	UpdatedAt time.Time `json:"updated_at" binding:"-"`
 }

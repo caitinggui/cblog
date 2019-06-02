@@ -11,6 +11,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/jinzhu/gorm"
 
+	"cblog/utils"
 	"cblog/utils/e"
 )
 
@@ -20,13 +21,13 @@ type Gin struct {
 
 // 返回html code 为200的json response
 func (self *Gin) WebJson(code int, data interface{}) {
-	logger.Info("json response: ", code, e.GetMsg(code), data)
+	logger.Debug("json response: ", code, e.GetMsg(code), data)
 	self.C.JSON(http.StatusOK, gin.H{"errCode": code, "errMsg": e.GetMsg(code), "data": data})
 }
 
 // 返回html code为200的html response
 func (self *Gin) SuccessHtml(templateName string, data interface{}) {
-	logger.Info("html response data: ", data)
+	logger.Debug("html response data: ", data)
 	self.C.HTML(http.StatusOK, templateName, data)
 }
 
@@ -42,6 +43,7 @@ func (self *Gin) CheckGormErr(err error) error {
 		return nil
 	}
 	if gorm.IsRecordNotFoundError(err) {
+		logger.Warn("数据库无此数据")
 		self.WebJson(e.ERR_NO_DATA, nil)
 		return err
 	}
@@ -53,7 +55,7 @@ func (self *Gin) CheckGormErr(err error) error {
 func (self *Gin) CheckBindErr(err error) error {
 	if err != nil {
 		logger.Info("解析参数失败:", err)
-		self.WebJson(e.ERR_INVALID_PARAM, nil)
+		self.WebJson(e.ERR_INVALID_PARAM, err)
 		return err
 	}
 	return nil
@@ -66,6 +68,7 @@ func LoadTemplates(templatesDir string) multitemplate.Renderer {
 	// 定义模板函数
 	funcMap := template.FuncMap{
 		"FormatAsDate": FormatAsDate,
+		"ToStr":        utils.ToStr,
 	}
 
 	adminBase, err := filepath.Glob(templatesDir + "/layouts/admin-base.html")
@@ -103,6 +106,7 @@ func LoadTemplates(templatesDir string) multitemplate.Renderer {
 
 }
 
+// html模板函数，时间转为字符串格式
 func FormatAsDate(t time.Time) string {
 	return t.Format("2006-01-02 15:04:05")
 }

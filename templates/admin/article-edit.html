@@ -1,0 +1,80 @@
+{{define "content"}}
+    <section class="content-header">
+    <h1>
+        编辑文章
+    </h1>
+    <ol class="breadcrumb">
+        <li><a href="{% url 'admin:dashboard' %}"><i class="fa fa-dashboard"></i> 首页</a></li>
+        <li><a>文章管理</a></li>
+        <li class="active">编辑文章</li>
+    </ol>
+    </section>
+
+{% if article.status == 'p' %}
+    <option value="p">发布</option>
+    <option value="d">存稿</option>
+{% elif article.status == 'd' %}
+    <option value="d">存稿</option>
+    <option value="p">发布</option>
+{% endif %}
+{% endblock %}
+
+{% block topped_show %}
+{% if article.topped %}
+    <option value="1">置顶</option>
+    <option value="0">不置顶</option>
+{% else %}
+    <option value="0">不置顶</option>
+    <option value="1">置顶</option>
+{% endif %}
+{% endblock %}
+{{end}}
+
+{{define "footer"}}
+{% block custom_js %}
+    <script src="{% static 'admin/plugins/select2/select2.full.min.js' %}"></script>
+    <script src="{% static 'admin/editormd/editormd.js' %}"></script>
+    <script type="text/javascript">
+        var Editor;
+        $(function () {
+            $.get("/admin/article/edit", function (md) {
+                Editor = editormd("editormd", {
+                    width: "100%",
+                    height: 740,
+					<!--根据浏览器调试信息和nginx error.log来更改路径-->
+                    path: '/static/admin/editormd/lib/',
+                    markdown: md,
+                    codeFold: true,
+                    saveHTMLToTextarea: true,
+                    searchReplace: true,
+                    htmlDecode: "style,script,iframe|on*",
+                    emoji: true,
+                    taskList: true,
+                    tocm: true,
+                    tex: true,
+                    flowChart: true,
+                    sequenceDiagram: true,
+                    imageUpload: true,
+                    imageFormats: ["jpg", "jpeg", "gif", "png", "bmp", "webp"],
+                    imageUploadURL: "/admin/upload/"
+                });
+            });
+            $(".select2").select2();
+        });
+        $(function () {
+            $("select[name='categories']").val("").change();
+            exist_tags = "";
+            exist_tags = exist_tags.split(',');
+            $("select[name='tags']").val(exist_tags).change()
+        })
+
+			function setConfirm() {
+				is_confirm = true;
+			}
+
+			window.onbeforeunload = function(){
+				if(window.is_confirm !== true)
+				 return "文章尚未保存";
+			}
+    </script>
+{{end}}

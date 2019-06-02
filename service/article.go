@@ -107,6 +107,32 @@ func GetArticle(c *gin.Context) {
 }
 
 /**
+* @api {get} /v1/article/edit/:id 创建、修改文章
+* @apiGroup Article
+* @apiVersion 0.1.0
+*
+* @apiSuccessExample {json} Success-Response:
+*   {
+*     "errCode": "0",
+*     "errMsg": "请求成功",
+*     "data": Object
+*}
+**/
+func EditArticle(c *gin.Context) {
+	mc := Gin{C: c}
+	id := c.Query("id")
+	if id == "" {
+		mc.SuccessHtml("admin/article-edit.html", nil)
+		return
+	}
+	article, err := models.GetArticleById(id)
+	if mc.CheckGormErr(err) != nil {
+		return
+	}
+	mc.SuccessHtml("admin/article-edit.html", article)
+}
+
+/**
 * @api {delete} /v1/article/:id 删除某个文章
 * @apiGroup Article
 * @apiVersion 0.1.0

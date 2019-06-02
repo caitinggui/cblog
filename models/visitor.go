@@ -87,9 +87,9 @@ func GetAllVisitors() (visitors []Visitor, err error) {
 	return
 }
 
-// TODO 有问题
+// Find要放order之类的后面
 func GetVisitors(page, pageSize uint64) (visitors []Visitor, err error) {
-	err = DB.Find(&visitors).Order("CreatedAt desc").Offset(pageSize * page).Limit(page).Error
+	err = DB.Order("ID desc").Offset(pageSize * page).Limit(pageSize).Find(&visitors).Error
 	return
 }
 

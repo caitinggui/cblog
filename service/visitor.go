@@ -12,15 +12,16 @@ import (
 )
 
 func GetVisitors(c *gin.Context) {
+	mc := Gin{C: c}
 	page := utils.StrToUnit64(c.Query("page"))
 	pageSize := utils.StrToUnit64(c.Query("pageSize"))
 	if pageSize == 0 || pageSize > V.MaxPageSize {
-		c.JSON(http.StatusBadRequest, gin.H{"errMsg": "pageSize error"})
-		return
+		pageSize = V.MaxPageSize
 	}
+	logger.Info("get visitorys page, pageSize: ", page, pageSize)
 	visitors, err := models.GetVisitors(page, pageSize)
-	logger.Info("get visitors result: ", err)
-	c.JSON(http.StatusOK, gin.H{"data": visitors, "errMsg": err})
+	logger.Info("get visitors result err: ", err)
+	mc.SuccessHtml("admin/visitor.html", gin.H{"Visitors": visitors})
 }
 
 func GetVisitor(c *gin.Context) {

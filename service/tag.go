@@ -29,7 +29,7 @@ func GetTags(c *gin.Context) {
 	if mc.CheckGormErr(err) != nil {
 		return
 	}
-	mc.WebJson(e.SUCCESS, tags)
+	mc.SuccessHtml("admin/tag.html", gin.H{"Tags": tags})
 }
 
 /**
@@ -76,12 +76,9 @@ func CreateTag(c *gin.Context) {
 	mc := Gin{C: c}
 	form := &models.Tag{}
 	// bind会优先json，xml，然后匹配不到才找form
-	err := c.Bind(form)
+	err := c.ShouldBind(form)
 	logger.Info("origin form: ", form, " err: ", err)
-	// 防止被恶意修改id
-	if err != nil || len(form.Name) > 20 || form.Name == "" || form.ID != 0 {
-		mc.WebJson(e.ERR_INVALID_PARAM, nil)
-
+	if mc.CheckBindErr(err) != nil {
 		return
 	}
 	tagNum, err = models.CountTagByName(form.Name)

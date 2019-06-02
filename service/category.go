@@ -30,9 +30,7 @@ func CreateCategory(c *gin.Context) {
 	)
 	mc := Gin{C: c}
 	err = c.ShouldBind(&form)
-	if err != nil {
-		logger.Warn("createCategory param error")
-		mc.WebJson(e.ERR_INVALID_PARAM, nil)
+	if mc.CheckBindErr(err) != nil {
 		return
 	}
 	logger.Info("find if exist ", form.Name, " in database")
@@ -95,7 +93,8 @@ func UpdateCategory(c *gin.Context) {
 	err = c.ShouldBind(&form)
 	logger.Info("UpdateCategory form: ", form)
 	if err != nil || form.ID == 0 {
-		mc.WebJson(e.ERR_INVALID_PARAM, nil)
+		logger.Info("参数异常: ", err)
+		mc.WebJson(e.ERR_INVALID_PARAM, err)
 		return
 	}
 

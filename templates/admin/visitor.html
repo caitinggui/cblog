@@ -1,0 +1,81 @@
+{{define "header"}}
+<link rel="stylesheet" href="/static/libs/AdminLTE/bower_components/datatables.net-bs/css/dataTables.bootstrap.min.css">
+{{end}}
+
+{{define "content"}}
+<!-- Content Wrapper. Contains page content -->
+<div class="content-wrapper">
+  <!-- Content Header (Page header) -->
+  <section class="content-header">
+    <h1>
+      访客列表
+      <!--<small>Optional description</small>-->
+    </h1>
+  </section>
+
+  <!-- Main content -->
+  <section class="content container-fluid">
+    <section class="content">
+      <div class="row">
+        <div class="col-xs-12">
+            <div class="box">
+                <!-- /.box-header -->
+                <div class="box-body">
+                    <table id="VisitorList" class="table table-bordered table-striped">
+                        <thead>
+                        <tr>
+														<th>访客IP</th>
+														<th>国家</th>
+														<th>省份</th>
+														<th>城市</th>
+														<th>运营商</th>
+														<th>时间</th>
+														<th>文章</th>
+														<th>来源</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                          {{range .Visitors}}
+                          <tr id="VisitorID{{.ID}}">
+                            <td>{{.IP}}</td>
+                            <td>{{.Country}}</td>
+                            <td>{{.Province}}</td>
+                            <td>{{.City}}</td>
+                            <td>{{.Isp}}</td>
+                            <td>{{.CreatedAt | ToStr }}</td>
+                            <td>{{.Article}}</td>
+                            <td>{{.Referer}}</td>
+                          </tr>
+                        {{end}}
+                        </tbody>
+                    </table>
+                </div>
+                <!-- /.box-body -->
+            </div>
+            <!-- /.box -->
+        </div>
+        <!-- /.col -->
+      </div>
+      <!-- /.row -->
+    </section>
+  </section>
+    <!-- /.content -->
+</div>
+<!-- /.content-wrapper -->
+<!-- /.content -->
+{{end}}
+
+{{define "footer"}}
+<!--jquery.dataTables要在前面-->
+<script src='/static/libs/AdminLTE/bower_components/datatables.net/js/jquery.dataTables.min.js'></script>
+<script src='/static/libs/AdminLTE/bower_components/datatables.net-bs/js/dataTables.bootstrap.min.js'></script>
+<script>
+  $(function () {
+    $("#VisitorList").DataTable({
+      'ordering': false,
+      'bStateSave': true, //记录所在页数
+      'aLengthMenu': [[20, 40, 80, -1], [20, 40, 80, "All"]], //定义每页显示数据数量
+    });
+  })
+</script>
+{{end}}

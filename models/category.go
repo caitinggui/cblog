@@ -8,7 +8,7 @@ import (
 // 文章类型
 type Category struct {
 	IntIdModelWithoutDeletedAt
-	Name string `gorm:"size:20;unique_index:uk_name" binding:"lte=20,required" json:"name"`
+	Name string `gorm:"size:20;unique_index:uk_name" binding:"lte=20,required" json:"name" form:"name"`
 }
 
 func (self *Category) TableName() string {

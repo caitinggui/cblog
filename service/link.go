@@ -16,7 +16,7 @@ func GetLinks(c *gin.Context) {
 	if mc.CheckGormErr(err) != nil {
 		return
 	}
-	mc.WebJson(e.SUCCESS, links)
+	mc.SuccessHtml("admin/link.html", gin.H{"Links": links})
 }
 
 func GetLink(c *gin.Context) {
