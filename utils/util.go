@@ -41,6 +41,47 @@ func StrToFloat64(s string) (n float64) {
 	return
 }
 
+// 将任意类型(包括时间)转字符串
+func ToStr(value interface{}) (s string) {
+	switch v := value.(type) {
+	case bool:
+		s = strconv.FormatBool(v)
+	case float32:
+		s = strconv.FormatFloat(float64(v), 'f', 3, 32)
+	case float64:
+		s = strconv.FormatFloat(v, 'f', 3, 64)
+	case int:
+		s = strconv.FormatInt(int64(v), 10)
+	case int8:
+		s = strconv.FormatInt(int64(v), 10)
+	case int16:
+		s = strconv.FormatInt(int64(v), 10)
+	case int32:
+		s = strconv.FormatInt(int64(v), 10)
+	case int64:
+		s = strconv.FormatInt(v, 10)
+	case uint:
+		s = strconv.FormatUint(uint64(v), 10)
+	case uint8:
+		s = strconv.FormatUint(uint64(v), 10)
+	case uint16:
+		s = strconv.FormatUint(uint64(v), 10)
+	case uint32:
+		s = strconv.FormatUint(uint64(v), 10)
+	case uint64:
+		s = strconv.FormatUint(v, 10)
+	case string:
+		s = v
+	case []byte:
+		s = string(v)
+	case time.Time:
+		s = v.Format("2006-01-02 15:04:05")
+	default:
+		s = fmt.Sprintf("%v", v)
+	}
+	return s
+}
+
 func InitUniqueId(WorkerId uint16, ReserveId uint8) {
 	UID = uniqueid.NewUniqueId(WorkerId, ReserveId)
 }
