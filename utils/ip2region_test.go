@@ -2,7 +2,6 @@ package utils
 
 import (
 	"testing"
-	"time"
 )
 
 func TestIp2Region(t *testing.T) {

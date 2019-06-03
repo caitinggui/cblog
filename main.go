@@ -12,6 +12,7 @@ import (
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-contrib/sessions/cookie"
 	"github.com/gin-gonic/gin"
+	"github.com/jinzhu/gorm"
 
 	"cblog/config"
 	"cblog/models"
@@ -20,10 +21,11 @@ import (
 )
 
 func Health(c *gin.Context) {
-	if models.Ping() != nil {
+	err := models.Ping()
+	if err == nil {
 		c.String(http.StatusOK, "success")
 	} else {
-		c.String(http.StatusInternalServerError, "sql error")
+		c.String(http.StatusInternalServerError, err.Error())
 	}
 }
 
@@ -119,30 +121,20 @@ func ListenAndServeGrace(listen string, router http.Handler) error {
 	return err
 }
 
-func main() {
-	log, err := logger.LoggerFromConfigAsBytes(config.LoggerConfig)
-	if err != nil {
-		panic(err)
-	}
-	err = logger.ReplaceLogger(log)
-	if err != nil {
-		panic(err)
-	}
+func InitRouterAndDb() (router *gin.Engine, db *gorm.DB) {
 	logger.Info("start cblog...")
-	defer logger.Flush()
 
 	utils.InitUniqueId(config.Config.UniqueId.WorkerId, config.Config.UniqueId.ReserveId)
 	logger.Info("初始化唯一id生成器成功: ", utils.GenerateId())
 
-	db := models.InitDB()
-	defer db.Close()
+	db = models.InitDB()
 
 	// 用logger 的trace记录gin框架的日志
 	var lg service.GinLog
 	gin.DisableConsoleColor()
 	gin.DefaultWriter = lg
 	gin.DefaultErrorWriter = lg
-	router := gin.Default()
+	router = gin.Default()
 
 	router.HTMLRender = service.LoadTemplates("templates")
 	// router.Static相当于用router.Group为静态链接的请求建立了路由，所以/static就是路由地址"./static"就是指当前目录的static/目录
@@ -158,16 +150,31 @@ func main() {
 	router.Use(sessions.Sessions("cblog", store))
 	router.Use(service.RecordClientIp())
 	router.Use(service.AbortClientCache())
+	BindRoute(router)
 
-	err = models.InitCache(config.Config.CacheFile)
-	defer models.DumpCache(config.Config.CacheFile)
+	err := models.InitCache(config.Config.CacheFile)
 	if err != nil {
 		logger.Warn("load cache file error: ", err)
 	} else {
 		logger.Info("load cache file success")
 	}
+	return
+}
 
-	BindRoute(router)
+func main() {
+	log, err := logger.LoggerFromConfigAsBytes(config.LoggerConfig)
+	if err != nil {
+		panic(err)
+	}
+	err = logger.ReplaceLogger(log)
+	if err != nil {
+		panic(err)
+	}
+	defer logger.Flush()
+
+	router, db := InitRouterAndDb()
+	defer db.Close()
+	defer models.DumpCache(config.Config.CacheFile)
 
 	err = ListenAndServeGrace(config.Config.Listen, router)
 	logger.Errorf("stop server: %2v", err)

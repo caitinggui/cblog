@@ -13,8 +13,7 @@ func TestHealth(t *testing.T) {
 	w := httptest.NewRecorder()
 
 	gin.SetMode(gin.TestMode)
-	router := gin.Default()
-	router.GET("/health", Health)
+	router, _ := InitRouterAndDb()
 
 	router.ServeHTTP(w, req)
 	if w.Code != http.StatusOK {
@@ -30,8 +29,7 @@ func BenchmarkHealth(b *testing.B) {
 	req, _ := http.NewRequest("GET", "/health", nil)
 	w := httptest.NewRecorder()
 	gin.SetMode(gin.TestMode)
-	router := gin.Default()
-	router.GET("/health", Health)
+	router, _ := InitRouterAndDb()
 
 	b.StartTimer() //重新开始时间
 	for i := 0; i < b.N; i++ {

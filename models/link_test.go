@@ -26,9 +26,11 @@ func TestLinkUpdate(t *testing.T) {
 	err := link.Insert()
 	defer link.Delete()
 	link.Name = "TestLinkUpdate"
+	time.Sleep(time.Second)
+	// 更新时间会自动适应当前时间
 	err = link.Update()
-	if err == nil {
-		t.Fatal("UpdateAt不为空时不允许更新")
+	if err != nil {
+		t.Fatal("测试更新失败: ", err)
 	}
 	link.UpdatedAt = zeroTime
 	link.CreatedAt = zeroTime
