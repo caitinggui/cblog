@@ -46,6 +46,30 @@ func PanicErr(err error) {
 	}
 }
 
+// 定时更新配置(5min)，但是数据库链接等更新了也没法使用
+func UpdateConfigFrequency(configPath string) {
+	tick := time.Tick(5 * time.Minute)
+	for {
+		select {
+		case <-tick:
+			content, err := ioutil.ReadFile(configPath + "config.yaml")
+			if err != nil {
+				logger.Warn("定时读取配置文件失败: ", err)
+
+			}
+			err = yaml.Unmarshal(content, &Config)
+			if err != nil {
+				logger.Warn("定时解析配置失败: ", err)
+
+			}
+			logger.Info("定时刷新配置成功")
+
+		}
+
+	}
+
+}
+
 // 根据GIN_MODE环境变量，获取相应的logger的配置和应用配置, 也可以用-configPath指定绝对目录
 func init() {
 	var (
@@ -77,6 +101,8 @@ func init() {
 	err = yaml.Unmarshal(content, &Config)
 	PanicErr(err)
 	logger.Info("config.yaml: ", Config)
+
+	go UpdateConfigFrequency(configPath)
 
 	//password := utils.UidDecrypt(Config.Mysql.Password)
 	//if password == "" {
