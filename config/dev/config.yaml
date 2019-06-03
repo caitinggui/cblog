@@ -1,10 +1,11 @@
-listen: 0.0.0.0:8088 # rpproxy监听地址
+listen: 0.0.0.0:8088
 mysql:
-  server: root:123456@(127.0.0.1:3306)/redpacket?parseTime=true&charset=utf8mb4
+  server: root:{password}@(127.0.0.1:3306)/redpacket?parseTime=true&charset=utf8mb4
   maxidle: 20 # zero means defaultMaxIdleConns; negative means 0
   maxopen: 200 # <= 0 means unlimited
   maxlife: 6  # 单位为小时
   logmode: true  # 记录sql语句
+  password: 40d868bb2517dc94
 cachefile: "cache.dump"
 secret: 3697ae54f90811e8ba2c60f81dad53c8
 uniqueid:  # 用作雪花算法生成唯一id

@@ -3,19 +3,23 @@ package config
 import (
 	"io/ioutil"
 	"os"
+	"strings"
 	"time"
 
 	logger "github.com/caitinggui/seelog"
 	"github.com/gin-gonic/gin"
 	"gopkg.in/yaml.v2"
+
+	"cblog/utils"
 )
 
 type mysql struct {
-	Server  string
-	MaxIdle int
-	MaxOpen int
-	MaxLife time.Duration
-	LogMode bool
+	Server   string
+	Password string
+	MaxIdle  int
+	MaxOpen  int
+	MaxLife  time.Duration
+	LogMode  bool
 }
 
 type praseIp struct {
@@ -102,12 +106,11 @@ func init() {
 	PanicErr(err)
 	logger.Info("config.yaml: ", Config)
 
+	password := utils.UidDecrypt(Config.Mysql.Password)
+	if password == "" {
+		panic("Db password error")
+	}
+	Config.Mysql.Server = strings.Replace(Config.Mysql.Server, "{password}", password, -1)
 	go UpdateConfigFrequency(configPath)
-
-	//password := utils.UidDecrypt(Config.Mysql.Password)
-	//if password == "" {
-	//panic("Db password error")
-	//}
-	//Config.Mysql.Server = strings.Replace(Config.Mysql.Server, "{password}", password, -1)
 	return
 }
