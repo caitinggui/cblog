@@ -1,7 +1,12 @@
 package main
 
 import (
+	"context"
 	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
+	"time"
 
 	logger "github.com/caitinggui/seelog"
 	"github.com/gin-contrib/sessions"
@@ -90,6 +95,30 @@ func BindRoute(router *gin.Engine) {
 	//router.GET("/get", GetCategory)
 }
 
+// 平滑结束服务，避免链接突然全部断开，结束的超时时间为10s
+func ListenAndServeGrace(listen string, router http.Handler) error {
+	srv := http.Server{
+		Addr:    listen,
+		Handler: router,
+	}
+	go func() {
+		err := srv.ListenAndServe()
+		// 判断是否启动时端口占用等问题
+		if err == http.ErrServerClosed {
+			logger.Info("正常结束服务: ", err)
+		} else {
+			logger.Info("服务结束异常: ", err)
+			panic(err)
+		}
+	}()
+	stop := make(chan os.Signal, 1)
+	signal.Notify(stop, syscall.SIGINT, syscall.SIGTERM)
+	logger.Info("收到结束信号量: ", <-stop)
+	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
+	err := srv.Shutdown(ctx)
+	return err
+}
+
 func main() {
 	log, err := logger.LoggerFromConfigAsBytes(config.LoggerConfig)
 	if err != nil {
@@ -131,10 +160,7 @@ func main() {
 	router.Use(service.AbortClientCache())
 
 	err = models.InitCache(config.Config.CacheFile)
-	defer func() {
-		logger.Info("start dump cache")
-		models.DumpCache(config.Config.CacheFile)
-	}()
+	defer models.DumpCache(config.Config.CacheFile)
 	if err != nil {
 		logger.Warn("load cache file error: ", err)
 	} else {
@@ -142,6 +168,7 @@ func main() {
 	}
 
 	BindRoute(router)
-	err = router.Run("0.0.0.0:8089")
+
+	err = ListenAndServeGrace(config.Config.Listen, router)
 	logger.Errorf("stop server: %2v", err)
 }
