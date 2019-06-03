@@ -34,20 +34,15 @@ import "testing"
 
 func testGroupResetFlags() {
 	testUseMust = false
-	testCanonical = false
-	testUseMust = false
-	testInternStr = false
 	testUseIoEncDec = -1
-	testStructToArray = false
-	testCheckCircRef = false
 	testUseReset = false
 	testMaxInitLen = 0
 	testUseIoWrapper = false
 	testNumRepeatString = 8
-	testEncodeOptions.RecursiveEmptyCheck = false
-	testDecodeOptions.MapValueReset = false
 	testUseIoEncDec = -1
 	testDepth = 0
+	testDecodeOptions = DecodeOptions{}
+	testEncodeOptions = EncodeOptions{}
 }
 
 func testSuite(t *testing.T, f func(t *testing.T)) {
@@ -56,29 +51,37 @@ func testSuite(t *testing.T, f func(t *testing.T)) {
 
 	testReinit() // so flag.Parse() is called first, and never called again
 
-	testDecodeOptions = DecodeOptions{}
-	testEncodeOptions = EncodeOptions{}
-
 	testGroupResetFlags()
 
 	testReinit()
 	t.Run("optionsFalse", f)
 
-	testCanonical = true
 	testUseMust = true
-	testInternStr = true
 	testUseIoEncDec = 0
 	// xdebugf("setting StructToArray=true")
-	testStructToArray = true
-	testCheckCircRef = true
 	testUseReset = true
+
+	testDecodeOptions.InternString = true
 	testDecodeOptions.MapValueReset = true
+	// testDecodeOptions.SignedInteger = true
+	// testDecodeOptions.SliceElementReset = true
+	// testDecodeOptions.InterfaceReset = true
+	// testDecodeOptions.PreferArrayOverSlice = true
+	// testDecodeOptions.DeleteOnNilMapValue = true
+	// testDecodeOptions.RawToString = true
+
+	testEncodeOptions.StructToArray = true
+	testEncodeOptions.Canonical = true
+	testEncodeOptions.CheckCircularRef = true
 	testEncodeOptions.RecursiveEmptyCheck = true
+	// testEncodeOptions.Raw = true
+	// testEncodeOptions.StringToRaw = true
+
 	testReinit()
 	t.Run("optionsTrue", f)
 
 	// xdebugf("setting StructToArray=false")
-	testStructToArray = false
+	testEncodeOptions.StructToArray = false
 	testDepth = 6
 	testReinit()
 	t.Run("optionsTrue-deepstruct", f)
@@ -171,6 +174,8 @@ func testJsonGroup(t *testing.T) {
 	t.Run("TestJsonIntfMapping", TestJsonIntfMapping)
 	t.Run("TestJsonMissingFields", TestJsonMissingFields)
 	t.Run("TestJsonMaxDepth", TestJsonMaxDepth)
+	t.Run("TestJsonSelfExt", TestJsonSelfExt)
+	t.Run("TestJsonBytesEncodedAsArray", TestJsonBytesEncodedAsArray)
 
 	t.Run("TestJsonInvalidUnicode", TestJsonInvalidUnicode)
 }
@@ -200,6 +205,8 @@ func testBincGroup(t *testing.T) {
 	t.Run("TestBincIntfMapping", TestBincIntfMapping)
 	t.Run("TestBincMissingFields", TestBincMissingFields)
 	t.Run("TestBincMaxDepth", TestBincMaxDepth)
+	t.Run("TestBincSelfExt", TestBincSelfExt)
+	t.Run("TestBincBytesEncodedAsArray", TestBincBytesEncodedAsArray)
 }
 
 func testCborGroup(t *testing.T) {
@@ -228,6 +235,8 @@ func testCborGroup(t *testing.T) {
 	t.Run("TestCborIntfMapping", TestCborIntfMapping)
 	t.Run("TestCborMissingFields", TestCborMissingFields)
 	t.Run("TestCborMaxDepth", TestCborMaxDepth)
+	t.Run("TestCborSelfExt", TestCborSelfExt)
+	t.Run("TestCborBytesEncodedAsArray", TestCborBytesEncodedAsArray)
 
 	t.Run("TestCborHalfFloat", TestCborHalfFloat)
 }
@@ -256,6 +265,8 @@ func testMsgpackGroup(t *testing.T) {
 	t.Run("TestMsgpackIntfMapping", TestMsgpackIntfMapping)
 	t.Run("TestMsgpackMissingFields", TestMsgpackMissingFields)
 	t.Run("TestMsgpackMaxDepth", TestMsgpackMaxDepth)
+	t.Run("TestMsgpackSelfExt", TestMsgpackSelfExt)
+	t.Run("TestMsgpackBytesEncodedAsArray", TestMsgpackBytesEncodedAsArray)
 
 	t.Run("TestMsgpackDecodeMapAndExtSizeMismatch", TestMsgpackDecodeMapAndExtSizeMismatch)
 }
@@ -283,6 +294,8 @@ func testSimpleGroup(t *testing.T) {
 	t.Run("TestSimpleIntfMapping", TestSimpleIntfMapping)
 	t.Run("TestSimpleMissingFields", TestSimpleMissingFields)
 	t.Run("TestSimpleMaxDepth", TestSimpleMaxDepth)
+	t.Run("TestSimpleSelfExt", TestSimpleSelfExt)
+	t.Run("TestSimpleBytesEncodedAsArray", TestSimpleBytesEncodedAsArray)
 }
 
 func testSimpleMammothGroup(t *testing.T) {
@@ -305,6 +318,7 @@ func testNonHandlesGroup(t *testing.T) {
 	t.Run("TestAllEncCircularRef", TestAllEncCircularRef)
 	t.Run("TestAllAnonCycle", TestAllAnonCycle)
 	t.Run("TestMultipleEncDec", TestMultipleEncDec)
+	t.Run("TestAllErrWriter", TestAllErrWriter)
 }
 
 func TestCodecSuite(t *testing.T) {
@@ -335,11 +349,9 @@ func TestCodecSuite(t *testing.T) {
 		oldIndent, oldCharsAsis, oldPreferFloat, oldMapKeyAsString
 
 	oldIndefLen := testCborH.IndefiniteLength
-
 	testCborH.IndefiniteLength = true
 	testReinit()
 	t.Run("cbor-indefinitelength", testCborGroup)
-
 	testCborH.IndefiniteLength = oldIndefLen
 
 	oldTimeRFC3339 := testCborH.TimeRFC3339
@@ -347,6 +359,12 @@ func TestCodecSuite(t *testing.T) {
 	testReinit()
 	t.Run("cbor-rfc3339", testCborGroup)
 	testCborH.TimeRFC3339 = oldTimeRFC3339
+
+	oldSkipUnexpectedTags := testCborH.SkipUnexpectedTags
+	testCborH.SkipUnexpectedTags = !testCborH.SkipUnexpectedTags
+	testReinit()
+	t.Run("cbor-skip-tags", testCborGroup)
+	testCborH.SkipUnexpectedTags = oldSkipUnexpectedTags
 
 	oldSymbols := testBincH.AsSymbols
 

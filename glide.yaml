@@ -2,12 +2,13 @@ package: cblog
 ignore:
 - golang.org/x/sys/unix
 - database/sql
+- golang.org/x/time/rate
 excludeDirs:
 - models
 - config
 import:
 - package: github.com/gin-gonic/gin
-  version: v1.3.0
+  version: v1.4.0
 - package: github.com/gin-contrib/sessions
 - package: github.com/jinzhu/gorm
   version: v1.9.1

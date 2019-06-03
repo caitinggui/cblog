@@ -1,5 +1,5 @@
-hash: 09545febcb31f8933dfb2378d55fefb9a9746bce54b69f22186fd9a7208c7e57
-updated: 2019-03-02T20:10:36.130234078+08:00
+hash: 4c9c302947912951cb8ed47f8ff501aa1ca80945ae86a6d202cdaa6e8c1d4a5e
+updated: 2019-06-04T00:10:10.229583822+08:00
 imports:
 - name: github.com/caitinggui/seelog
   version: 2189d465f641d87176941698dc4046225fea47f0
@@ -11,21 +11,21 @@ imports:
 - name: github.com/caitinggui/uniqueid
   version: a9e3092e2f232ec1062f1b997e786edefad996e4
 - name: github.com/gin-contrib/multitemplate
-  version: f9896279eead500934dc33f97657bf039781c9d3
+  version: 30e424939505d607907753c252dc209d8fdd496c
 - name: github.com/gin-contrib/sessions
-  version: 1532893d996f0fedbac1162ea1311ebfb57a3da5
+  version: 3cb4c4f2d615bc14e3e6a740f69cc6447fa05807
   subpackages:
   - cookie
 - name: github.com/gin-contrib/sse
-  version: 5545eab6dad3bbbd6c5ae9186383c2a9d23c0dae
+  version: 54d8467d122d380a14768b6b4e5cd7ca4755938f
 - name: github.com/gin-gonic/gin
-  version: b869fe1415e4b9eb52f247441830d502aece2d4d
+  version: b75d67cd51eb53c3c3a2fc406524c940021ffbda
   subpackages:
   - binding
-  - json
+  - internal/json
   - render
 - name: github.com/golang/protobuf
-  version: b5d812f8a3706043e23a9cd5babf2e5423744d30
+  version: b285ee9cfc6c881bb20c0d8dc73370ea9b9ec90f
   subpackages:
   - proto
 - name: github.com/gorilla/context
@@ -37,11 +37,11 @@ imports:
 - name: github.com/jinzhu/gorm
   version: 6ed508ec6a4ecb3531899a69cbc746ccf65a4166
 - name: github.com/jinzhu/inflection
-  version: 04140366298a54a039076d798123ffa108fff46c
+  version: f5c5f50e6090ae76a29240b61ae2a90dd810112e
 - name: github.com/json-iterator/go
-  version: 5bc93205020f6311d7e4a34f82c5616a18ec35e5
+  version: 08047c174c6c03e8ec963a411bde1b6d1ee67b26
 - name: github.com/mattn/go-isatty
-  version: 369ecd8cea9851e459abb67eb171853e3986591e
+  version: 1311e847b0cb909da63b5fecfb5370aa66236465
 - name: github.com/mattn/go-sqlite3
   version: c7c4067b79cc51e6dfdcef5c702e74b1e0fa7c75
 - name: github.com/modern-go/concurrent
@@ -51,7 +51,7 @@ imports:
 - name: github.com/patrickmn/go-cache
   version: a3647f8e31d79543b2d0f0ae2fe5c379d72cedc0
 - name: github.com/ugorji/go
-  version: e444a5086c436778cf9281a7059a3d58b9e17935
+  version: a2c9fa250719622a16ea652598779a08d5a377f8
   subpackages:
   - codec
 - name: gopkg.in/go-playground/validator.v8

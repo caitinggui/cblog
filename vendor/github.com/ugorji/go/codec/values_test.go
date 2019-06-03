@@ -33,6 +33,8 @@ type wrapString string
 type wrapUint64Slice []wrapUint64
 type wrapStringSlice []wrapString
 
+// some other types
+
 type stringUint64T struct {
 	S string
 	U uint64
@@ -122,12 +124,16 @@ type TestStrucCommon struct {
 	Bslice    []bool
 	Byslice   []byte
 
+	BytesSlice [][]byte
+
 	Iptrslice []*int64
 
 	WrapSliceInt64  wrapSliceUint64
 	WrapSliceString wrapSliceString
 
 	Msi64 map[string]int64
+
+	Msbytes map[string][]byte
 
 	Simplef testSimpleFields
 
@@ -220,12 +226,12 @@ func populateTestStrucCommon(ts *TestStrucCommon, n int, bench, useInterface, us
 			math.MaxFloat64, math.SmallestNonzeroFloat64,
 		},
 		AF32slice: []float32{
-			11.11e-11, -11.11e+11,
-			2.222E+12, -2.222E-12,
-			-555.55E-5, 555.55E+5,
-			666.66E-6, -666.66E+6,
-			7777.7777E-7, -7777.7777E-7,
-			-8888.8888E+8, 8888.8888E+8,
+			11.11e-1, -11.11e+1,
+			2.222E+2, -2.222E-2,
+			-55.55E-5, 55.55E+5,
+			66.66E-6, -66.66E+6,
+			777.777E-7, -777.777E-7,
+			-8.88E+8, 8.88E-8,
 			-99999.9999E+9, 99999.9999E+9,
 			// these below are hairy enough to need strconv.ParseFloat
 			33.33E-33, -33.33E+33,
@@ -275,13 +281,21 @@ func populateTestStrucCommon(ts *TestStrucCommon, n int, bench, useInterface, us
 		Ui8slice:  []uint8{210, 211, 212},
 		Bslice:    []bool{true, false, true, false},
 		Byslice:   []byte{13, 14, 15},
-
+		BytesSlice: [][]byte{
+			[]byte(strRpt(n, "one")),
+			[]byte(strRpt(n, "two")),
+			[]byte(strRpt(n, "\"three\"")),
+		},
 		Msi64: map[string]int64{
 			strRpt(n, "one"):       1,
 			strRpt(n, "two"):       2,
 			strRpt(n, "\"three\""): 3,
 		},
-
+		Msbytes: map[string][]byte{
+			strRpt(n, "one"):       []byte(strRpt(n, "one")),
+			strRpt(n, "two"):       []byte(strRpt(n, "two")),
+			strRpt(n, "\"three\""): []byte(strRpt(n, "\"three\"")),
+		},
 		WrapSliceInt64:  []uint64{4, 16, 64, 256},
 		WrapSliceString: []string{strRpt(n, "4"), strRpt(n, "16"), strRpt(n, "64"), strRpt(n, "256")},
 
