@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"os"
 	"os/signal"
@@ -129,12 +130,27 @@ func InitRouterAndDb() (router *gin.Engine, db *gorm.DB) {
 
 	db = models.InitDB()
 
-	// 用logger 的trace记录gin框架的日志
+	router = gin.New()
 	var lg service.GinLog
-	gin.DisableConsoleColor()
-	gin.DefaultWriter = lg
-	gin.DefaultErrorWriter = lg
-	router = gin.Default()
+	gin.DefaultErrorWriter = lg // 错误日志也要记录
+
+	ginLoggerConfig := gin.LoggerConfig{
+		Output: lg,
+		Formatter: func(param gin.LogFormatterParams) string {
+			return fmt.Sprintf("%v |%3d| %8v %8vkB | %15s |%-5s %s | %s\n%s",
+				param.TimeStamp.Format("2006/01/02-15:04:05"),
+				param.StatusCode,
+				param.Latency, param.BodySize/1024,
+				param.ClientIP,
+				param.Method,
+				param.Path,
+				param.Request.Referer(),
+				param.ErrorMessage,
+			)
+		},
+	}
+	router.Use(gin.LoggerWithConfig(ginLoggerConfig))
+	router.Use(gin.Recovery())
 
 	router.HTMLRender = service.LoadTemplates("templates")
 	// router.Static相当于用router.Group为静态链接的请求建立了路由，所以/static就是路由地址"./static"就是指当前目录的static/目录
