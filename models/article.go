@@ -19,11 +19,11 @@ type Article struct {
 	Weight        uint64    `gorm:"default:0" json:"weight" form:"weight"`                                     //推荐权重
 	Topped        int8      `gorm:"default:-1" json:"topped" form:"topped" binding:"omitempty,eq=-1|eq=1"`     //是否置顶, -1不置顶，1置顶
 	AttachmentUrl string    `gorm:"type:text" json:"attachment_url"`                                           //附件地址
-	Category      *Category `gorm:"ForeignKey:CategoryId;association_autoupdate:false" binding:"-"`
-	CategoryId    uint64    `json:"category_id"`
-	Tags          []Tag     `gorm:"many2many:article_tag;association_autoupdate:false" binding:"-" json:"tags"`
+	Category      *Category `gorm:"ForeignKey:CategoryId;save_associations:false" binding:"-"`
+	CategoryId    uint64    `json:"category_id" form:"category_id"`
+	Tags          []Tag     `gorm:"many2many:article_tag;save_associations:false" binding:"-" json:"tags"`
 
-	TagsId []uint64 `gorm:"-" json:"tags_id" binding:"dive,omitempty"`
+	TagsId []uint64 `gorm:"-" json:"tags_id" binding:"dive,omitempty" form:"tags_id"`
 }
 
 type ArticleListParam struct {
@@ -52,6 +52,9 @@ func (self *Article) Insert() error {
 			bodyLen = 128
 		}
 		self.Abstract = self.Body[:bodyLen]
+	}
+	if self.CategoryId != 0 {
+		self.Category.ID = self.CategoryId
 	}
 	db := DB.Omit("DeletedAt").Create(self)
 	return db.Error
