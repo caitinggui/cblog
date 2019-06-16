@@ -13,7 +13,7 @@ debug:
 	gin --appPort 8089 main.go
 
 run:
-	go run main.go
+	go build -o cblog main.go && ./cblog
 
 build-linux:
 	echo "build linux"
