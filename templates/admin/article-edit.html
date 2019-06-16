@@ -41,26 +41,26 @@
                                     </div>
                                 </div>
                                 <div class="col-xs-6">
-                                    <input type="text" class="form-control" name="abstract" maxlength="54" placeholder="摘要" value="23333article.abstract }}">
+                                    <input type="text" class="form-control" name="abstract" maxlength="54" placeholder="摘要" value="{{ .Article.Abstract }}">
                                 </div>
                             </div>
                             <div class="row">
                                 <div class="col-md-6">
                                     <div class="form-group">
-                                        <select class="form-control select2" data-placeholder="分类" style="width: 100%;" name="categories">
-                                            {% for category in categories %}
-                                                <option value="23333category.name }}">23333category.name }}</option>
-                                            {% endfor %}
+                                        <select class="form-control select2" data-placeholder="分类" style="width: 100%;" name="category_id">
+                                            {{ range .Cates }}
+                                                <option value="{{ .ID }}">{{ .Name }}</option>
+                                            {{ end }}
                                         </select>
                                     </div>
                                 </div>
 
                                 <div class="col-md-6">
                                     <div class="form-group">
-                                        <select class="form-control select2" multiple="multiple" data-placeholder="标签" style="width: 100%;" name="tags">
-                                            {% for tag in tags %}
-                                                <option value="23333tag.name }}">23333tag.name }}</option>
-                                            {% endfor %}
+                                        <select class="form-control select2" multiple="multiple" data-placeholder="标签" style="width: 100%;" name="tags_id">
+                                            {{ range .Tags }}
+                                                <option value="{{ .ID }}">{{ .Name }}</option>
+                                            {{ end }}
                                         </select>
                                     </div>
                                 </div>
@@ -71,7 +71,7 @@
                                 <div class="col-md-4">
                                     <div class="form-group">
                                         <label>已关联的分类</label>
-                                        <input class="form-control" type="text" value="23333exist_categories }}" name="exist_categories">
+                                        <input class="form-control" type="text" value="{ exist_categories }}" name="exist_categories">
                                     </div>
                                 </div>
 
@@ -92,7 +92,7 @@
                                 <div class="col-md-6">
                                     <div class="form-group">
                                         <label>已关联的标签</label>
-                                        <input class="form-control" type="text" value="23333exist_tag }}" name="exist_tag">
+                                        <input class="form-control" type="text" value="{ exist_tag }}" name="exist_tag">
                                     </div>
                                 </div>
                             </div>
@@ -120,13 +120,12 @@
     <script type="text/javascript">
         var Editor;
         $(function () {
-            $.get("/admin/article/0", function (md) {
                 Editor = editormd("editormd", {
                     width: "100%",
                     height: 740,
 					<!--根据浏览器调试信息和nginx error.log来更改路径-->
                     path: '/static/libs/editormd/lib/',
-                    markdown: md,
+										markdown: {{ .Article.Body }},
                     codeFold: true,
                     saveHTMLToTextarea: true,
                     searchReplace: true,
@@ -140,7 +139,6 @@
                     imageUpload: true,
                     imageFormats: ["jpg", "jpeg", "gif", "png", "bmp", "webp"],
                     imageUploadURL: "/admin/upload/"
-                });
             });
             $(".select2").select2();
         });

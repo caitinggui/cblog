@@ -19,6 +19,11 @@ type Gin struct {
 	C *gin.Context
 }
 
+// 临时重定向
+func (self *Gin) Redirect(url string) {
+	self.C.Redirect(http.StatusMovedPermanently, url)
+}
+
 // 返回html code 为200的json response
 func (self *Gin) WebJson(code int, data interface{}) {
 	logger.Debug("json response: ", code, e.GetMsg(code), data)

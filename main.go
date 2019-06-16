@@ -47,7 +47,7 @@ func BindRoute(router *gin.Engine) {
 		admin.GET("/article", service.GetArticles)
 		admin.GET("/article-edit", service.EditArticle)
 		admin.GET("/article/:id", service.GetArticle)
-		admin.POST("/article", service.CreateArticle)
+		admin.POST("/article", service.CreateOrUpdateArticle)
 		admin.PUT("/article", service.UpdateArticle)
 		admin.DELETE("/article/:id", service.DeleteArticle)
 
@@ -118,7 +118,7 @@ func ListenAndServeGrace(listen string, router http.Handler) error {
 	stop := make(chan os.Signal, 1)
 	signal.Notify(stop, syscall.SIGINT, syscall.SIGTERM)
 	logger.Info("收到结束信号量: ", <-stop)
-	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
+	ctx, _ := context.WithTimeout(context.Background(), 5*time.Second)
 	err := srv.Shutdown(ctx)
 	return err
 }

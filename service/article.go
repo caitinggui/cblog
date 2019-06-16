@@ -29,7 +29,7 @@ import (
 *     "data": Object
 *    }
  */
-func CreateArticle(c *gin.Context) {
+func CreateOrUpdateArticle(c *gin.Context) {
 	var (
 		form models.Article
 		err  error
@@ -40,11 +40,15 @@ func CreateArticle(c *gin.Context) {
 	if mc.CheckBindErr(err) != nil {
 		return
 	}
-	err = form.Insert()
+	if form.ID != 0 {
+		form.Update()
+	} else {
+		err = form.Insert()
+	}
 	if mc.CheckGormErr(err) != nil {
 		return
 	}
-	mc.WebJson(e.SUCCESS, form)
+	mc.Redirect("/admin/article")
 }
 
 /**
@@ -123,18 +127,25 @@ func EditArticle(c *gin.Context) {
 	mc := Gin{C: c}
 	id := c.Query("id")
 	res := gin.H{
-		"Article":    models.Article{},
-		"HasArticle": true,
+		"Article": models.Article{},
 	}
-	if id == "" {
-		res["HasArticle"] = false
-	} else {
+	if id != "" {
 		article, err := models.GetArticleById(id)
 		if mc.CheckGormErr(err) != nil {
 			return
 		}
 		res["Article"] = article
 	}
+	cates, err2 := models.GetAllCategories()
+	if mc.CheckGormErr(err2) != nil {
+		return
+	}
+	res["Cates"] = cates
+	tags, err3 := models.GetAllTags()
+	if mc.CheckGormErr(err3) != nil {
+		return
+	}
+	res["Tags"] = tags
 	mc.SuccessHtml("admin/article-edit.html", res)
 }
 
