@@ -45,7 +45,8 @@ func BindRoute(router *gin.Engine) {
 	{
 		admin.GET("", Index)
 		admin.GET("/article", service.GetArticles)
-		admin.GET("/article/edit", service.EditArticle)
+		admin.GET("/article-edit", service.EditArticle)
+		admin.GET("/article/:id", service.GetArticle)
 		admin.POST("/article", service.CreateArticle)
 		admin.PUT("/article", service.UpdateArticle)
 		admin.DELETE("/article/:id", service.DeleteArticle)

@@ -121,15 +121,20 @@ func GetArticle(c *gin.Context) {
 func EditArticle(c *gin.Context) {
 	mc := Gin{C: c}
 	id := c.Query("id")
+	res := gin.H{
+		"Article":    models.Article{},
+		"HasArticle": true,
+	}
 	if id == "" {
-		mc.SuccessHtml("admin/article-edit.html", nil)
-		return
+		res["HasArticle"] = false
+	} else {
+		article, err := models.GetArticleById(id)
+		if mc.CheckGormErr(err) != nil {
+			return
+		}
+		res["Article"] = article
 	}
-	article, err := models.GetArticleById(id)
-	if mc.CheckGormErr(err) != nil {
-		return
-	}
-	mc.SuccessHtml("admin/article-edit.html", article)
+	mc.SuccessHtml("admin/article-edit.html", res)
 }
 
 /**

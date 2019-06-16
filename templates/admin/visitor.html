@@ -72,7 +72,7 @@
 <script>
   $(function () {
     $("#VisitorList").DataTable({
-      'ordering': false,
+      'order': [[5, 'desc']], //第5列降序排序
       'bStateSave': true, //记录所在页数
       'aLengthMenu': [[20, 40, 80, -1], [20, 40, 80, "All"]], //定义每页显示数据数量
     });

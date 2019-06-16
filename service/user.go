@@ -35,6 +35,7 @@ func PostLogin(c *gin.Context) {
 }
 
 // 登出
+// TODO 有时候登出失败
 func Logout(c *gin.Context) {
 	session := sessions.Default(c)
 	session.Clear()

@@ -27,7 +27,7 @@ func (self *Gin) WebJson(code int, data interface{}) {
 
 // 返回html code为200的html response
 func (self *Gin) SuccessHtml(templateName string, data interface{}) {
-	logger.Debug("html response data: ", data)
+	//logger.Debug("html response data: ", data)
 	self.C.HTML(http.StatusOK, templateName, data)
 }
 

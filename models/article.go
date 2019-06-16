@@ -9,16 +9,16 @@ import (
 
 type Article struct {
 	IntIdModelWithoutDeletedAt
-	Title         string    `gorm:"size:70" json:"title" binding:"lte=70,required"`          //文章标题
-	Body          string    `gorm:"type:longtext" json:"body" binding:"required"`            //富文本
-	Status        int8      `gorm:"default:-1" json:"status" binding:"omitempty,eq=-1|eq=1"` //文章状态 -1:未发布 1:发布
-	Abstract      string    `gorm:"size:128" json:"abstract" binding:"lte=128"`              //摘要
-	Views         uint64    `gorm:"default:0" "json:"views" binding:"-"`                     //浏览数
-	Likes         uint64    `gorm:"default:0" json:"likes"`                                  //点赞数
-	UserLikes     string    `gorm:"type:text" json:"user_likes"`                             //点赞的用户
-	Weight        uint64    `gorm:"default:0" json:"weight"`                                 //推荐权重
-	Topped        int8      `gorm:"default:-1" json:"topped" binding:"omitempty,eq=-1|eq=1"` //是否置顶, -1不置顶，1置顶
-	AttachmentUrl string    `gorm:"type:text" json:"attachment_url"`                         //附件地址
+	Title         string    `gorm:"size:70" json:"title" form:"title" binding:"lte=70,required"`               //文章标题
+	Body          string    `gorm:"type:longtext" json:"body" form:"editormd-markdown-doc" binding:"required"` //富文本
+	Status        int8      `gorm:"default:-1" json:"status" form:"status" binding:"omitempty,eq=-1|eq=1"`     //文章状态 -1:未发布 1:发布
+	Abstract      string    `gorm:"size:128" json:"abstract" form:"abstract" binding:"lte=128"`                //摘要
+	Views         uint64    `gorm:"default:0" "json:"views" form:"views binding:"-"`                           //浏览数
+	Likes         uint64    `gorm:"default:0" json:"likes" form:"likes"`                                       //点赞数
+	UserLikes     string    `gorm:"type:text" json:"user_likes"`                                               //点赞的用户
+	Weight        uint64    `gorm:"default:0" json:"weight" form:"weight"`                                     //推荐权重
+	Topped        int8      `gorm:"default:-1" json:"topped" form:"topped" binding:"omitempty,eq=-1|eq=1"`     //是否置顶, -1不置顶，1置顶
+	AttachmentUrl string    `gorm:"type:text" json:"attachment_url"`                                           //附件地址
 	Category      *Category `gorm:"ForeignKey:CategoryId;association_autoupdate:false" binding:"-"`
 	CategoryId    uint64    `json:"category_id"`
 	Tags          []Tag     `gorm:"many2many:article_tag;association_autoupdate:false" json:"tags"`
