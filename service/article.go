@@ -36,12 +36,13 @@ func CreateArticle(c *gin.Context) {
 	)
 	mc := Gin{C: c}
 	err = c.ShouldBind(&form)
+	logger.Debug("创建文章: ", form)
 	if mc.CheckBindErr(err) != nil {
 		return
 	}
 	err = form.Insert()
-	if err != nil {
-		mc.WebJson(e.ERR_SQL, err)
+	if mc.CheckGormErr(err) != nil {
+		return
 	}
 	mc.WebJson(e.SUCCESS, form)
 }
@@ -195,7 +196,7 @@ func GetArticles(c *gin.Context) {
 	if mc.CheckGormErr(err) != nil {
 		return
 	}
-	mc.WebJson(e.SUCCESS, articles)
+	mc.SuccessHtml("admin/article-list.html", gin.H{"Article": articles})
 }
 
 func GetArticleNames(c *gin.Context) {

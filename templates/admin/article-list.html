@@ -1,11 +1,8 @@
-{% extends 'admin/base.html' %}
-{% load staticfiles %}
-{% block title %}低调诺 | 仪表板{% endblock %}
-{% block custom_css %}
-    <link rel="stylesheet" href="{% static 'admin/plugins/datatables/dataTables.bootstrap.css' %}">
-{% endblock %}
+{{define "header"}}
+<link rel="stylesheet" href="/static/libs/AdminLTE/bower_components/datatables.net-bs/css/dataTables.bootstrap.min.css">
+{{end}}
 
-{% block content-wrapper %}
+{{define "content"}}
     <div class="content-wrapper">
         <!-- Content Header (Page header) -->
         <section class="content-header">
@@ -42,29 +39,35 @@
                                 </tr>
                                 </thead>
                                 <tbody>
-                                {% for article in articles %}
-                                    <tr id="Article23333 article.id }}">
-																			  <td><a onclick="EditArticle(23333 article.id }})">23333 article.title }}</a></td>
-                                        <td>23333 article.created_time }}</td>
-                                        <td>23333 article.last_modified_time }}</td>
-                                        <td>23333 article.views }}</td>
-                                        <td>23333 article.likes }}</td>
-                                        <td>23333 article.get_comment_num }}</td>
-                                        <td>23333 article.topped }}</td>
+																	{{range .Article}}
+																	<tr id="{{ .ID | ToStr }}">
+																			  <td><a onclick="EditArticle({{ .ID | ToStr }})">{{ .Title }}</a></td>
+                                        <td>{{ .CreatedAt }}</td>
+                                        <td>{{ .UpdatedAt }}</td>
+                                        <td>{{ .Views }}</td>
+                                        <td>{{ .Likes }}</td>
+                                        <td>{{ .Likes }}</td>
                                         <td>
-                                            {% if article.status == 'p' %}
-                                                <button type="button" class="btn btn-primary" style="font-size: 12px">发布</button>
-                                            {% elif article.status == 'd' %}
-                                                <button type="button" class="btn btn-info" style="font-size: 12px">存稿</button>
-                                            {% endif %}
+                                            {{ if eq .Topped 1}}
+                                                <button type="button" class="btn btn-primary" style="font-size: 12px">置顶</button>
+																						{{ else }}
+                                                <button type="button" class="btn btn-info" style="font-size: 12px">不置顶</button>
+                                            {{ end }}
                                         </td>
                                         <td>
-                                            <button onclick="EditArticle(23333 article.id }})" type="button" class="btn btn-success" style="font-size: 12px">编辑</button>
-                                            <button onclick="DeleteArticle(23333 article.id }})" type="button" class="btn btn-danger" style="font-size: 12px">删除</button>
-                                            <a href="{% url 'blog:detail' article.id %}"><button type="button" class="btn btn-default" style="font-size: 12px">访问</button></a>
+                                            {{ if eq .Status 1}}
+                                                <button type="button" class="btn btn-primary" style="font-size: 12px">发布</button>
+																						{{ else }}
+                                                <button type="button" class="btn btn-info" style="font-size: 12px">存稿</button>
+                                            {{ end }}
+                                        </td>
+                                        <td>
+                                            <button onclick="EditArticle({{ .ID | ToStr }})" type="button" class="btn btn-success" style="font-size: 12px">编辑</button>
+                                            <button onclick="DeleteArticle({{ .ID | ToStr }})" type="button" class="btn btn-danger" style="font-size: 12px">删除</button>
+                                            <a href="{% url 'blog:detail' .id %}"><button type="button" class="btn btn-default" style="font-size: 12px">访问</button></a>
                                         </td>
                                     </tr>
-                                {% endfor %}
+                                  {{end}}
                                 </tbody>
                             </table>
                         </div>
@@ -78,12 +81,12 @@
         </section>
         <!-- /.content -->
     </div>
-{% endblock %}
+{{end}}
 
-{% block custom_js %}
+{{define "footer"}}
     <!-- DataTables -->
-    <script src="{% static 'admin/plugins/datatables/jquery.dataTables.min.js' %}"></script>
-    <script src="{% static 'admin/plugins/datatables/dataTables.bootstrap.min.js' %}"></script>
+<script src='/static/libs/AdminLTE/bower_components/datatables.net/js/jquery.dataTables.min.js'></script>
+<script src='/static/libs/AdminLTE/bower_components/datatables.net-bs/js/dataTables.bootstrap.min.js'></script>
     <!-- page script -->
     <script>
         $(function () {
@@ -98,13 +101,10 @@
 			if (response==true){
                 $.ajax({
                     type: "DELETE",
-                    url: "{% url 'admin:article-add' %}",
+                    url: "article/" + ID,
                     headers: {
-                        "X-CSRFToken": '23333 csrf_token }}'
+                        "X-CSRFToken": '{ csrf_token }}'
                     },
-                    data: JSON.stringify({
-                        id: ID
-                    }),
                     success: function (data) {
                         data = JSON.parse(data);
                         $('#Article' + data.aid).remove();
@@ -116,7 +116,7 @@
 			}
 		}
         function EditArticle(ID) {
-            location.href = "{% url 'admin:article-edit' %}" + '?aid=' + ID
+            location.href = "article-edit?id" + ID
         }
     </script>
-{% endblock %}
+{{end}}

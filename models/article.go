@@ -21,7 +21,7 @@ type Article struct {
 	AttachmentUrl string    `gorm:"type:text" json:"attachment_url"`                                           //附件地址
 	Category      *Category `gorm:"ForeignKey:CategoryId;association_autoupdate:false" binding:"-"`
 	CategoryId    uint64    `json:"category_id"`
-	Tags          []Tag     `gorm:"many2many:article_tag;association_autoupdate:false" json:"tags"`
+	Tags          []Tag     `gorm:"many2many:article_tag;association_autoupdate:false" binding:"-" json:"tags"`
 
 	TagsId []uint64 `gorm:"-" json:"tags_id" binding:"dive,omitempty"`
 }
