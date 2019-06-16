@@ -33,23 +33,56 @@ func bytesView(v string) []byte {
 	return []byte(v)
 }
 
-func definitelyNil(v interface{}) bool {
-	// this is a best-effort option.
-	// We just return false, so we don't unnecessarily incur the cost of reflection this early.
-	return false
+// isNil says whether the value v is nil.
+// This applies to references like map/ptr/unsafepointer/chan/func,
+// and non-reference values like interface/slice.
+func isNil(v interface{}) (rv reflect.Value, isnil bool) {
+	rv = reflect.ValueOf(v)
+	if isnilBitset.isset(byte(rv.Kind())) {
+		isnil = rv.IsNil()
+	}
+	return
 }
 
 func rv2i(rv reflect.Value) interface{} {
 	return rv.Interface()
 }
 
-func rt2id(rt reflect.Type) uintptr {
-	return reflect.ValueOf(rt).Pointer()
+func rvisnil(rv reflect.Value) bool {
+	return rv.IsNil()
 }
+
+func rvssetlen(rv reflect.Value, length int) {
+	rv.SetLen(length)
+}
+
+// func rvzeroaddr(t reflect.Type) reflect.Value {
+// 	return reflect.New(t).Elem()
+// }
+
+func rvzeroaddrk(t reflect.Type, k reflect.Kind) reflect.Value {
+	return reflect.New(t).Elem()
+}
+
+func rvconvert(v reflect.Value, t reflect.Type) (rv reflect.Value) {
+	return v.Convert(t)
+}
+
+// func rvisnilref(rv reflect.Value) bool {
+// 	return rv.IsNil()
+// }
+
+// func rvslen(rv reflect.Value) int {
+// 	return rv.Len()
+// }
 
 // func rv2rtid(rv reflect.Value) uintptr {
 // 	return reflect.ValueOf(rv.Type()).Pointer()
 // }
+
+func rt2id(rt reflect.Type) uintptr {
+	return reflect.ValueOf(rt).Pointer()
+}
 
 func i2rtid(i interface{}) uintptr {
 	return reflect.ValueOf(reflect.TypeOf(i)).Pointer()
@@ -170,7 +203,7 @@ func (d *Decoder) raw(f *codecFnInfo, rv reflect.Value) {
 }
 
 func (d *Decoder) kString(f *codecFnInfo, rv reflect.Value) {
-	rv.SetString(d.d.DecodeString())
+	rv.SetString(string(d.d.DecodeStringAsBytes()))
 }
 
 func (d *Decoder) kBool(f *codecFnInfo, rv reflect.Value) {
@@ -244,13 +277,20 @@ func (e *Encoder) kTime(f *codecFnInfo, rv reflect.Value) {
 }
 
 func (e *Encoder) kString(f *codecFnInfo, rv reflect.Value) {
-	s := rv.String()
 	if e.h.StringToRaw {
-		e.e.EncodeStringBytesRaw(bytesView(s))
+		e.e.EncodeStringBytesRaw(bytesView(rv.String()))
 	} else {
-		e.e.EncodeStringEnc(cUTF8, s)
+		e.e.EncodeStringEnc(cUTF8, rv.String())
 	}
 }
+
+// func (e *Encoder) kStringToRaw(f *codecFnInfo, rv reflect.Value) {
+// 	e.e.EncodeStringBytesRaw(bytesView(rv.String()))
+// }
+
+// func (e *Encoder) kStringEnc(f *codecFnInfo, rv reflect.Value) {
+// 	e.e.EncodeStringEnc(cUTF8, rv.String())
+// }
 
 func (e *Encoder) kFloat64(f *codecFnInfo, rv reflect.Value) {
 	e.e.EncodeFloat64(rv.Float())
@@ -304,24 +344,23 @@ func (e *Encoder) kUintptr(f *codecFnInfo, rv reflect.Value) {
 	e.e.EncodeUint(rv.Uint())
 }
 
-// // keepAlive4BytesView maintains a reference to the input parameter for bytesView.
-// //
-// // Usage: call this at point where done with the bytes view.
-// func keepAlive4BytesView(v string) {}
+// ------------ map range and map indexing ----------
 
-// // keepAlive4BytesView maintains a reference to the input parameter for stringView.
-// //
-// // Usage: call this at point where done with the string view.
-// func keepAlive4StringView(v []byte) {}
+func mapGet(m, k, v reflect.Value) (vv reflect.Value) {
+	return m.MapIndex(k)
+}
 
-// func definitelyNil(v interface{}) bool {
-// 	rv := reflect.ValueOf(v)
-// 	switch rv.Kind() {
-// 	case reflect.Invalid:
-// 		return true
-// 	case reflect.Ptr, reflect.Interface, reflect.Chan, reflect.Slice, reflect.Map, reflect.Func:
-// 		return rv.IsNil()
-// 	default:
-// 		return false
-// 	}
-// }
+func mapSet(m, k, v reflect.Value) {
+	m.SetMapIndex(k, v)
+}
+
+func mapDelete(m, k reflect.Value) {
+	m.SetMapIndex(k, reflect.Value{})
+}
+
+// return an addressable reflect value that can be used in mapRange and mapGet operations.
+//
+// all calls to mapGet or mapRange will call here to get an addressable reflect.Value.
+func mapAddressableRV(t reflect.Type, k reflect.Kind) (r reflect.Value) {
+	return // reflect.New(t).Elem()
+}

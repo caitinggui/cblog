@@ -20,11 +20,11 @@ var logConfig = `
     <filter levels="info,debug,warn,error,critical">
       <console />
       <!--在golang中，2006代表年份，01代表月份，02代表日，因为golang是2016-01-02诞生的-->
-      <rollingfile type="date" filename="logs/slog.log" datepattern="2006.01.02" maxrolls="7"/>
+      <rollingfile type="date" filename="logs/[%ProgramName].log" datepattern="2006.01.02" maxrolls="7"/>
     </filter>
     <filter levels="error,critical">
-      <!--maxsize单位是字节，102400大概是100k大小-->
-      <rollingfile type="size" filename="logs/slog.error" maxsize="102400000" maxrolls="7"/>
+      <!--maxsize单位是字节，102400大概是100k大小 过期的错误日志会被压缩保存-->
+      <rollingfile type="size" filename="logs/[%ProgramName].error" maxsize="10240" archivetype="gzip" archivepath="logs/[%ProgramName].error.bak.tar.gz" maxrolls="7"/>
     </filter>
 
   </outputs>
@@ -37,6 +37,7 @@ var logConfig = `
 
 func testLogger() {
 	logger.Info("hello: ", runtime.Goid())
+	logger.Error("hello: ", runtime.Goid())
 }
 
 func main() {
@@ -57,6 +58,7 @@ func main() {
 		go testLogger()
 
 	}
-	time.Sleep(30000000)
-	logger.Error("hello error")
+	time.Sleep(time.Second)
+	logger.Error(logger.HideStr("hello error"))
+	logger.Info(logger.HideStr("hello info"))
 }

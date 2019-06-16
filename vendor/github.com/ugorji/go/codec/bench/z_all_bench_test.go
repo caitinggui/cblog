@@ -1,8 +1,8 @@
+// +build alltests
+// +build go1.7
+
 // Copyright (c) 2012-2018 Ugorji Nwoke. All rights reserved.
 // Use of this source code is governed by a MIT license found in the LICENSE file.
-
-// +build alltests codecgen
-// +build go1.7
 
 package codec
 
@@ -23,12 +23,8 @@ var benchmarkGroupSave struct {
 	testUseIoEncDec int
 	testUseReset    bool
 
-	benchDepth            int
-	benchMapStringKeyOnly bool
-	benchInitDebug        bool
-	benchVerify           bool
-	benchDoInitBench      bool
-	benchUnscientificRes  bool
+	testDepth            int
+	testMapStringKeyOnly bool
 }
 
 func benchmarkGroupInitAll() {
@@ -36,29 +32,16 @@ func benchmarkGroupInitAll() {
 	benchmarkGroupSave.testUseIoEncDec = testUseIoEncDec
 	benchmarkGroupSave.testUseReset = testUseReset
 
-	benchmarkGroupSave.benchDepth = benchDepth
-	benchmarkGroupSave.benchMapStringKeyOnly = benchMapStringKeyOnly
-	benchmarkGroupSave.benchInitDebug = benchInitDebug
-	benchmarkGroupSave.benchVerify = benchVerify
-	benchmarkGroupSave.benchDoInitBench = benchDoInitBench
-	benchmarkGroupSave.benchUnscientificRes = benchUnscientificRes
+	benchmarkGroupSave.testDepth = testDepth
+	benchmarkGroupSave.testMapStringKeyOnly = testMapStringKeyOnly
 }
 
 func benchmarkGroupReset() {
 	testUseIoEncDec = benchmarkGroupSave.testUseIoEncDec
 	testUseReset = benchmarkGroupSave.testUseReset
 
-	benchDepth = benchmarkGroupSave.benchDepth
-	benchMapStringKeyOnly = benchmarkGroupSave.benchMapStringKeyOnly
-	benchInitDebug = benchmarkGroupSave.benchInitDebug
-	benchVerify = benchmarkGroupSave.benchVerify
-	benchDoInitBench = benchmarkGroupSave.benchDoInitBench
-	benchUnscientificRes = benchmarkGroupSave.benchUnscientificRes
-}
-
-func benchmarkDivider() {
-	// logTv(nil, "-------------------------------\n")
-	println()
+	testDepth = benchmarkGroupSave.testDepth
+	testMapStringKeyOnly = benchmarkGroupSave.testMapStringKeyOnly
 }
 
 func benchmarkOneFn(fns []func(*testing.B)) func(*testing.B) {
@@ -98,19 +81,6 @@ func benchmarkSuite(t *testing.B, fns ...func(t *testing.B)) {
 
 	benchmarkGroupReset()
 
-	benchVerify = true
-	benchDoInitBench = true
-	benchUnscientificRes = true
-	testReinit()
-	benchReinit()
-	t.Run("init-metrics....", func(t *testing.B) { t.Run("Benchmark__Noop.............", benchmarkSuiteNoop) })
-
-	benchmarkGroupReset()
-
-	benchVerify = false
-	benchDoInitBench = false
-	benchUnscientificRes = false
-
 	testReinit()
 	benchReinit()
 	t.Run("options-false...", f)
@@ -130,13 +100,6 @@ func benchmarkSuite(t *testing.B, fns ...func(t *testing.B)) {
 	t.Run("reset-enc-dec...", f)
 
 	benchmarkGroupReset()
-
-	// benchVerify is kinda lame - serves no real purpose.
-	// benchVerify = true
-	// testReinit()
-	// benchReinit()
-	// t.Run("verify-on-decode", f)
-	// benchVerify = false
 }
 
 func benchmarkVeryQuickSuite(t *testing.B, name string, fns ...func(t *testing.B)) {
@@ -147,29 +110,29 @@ func benchmarkVeryQuickSuite(t *testing.B, name string, fns ...func(t *testing.B
 	// bd=1 2 | ti=-1, 1024 |
 
 	testUseIoEncDec = -1
-	// benchDepth = depth
+	// testDepth = depth
 	testReinit()
 	benchReinit()
 
-	t.Run(name+"-bd"+strconv.Itoa(benchDepth)+"........", benchmarkOneFn(fns))
+	t.Run(name+"-bd"+strconv.Itoa(testDepth)+"........", benchmarkOneFn(fns))
 	benchmarkGroupReset()
 }
 
 func benchmarkQuickSuite(t *testing.B, name string, fns ...func(t *testing.B)) {
 	benchmarkVeryQuickSuite(t, name, fns...)
 
-	// encoded size of TestStruc is between 20K and 30K for bd=1 // consider buffer=1024 * 16 * benchDepth
+	// encoded size of TestStruc is between 20K and 30K for bd=1 // consider buffer=1024 * 16 * testDepth
 	testUseIoEncDec = 1024 // (value of defEncByteBufSize): use smaller buffer, and more flushes - it's ok.
-	// benchDepth = depth
+	// testDepth = depth
 	testReinit()
 	benchReinit()
-	t.Run(name+"-bd"+strconv.Itoa(benchDepth)+"-buf"+strconv.Itoa(testUseIoEncDec), benchmarkOneFn(fns))
+	t.Run(name+"-bd"+strconv.Itoa(testDepth)+"-buf"+strconv.Itoa(testUseIoEncDec), benchmarkOneFn(fns))
 
 	testUseIoEncDec = 0
-	// benchDepth = depth
+	// testDepth = depth
 	testReinit()
 	benchReinit()
-	t.Run(name+"-bd"+strconv.Itoa(benchDepth)+"-io.....", benchmarkOneFn(fns))
+	t.Run(name+"-bd"+strconv.Itoa(testDepth)+"-io.....", benchmarkOneFn(fns))
 
 	benchmarkGroupReset()
 }
@@ -192,18 +155,12 @@ func benchmarkCodecGroup(t *testing.B) {
 	t.Run("Benchmark__Simple_____Encode", Benchmark__Simple_____Encode)
 	t.Run("Benchmark__Cbor_______Encode", Benchmark__Cbor_______Encode)
 	t.Run("Benchmark__Json_______Encode", Benchmark__Json_______Encode)
-	t.Run("Benchmark__Std_Json___Encode", Benchmark__Std_Json___Encode)
-	t.Run("Benchmark__Gob________Encode", Benchmark__Gob________Encode)
-	// t.Run("Benchmark__Std_Xml____Encode", Benchmark__Std_Xml____Encode)
 	benchmarkDivider()
 	t.Run("Benchmark__Msgpack____Decode", Benchmark__Msgpack____Decode)
 	t.Run("Benchmark__Binc_______Decode", Benchmark__Binc_______Decode)
 	t.Run("Benchmark__Simple_____Decode", Benchmark__Simple_____Decode)
 	t.Run("Benchmark__Cbor_______Decode", Benchmark__Cbor_______Decode)
 	t.Run("Benchmark__Json_______Decode", Benchmark__Json_______Decode)
-	t.Run("Benchmark__Std_Json___Decode", Benchmark__Std_Json___Decode)
-	t.Run("Benchmark__Gob________Decode", Benchmark__Gob________Decode)
-	// t.Run("Benchmark__Std_Xml____Decode", Benchmark__Std_Xml____Decode)
 }
 
 func BenchmarkCodecSuite(t *testing.B) { benchmarkSuite(t, benchmarkCodecGroup) }

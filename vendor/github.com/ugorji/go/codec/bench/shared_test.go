@@ -43,12 +43,10 @@ package codec
 import (
 	"bytes"
 	"flag"
-	"fmt"
 	"io"
 	"io/ioutil"
 	"log"
 	"sync"
-	"testing"
 )
 
 import . "github.com/ugorji/go/codec"
@@ -96,6 +94,8 @@ var (
 var (
 	testVerbose bool
 
+	//depth of 0 maps to ~400bytes json-encoded string, 1 maps to ~1400 bytes, etc
+	//For depth>1, we likely trigger stack growth for encoders, making benchmarking unreliable.
 	testDepth int
 
 	testMaxInitLen int
@@ -110,25 +110,14 @@ var (
 
 	testNumRepeatString int
 
-	testRpcBufsize int
+	testRpcBufsize       int
+	testMapStringKeyOnly bool
 )
 
 // variables that are not flags, but which can configure the handles
 var (
 	testEncodeOptions EncodeOptions
 	testDecodeOptions DecodeOptions
-)
-
-// flag variables used by bench
-var (
-	benchDoInitBench      bool
-	benchVerify           bool
-	benchUnscientificRes  bool = false
-	benchMapStringKeyOnly bool
-	//depth of 0 maps to ~400bytes json-encoded string, 1 maps to ~1400 bytes, etc
-	//For depth>1, we likely trigger stack growth for encoders, making benchmarking unreliable.
-	benchDepth     int
-	benchInitDebug bool
 )
 
 func init() {
@@ -153,7 +142,6 @@ func init() {
 func testInitFlags() {
 	// delete(testDecOpts.ExtFuncs, timeTyp)
 	flag.BoolVar(&testVerbose, "tv", false, "Text Extra Verbose Logging if -v if set")
-	flag.IntVar(&testDepth, "tsd", 0, "Test Struc Depth")
 	flag.BoolVar(&testInitDebug, "tg", false, "Test Init Debug")
 	flag.IntVar(&testUseIoEncDec, "ti", -1, "Use IO Reader/Writer for Marshal/Unmarshal ie >= 0")
 	flag.BoolVar(&testUseIoWrapper, "tiw", false, "Wrap the IO Reader/Writer with a base pass-through reader/writer")
@@ -164,15 +152,15 @@ func testInitFlags() {
 	flag.BoolVar(&testUseMust, "tm", true, "Use Must(En|De)code")
 
 	flag.IntVar(&testMaxInitLen, "tx", 0, "Max Init Len")
+
+	flag.IntVar(&testDepth, "tsd", 0, "Test Struc Depth")
+	flag.BoolVar(&testMapStringKeyOnly, "tsk", false, "use maps with string keys only")
 }
 
 func benchInitFlags() {
-	flag.BoolVar(&benchMapStringKeyOnly, "bs", false, "Bench use maps with string keys only")
-	flag.BoolVar(&benchInitDebug, "bg", false, "Bench Debug")
-	flag.IntVar(&benchDepth, "bd", 1, "Bench Depth")
-	flag.BoolVar(&benchDoInitBench, "bi", false, "Run Bench Init")
-	flag.BoolVar(&benchVerify, "bv", false, "Verify Decoded Value during Benchmark")
-	flag.BoolVar(&benchUnscientificRes, "bu", false, "Show Unscientific Results during Benchmark")
+	// flags reproduced here for compatibility (duplicate some in testInitFlags)
+	flag.BoolVar(&testMapStringKeyOnly, "bs", false, "use maps with string keys only")
+	flag.IntVar(&testDepth, "bd", 1, "Bench Depth")
 }
 
 func testHEDGet(h Handle) *testHED {
@@ -279,64 +267,68 @@ func sTestCodecDecode(bs []byte, ts interface{}, h Handle, bh *BasicHandle) (err
 	return
 }
 
-// --- functions below are used by both benchmarks and tests
+// // --- functions below are used by both benchmarks and tests
 
-// log message only when testVerbose = true (ie go test ... -- -tv).
-//
-// These are for intormational messages that do not necessarily
-// help with diagnosing a failure, or which are too large.
-func logTv(x interface{}, format string, args ...interface{}) {
-	if testVerbose {
-		logT(x, format, args...)
-	}
-}
+// // log message only when testVerbose = true (ie go test ... -- -tv).
+// //
+// // These are for intormational messages that do not necessarily
+// // help with diagnosing a failure, or which are too large.
+// func logTv(x interface{}, format string, args ...interface{}) {
+// 	if !testVerbose {
+// 		return
+// 	}
+// 	if t, ok := x.(testing.TB); ok { // only available from go 1.9
+// 		t.Helper()
+// 	}
+// 	logT(x, format, args...)
+// }
 
-// logT logs messages when running as go test -v
-//
-// Use it for diagnostics messages that help diagnost failure,
-// and when the output is not too long ie shorter than like 100 characters.
-//
-// In general, any logT followed by failT should call this.
-func logT(x interface{}, format string, args ...interface{}) {
-	if x == nil {
-		if len(format) == 0 || format[len(format)-1] != '\n' {
-			format = format + "\n"
-		}
-		fmt.Printf(format, args...)
-		return
-	}
-	switch t := x.(type) {
-	case *testing.T:
-		// TODO: use conditional build files containing logT and failT
-		// t.Helper() // only available from go 1.9
-		t.Logf(format, args...)
-	case *testing.B:
-		// t.Helper() // only available from go 1.9
-		t.Logf(format, args...)
-	}
-}
+// // logT logs messages when running as go test -v
+// //
+// // Use it for diagnostics messages that help diagnost failure,
+// // and when the output is not too long ie shorter than like 100 characters.
+// //
+// // In general, any logT followed by failT should call this.
+// func logT(x interface{}, format string, args ...interface{}) {
+// 	if x == nil {
+// 		if len(format) == 0 || format[len(format)-1] != '\n' {
+// 			format = format + "\n"
+// 		}
+// 		fmt.Printf(format, args...)
+// 		return
+// 	}
+// 	if t, ok := x.(testing.TB); ok { // only available from go 1.9
+// 		t.Helper()
+// 		t.Logf(format, args...)
+// 	}
+// }
 
-func failT(x interface{}, args ...interface{}) {
-	// switch t := x.(type) {
-	// case *testing.T:
-	// 	t.Helper() // only available from go 1.9
-	// case *testing.B:
-	// 	t.Helper()
-	// }
+// func failTv(x testing.TB, args ...interface{}) {
+// 	x.Helper()
+// 	if testVerbose {
+// 		failTMsg(x, args...)
+// 	}
+// 	x.FailNow()
+// }
 
-	if len(args) > 0 {
-		if format, ok := args[0].(string); ok {
-			logT(x, format, args[1:]...)
-		} else if len(args) == 1 {
-			logT(x, "%v", args[0])
-		} else {
-			logT(x, "%v", args)
-		}
-	}
-	if t, ok := x.(interface{ FailNow() }); ok {
-		t.FailNow()
-	}
-}
+// func failT(x testing.TB, args ...interface{}) {
+// 	x.Helper()
+// 	failTMsg(x, args...)
+// 	x.FailNow()
+// }
+
+// func failTMsg(x testing.TB, args ...interface{}) {
+// 	x.Helper()
+// 	if len(args) > 0 {
+// 		if format, ok := args[0].(string); ok {
+// 			logT(x, format, args[1:]...)
+// 		} else if len(args) == 1 {
+// 			logT(x, "%v", args[0])
+// 		} else {
+// 			logT(x, "%v", args)
+// 		}
+// 	}
+// }
 
 // --- functions below are used only by benchmarks alone
 

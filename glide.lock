@@ -1,8 +1,8 @@
 hash: 4c9c302947912951cb8ed47f8ff501aa1ca80945ae86a6d202cdaa6e8c1d4a5e
-updated: 2019-06-04T00:10:10.229583822+08:00
+updated: 2019-06-16T18:14:25.039588228+08:00
 imports:
 - name: github.com/caitinggui/seelog
-  version: 2189d465f641d87176941698dc4046225fea47f0
+  version: 8312b9d9869c1a9e924ec23ced323d6cd3c031bb
   subpackages:
   - archive
   - archive/gzip
@@ -39,7 +39,7 @@ imports:
 - name: github.com/jinzhu/inflection
   version: f5c5f50e6090ae76a29240b61ae2a90dd810112e
 - name: github.com/json-iterator/go
-  version: 08047c174c6c03e8ec963a411bde1b6d1ee67b26
+  version: 0039f4ac3d5680243e7d0650c581e7ec0885ef5a
 - name: github.com/mattn/go-isatty
   version: 1311e847b0cb909da63b5fecfb5370aa66236465
 - name: github.com/mattn/go-sqlite3
@@ -51,7 +51,7 @@ imports:
 - name: github.com/patrickmn/go-cache
   version: a3647f8e31d79543b2d0f0ae2fe5c379d72cedc0
 - name: github.com/ugorji/go
-  version: a2c9fa250719622a16ea652598779a08d5a377f8
+  version: 882e0bbdfaa5d9209fdb417056003ed00d743008
   subpackages:
   - codec
 - name: gopkg.in/go-playground/validator.v8

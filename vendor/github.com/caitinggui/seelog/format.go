@@ -39,6 +39,8 @@ const (
 	FormatterSymbol = '%'
 )
 
+const programNameAttr = "[%ProgramName]"
+
 const (
 	formatterParameterStart = '('
 	formatterParameterEnd   = ')'
@@ -65,6 +67,30 @@ func init() {
 	if msgonlyformatter, err = NewFormatter("%Msg"); err != nil {
 		reportInternalError(fmt.Errorf("error during creating msgonlyformatter: %s", err))
 	}
+}
+
+// add * to string to hide some imformation
+func HideStr(s string) string {
+	rStr := []rune(s)
+	rStrLen := len(rStr)
+	switch {
+	case rStrLen < 3:
+		return strings.Repeat("*", rStrLen)
+	case rStrLen < 5:
+		return string(rStr[:1]) + strings.Repeat("*", rStrLen-2) + string(rStr[rStrLen-1:])
+	case rStrLen < 7:
+		return string(rStr[:2]) + strings.Repeat("*", rStrLen-4) + string(rStr[rStrLen-2:])
+	case rStrLen < 25:
+		return string(rStr[:3]) + strings.Repeat("*", rStrLen-6) + string(rStr[rStrLen-3:])
+	default:
+		return string(rStr[:5]) + strings.Repeat("*", rStrLen-10) + string(rStr[rStrLen-5:])
+	}
+	return ""
+}
+
+// add * to hide some imformation
+func Hide(s interface{}) string {
+	return HideStr(fmt.Sprintf("%v", s))
 }
 
 // FormatterFunc represents one formatter object that starts with '%' sign in the 'format' attribute

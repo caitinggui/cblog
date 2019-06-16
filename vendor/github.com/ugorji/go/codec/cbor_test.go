@@ -80,10 +80,12 @@ func TestCborIndefiniteLength(t *testing.T) {
 
 	NewDecoderBytes(buf.Bytes(), testCborH).MustDecode(&vv)
 	if err := deepEqual(v, vv); err != nil {
-		logT(t, "-------- Before and After marshal do not match: Error: %v", err)
-		logTv(t, "    ....... GOLDEN:  (%T) %#v", v, v)
-		logTv(t, "    ....... DECODED: (%T) %#v", vv, vv)
-		failT(t)
+		t.Logf("-------- Before and After marshal do not match: Error: %v", err)
+		if testVerbose {
+			t.Logf("    ....... GOLDEN:  (%T) %#v", v, v)
+			t.Logf("    ....... DECODED: (%T) %#v", vv, vv)
+		}
+		t.FailNow()
 	}
 }
 
@@ -112,8 +114,8 @@ func TestCborGoldens(t *testing.T) {
 	var gs []*testCborGolden
 	f, err := os.Open("test-cbor-goldens.json")
 	if err != nil {
-		logT(t, "error opening test-cbor-goldens.json: %v", err)
-		failT(t)
+		t.Logf("error opening test-cbor-goldens.json: %v", err)
+		t.FailNow()
 	}
 	defer f.Close()
 	jh := new(JsonHandle)
@@ -123,8 +125,8 @@ func TestCborGoldens(t *testing.T) {
 	// err = d.Decode(&gs)
 	d.MustDecode(&gs)
 	if err != nil {
-		logT(t, "error json decoding test-cbor-goldens.json: %v", err)
-		failT(t)
+		t.Logf("error json decoding test-cbor-goldens.json: %v", err)
+		t.FailNow()
 	}
 
 	tagregex := regexp.MustCompile(`[\d]+\(.+?\)`)
@@ -134,7 +136,9 @@ func TestCborGoldens(t *testing.T) {
 		// skip tags or simple or those with prefix, as we can't verify them.
 		if g.Skip || strings.HasPrefix(g.Diagnostic, "simple(") || tagregex.MatchString(g.Diagnostic) {
 			// fmt.Printf("%v: skipped\n", i)
-			logTv(t, "[%v] skipping because skip=true OR unsupported simple value or Tag Value", i)
+			if testVerbose {
+				t.Logf("[%v] skipping because skip=true OR unsupported simple value or Tag Value", i)
+			}
 			continue
 		}
 		// println("++++++++++++", i, "g.Diagnostic", g.Diagnostic)
@@ -149,8 +153,8 @@ func TestCborGoldens(t *testing.T) {
 		}
 		bs, err := hex.DecodeString(g.Hex)
 		if err != nil {
-			logT(t, "[%v] error hex decoding %s [%v]: %v", i, g.Hex, g.Hex, err)
-			failT(t)
+			t.Logf("[%v] error hex decoding %s [%v]: %v", i, g.Hex, g.Hex, err)
+			t.FailNow()
 		}
 		var v interface{}
 		NewDecoderBytes(bs, testCborH).MustDecode(&v)
@@ -186,16 +190,20 @@ func testCborError(t *testing.T, i int, v0, v1 interface{}, err error, equal *bo
 		return
 	}
 	if err != nil {
-		logT(t, "[%v] deepEqual error: %v", i, err)
-		logTv(t, "    ....... GOLDEN:  (%T) %#v", v0, v0)
-		logTv(t, "    ....... DECODED: (%T) %#v", v1, v1)
-		failT(t)
+		t.Logf("[%v] deepEqual error: %v", i, err)
+		if testVerbose {
+			t.Logf("    ....... GOLDEN:  (%T) %#v", v0, v0)
+			t.Logf("    ....... DECODED: (%T) %#v", v1, v1)
+		}
+		t.FailNow()
 	}
 	if equal != nil && !*equal {
-		logT(t, "[%v] values not equal", i)
-		logTv(t, "    ....... GOLDEN:  (%T) %#v", v0, v0)
-		logTv(t, "    ....... DECODED: (%T) %#v", v1, v1)
-		failT(t)
+		t.Logf("[%v] values not equal", i)
+		if testVerbose {
+			t.Logf("    ....... GOLDEN:  (%T) %#v", v0, v0)
+			t.Logf("    ....... DECODED: (%T) %#v", v1, v1)
+		}
+		t.FailNow()
 	}
 	// fmt.Printf("%v testCborError passed (checks passed)\n", i)
 }
@@ -222,9 +230,12 @@ func TestCborHalfFloat(t *testing.T) {
 		bigen.PutUint16(ba[1:], k)
 		testUnmarshalErr(&res, ba[:3], testCborH, t, "-")
 		if res == v {
-			logTv(t, "equal floats: from %x %b, %v", k, k, v)
+			if testVerbose {
+				t.Logf("equal floats: from %x %b, %v", k, k, v)
+			}
 		} else {
-			failT(t, "unequal floats: from %x %b, %v != %v", k, k, res, v)
+			t.Logf("unequal floats: from %x %b, %v != %v", k, k, res, v)
+			t.FailNow()
 		}
 	}
 }
@@ -320,7 +331,6 @@ func TestCborSkipTags(t *testing.T) {
 
 	var gold []byte
 	NewEncoderBytes(&gold, &h).MustEncode(v)
-
 	// xdebug2f("encoded:    gold: %v", gold)
 
 	// w.b is the encoded bytes
@@ -333,15 +343,12 @@ func TestCborSkipTags(t *testing.T) {
 	NewDecoderBytes(w.b, &h).MustDecode(&v2)
 	testDeepEqualErr(v, v2, t, "cbor-skip-tags--no-tags-")
 
-	// Now, decode that stream into it.
 	var v3 Tcbortags
 	doAddTag = true
 	fnEncode()
 	// xdebug2f("manual: has-tags: %v", w.b)
 	NewDecoderBytes(w.b, &h).MustDecode(&v3)
 	testDeepEqualErr(v, v2, t, "cbor-skip-tags--has-tags")
-
-	// Then get bytes with tags added, decode that stream, and check against golden v
 
 	// Github 300 - tests naked path
 	{

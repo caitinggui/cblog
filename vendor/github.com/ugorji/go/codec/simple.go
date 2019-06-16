@@ -213,6 +213,7 @@ type simpleDecDriver struct {
 	bdRead bool
 	bd     byte
 	br     bool // a bytes reader?
+	fnil   bool
 	// c      containerState
 	// b      [scratchByteArrayLen]byte
 	noBuiltInTypes
@@ -233,12 +234,32 @@ func (d *simpleDecDriver) uncacheRead() {
 	}
 }
 
+func (d *simpleDecDriver) advanceNil() (null bool) {
+	d.fnil = false
+	if !d.bdRead {
+		d.readNextBd()
+	}
+	if d.bd == simpleVdNil {
+		d.bdRead = false
+		d.fnil = true
+		null = true
+	}
+	return
+}
+
+func (d *simpleDecDriver) Nil() bool {
+	return d.fnil
+}
+
 func (d *simpleDecDriver) ContainerType() (vt valueType) {
 	if !d.bdRead {
 		d.readNextBd()
 	}
+	d.fnil = false
 	switch d.bd {
 	case simpleVdNil:
+		d.bdRead = false
+		d.fnil = true
 		return valueTypeNil
 	case simpleVdByteArray, simpleVdByteArray + 1,
 		simpleVdByteArray + 2, simpleVdByteArray + 3, simpleVdByteArray + 4:
@@ -261,21 +282,11 @@ func (d *simpleDecDriver) ContainerType() (vt valueType) {
 	return valueTypeUnset
 }
 
-func (d *simpleDecDriver) TryDecodeAsNil() bool {
-	if !d.bdRead {
-		d.readNextBd()
-	}
-	if d.bd == simpleVdNil {
-		d.bdRead = false
-		return true
-	}
-	return false
+func (d *simpleDecDriver) TryNil() bool {
+	return d.advanceNil()
 }
 
 func (d *simpleDecDriver) decCheckInteger() (ui uint64, neg bool) {
-	if !d.bdRead {
-		d.readNextBd()
-	}
 	switch d.bd {
 	case simpleVdPosInt:
 		ui = uint64(d.r.readn1())
@@ -310,6 +321,9 @@ func (d *simpleDecDriver) decCheckInteger() (ui uint64, neg bool) {
 }
 
 func (d *simpleDecDriver) DecodeInt64() (i int64) {
+	if d.advanceNil() {
+		return
+	}
 	ui, neg := d.decCheckInteger()
 	i = chkOvf.SignedIntV(ui)
 	if neg {
@@ -320,6 +334,9 @@ func (d *simpleDecDriver) DecodeInt64() (i int64) {
 }
 
 func (d *simpleDecDriver) DecodeUint64() (ui uint64) {
+	if d.advanceNil() {
+		return
+	}
 	ui, neg := d.decCheckInteger()
 	if neg {
 		d.d.errorf("assigning negative signed value to unsigned type")
@@ -330,8 +347,8 @@ func (d *simpleDecDriver) DecodeUint64() (ui uint64) {
 }
 
 func (d *simpleDecDriver) DecodeFloat64() (f float64) {
-	if !d.bdRead {
-		d.readNextBd()
+	if d.advanceNil() {
+		return
 	}
 	if d.bd == simpleVdFloat32 {
 		f = float64(math.Float32frombits(bigen.Uint32(d.r.readx(4))))
@@ -351,12 +368,12 @@ func (d *simpleDecDriver) DecodeFloat64() (f float64) {
 
 // bool can be decoded from bool only (single byte).
 func (d *simpleDecDriver) DecodeBool() (b bool) {
-	if !d.bdRead {
-		d.readNextBd()
+	if d.advanceNil() {
+		return
 	}
-	if d.bd == simpleVdTrue {
+	if d.bd == simpleVdFalse {
+	} else if d.bd == simpleVdTrue {
 		b = true
-	} else if d.bd == simpleVdFalse {
 	} else {
 		d.d.errorf("cannot decode bool - %s: %x", msgBadDesc, d.bd)
 		return
@@ -366,16 +383,16 @@ func (d *simpleDecDriver) DecodeBool() (b bool) {
 }
 
 func (d *simpleDecDriver) ReadMapStart() (length int) {
-	if !d.bdRead {
-		d.readNextBd()
+	if d.advanceNil() {
+		return decContainerLenNil
 	}
 	d.bdRead = false
 	return d.decLen()
 }
 
 func (d *simpleDecDriver) ReadArrayStart() (length int) {
-	if !d.bdRead {
-		d.readNextBd()
+	if d.advanceNil() {
+		return decContainerLenNil
 	}
 	d.bdRead = false
 	return d.decLen()
@@ -408,20 +425,12 @@ func (d *simpleDecDriver) decLen() int {
 	return -1
 }
 
-func (d *simpleDecDriver) DecodeString() (s string) {
-	return string(d.DecodeBytes(d.d.b[:], true))
-}
-
 func (d *simpleDecDriver) DecodeStringAsBytes() (s []byte) {
 	return d.DecodeBytes(d.d.b[:], true)
 }
 
 func (d *simpleDecDriver) DecodeBytes(bs []byte, zerocopy bool) (bsOut []byte) {
-	if !d.bdRead {
-		d.readNextBd()
-	}
-	if d.bd == simpleVdNil {
-		d.bdRead = false
+	if d.advanceNil() {
 		return
 	}
 	// check if an "array" of uint8's (see ContainerType for how to infer if an array)
@@ -432,7 +441,7 @@ func (d *simpleDecDriver) DecodeBytes(bs []byte, zerocopy bool) (bsOut []byte) {
 		// bsOut, _ = fastpathTV.DecSliceUint8V(bs, true, d.d)
 		slen := d.ReadArrayStart()
 		bs = usableByteSlice(bs, slen)
-		for i := 0; i < slen; i++ {
+		for i := 0; i < len(bs); i++ {
 			bs[i] = uint8(chkOvf.UintV(d.DecodeUint64(), 8))
 		}
 		return bs
@@ -451,11 +460,7 @@ func (d *simpleDecDriver) DecodeBytes(bs []byte, zerocopy bool) (bsOut []byte) {
 }
 
 func (d *simpleDecDriver) DecodeTime() (t time.Time) {
-	if !d.bdRead {
-		d.readNextBd()
-	}
-	if d.bd == simpleVdNil {
-		d.bdRead = false
+	if d.advanceNil() {
 		return
 	}
 	if d.bd != simpleVdTime {
@@ -471,13 +476,16 @@ func (d *simpleDecDriver) DecodeTime() (t time.Time) {
 	return
 }
 
-func (d *simpleDecDriver) DecodeExt(rv interface{}, xtag uint64, ext Ext) (realxtag uint64) {
+func (d *simpleDecDriver) DecodeExt(rv interface{}, xtag uint64, ext Ext) {
 	if xtag > 0xff {
 		d.d.errorf("ext: tag must be <= 0xff; got: %v", xtag)
 		return
 	}
+	if d.advanceNil() {
+		return
+	}
 	realxtag1, xbs := d.decodeExtV(ext != nil, uint8(xtag))
-	realxtag = uint64(realxtag1)
+	realxtag := uint64(realxtag1)
 	if ext == nil {
 		re := rv.(*RawExt)
 		re.Tag = realxtag
@@ -487,13 +495,9 @@ func (d *simpleDecDriver) DecodeExt(rv interface{}, xtag uint64, ext Ext) (realx
 	} else {
 		ext.ReadExt(rv, xbs)
 	}
-	return
 }
 
 func (d *simpleDecDriver) decodeExtV(verifyTag bool, tag byte) (xtag byte, xbs []byte) {
-	if !d.bdRead {
-		d.readNextBd()
-	}
 	switch d.bd {
 	case simpleVdExt, simpleVdExt + 1, simpleVdExt + 2, simpleVdExt + 3, simpleVdExt + 4:
 		l := d.decLen()
@@ -523,12 +527,14 @@ func (d *simpleDecDriver) DecodeNaked() {
 		d.readNextBd()
 	}
 
+	d.fnil = false
 	n := d.d.naked()
 	var decodeFurther bool
 
 	switch d.bd {
 	case simpleVdNil:
 		n.v = valueTypeNil
+		d.fnil = true
 	case simpleVdFalse:
 		n.v = valueTypeBool
 		n.b = false
@@ -558,7 +564,7 @@ func (d *simpleDecDriver) DecodeNaked() {
 	case simpleVdString, simpleVdString + 1,
 		simpleVdString + 2, simpleVdString + 3, simpleVdString + 4:
 		n.v = valueTypeString
-		n.s = d.DecodeString()
+		n.s = string(d.DecodeStringAsBytes())
 	case simpleVdByteArray, simpleVdByteArray + 1,
 		simpleVdByteArray + 2, simpleVdByteArray + 3, simpleVdByteArray + 4:
 		decNakedReadRawBytes(d, d.d, n, d.h.RawToString)
@@ -609,13 +615,13 @@ func (d *simpleDecDriver) DecodeNaked() {
 //
 // The full spec will be published soon.
 type SimpleHandle struct {
-	BasicHandle
 	binaryEncodingType
 	noElemSeparators
+	BasicHandle
 	// EncZeroValuesAsNil says to encode zero values for numbers, bool, string, etc as nil
 	EncZeroValuesAsNil bool
 
-	_ [1]uint64 // padding (cache-aligned)
+	_ [7]uint64 // padding (cache-aligned)
 }
 
 // Name returns the name of the handle: simple
@@ -643,6 +649,7 @@ func (e *simpleEncDriver) reset() {
 func (d *simpleDecDriver) reset() {
 	d.r, d.br = d.d.r(), d.d.bytes
 	d.bd, d.bdRead = 0, false
+	d.fnil = false
 }
 
 var _ decDriver = (*simpleDecDriver)(nil)

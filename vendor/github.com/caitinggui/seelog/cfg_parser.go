@@ -30,6 +30,8 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
@@ -768,6 +770,9 @@ func createfileWriter(node *xmlNode, formatFromParent *formatter, formats map[st
 	if !isPath {
 		return nil, newMissingArgumentError(node.name, pathID)
 	}
+	if strings.Contains(path, programNameAttr) {
+		path = strings.Replace(path, programNameAttr, filepath.Base(os.Args[0]), -1)
+	}
 
 	fileWriter, err := NewFileWriter(path)
 	if err != nil {
@@ -817,6 +822,9 @@ func createSMTPWriter(node *xmlNode, formatFromParent *formatter, formats map[st
 			path, ok := childNode.attributes[pathID]
 			if !ok {
 				return nil, newMissingArgumentError(childNode.name, pathID)
+			}
+			if strings.Contains(path, programNameAttr) {
+				path = strings.Replace(path, programNameAttr, filepath.Base(os.Args[0]), -1)
 			}
 			caCertDirPaths = append(caCertDirPaths, path)
 
@@ -1005,6 +1013,9 @@ func createRollingFileWriter(node *xmlNode, formatFromParent *formatter, formats
 	if !isPath {
 		return nil, newMissingArgumentError(node.name, rollingFilePathAttr)
 	}
+	if strings.Contains(path, programNameAttr) {
+		path = strings.Replace(path, programNameAttr, filepath.Base(os.Args[0]), -1)
+	}
 
 	rollingArchiveStr, archiveAttrExists := node.attributes[rollingFileArchiveAttr]
 
@@ -1034,6 +1045,9 @@ func createRollingFileWriter(node *xmlNode, formatFromParent *formatter, formats
 			if ok {
 				if rArchivePath == "" {
 					return nil, fmt.Errorf("empty archive path is not supported")
+				}
+				if strings.Contains(rArchivePath, programNameAttr) {
+					rArchivePath = strings.Replace(rArchivePath, programNameAttr, filepath.Base(os.Args[0]), -1)
 				}
 			} else {
 				if rArchiveExploded {
