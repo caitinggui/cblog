@@ -9,19 +9,19 @@ import (
 
 type Article struct {
 	IntIdModelWithoutDeletedAt
-	Title         string    `gorm:"size:70" json:"title" form:"title" binding:"lte=70,required"`               //文章标题
-	Body          string    `gorm:"type:longtext" json:"body" form:"editormd-markdown-doc" binding:"required"` //富文本
-	Status        int8      `gorm:"default:-1" json:"status" form:"status" binding:"omitempty,eq=-1|eq=1"`     //文章状态 -1:未发布 1:发布
-	Abstract      string    `gorm:"size:128" json:"abstract" form:"abstract" binding:"lte=128"`                //摘要
-	Views         uint64    `gorm:"default:0" "json:"views" form:"views binding:"-"`                           //浏览数
-	Likes         uint64    `gorm:"default:0" json:"likes" form:"likes"`                                       //点赞数
-	UserLikes     string    `gorm:"type:text" json:"user_likes"`                                               //点赞的用户
-	Weight        uint64    `gorm:"default:0" json:"weight" form:"weight"`                                     //推荐权重
-	Topped        int8      `gorm:"default:-1" json:"topped" form:"topped" binding:"omitempty,eq=-1|eq=1"`     //是否置顶, -1不置顶，1置顶
-	AttachmentUrl string    `gorm:"type:text" json:"attachment_url"`                                           //附件地址
-	Category      *Category `gorm:"ForeignKey:CategoryId;save_associations:false" binding:"-"`
-	CategoryId    uint64    `json:"category_id" form:"category_id"`
-	Tags          []Tag     `gorm:"many2many:article_tag;save_associations:false" binding:"-" json:"tags"`
+	Title         string   `gorm:"size:70" json:"title" form:"title" binding:"lte=70,required"`               //文章标题
+	Body          string   `gorm:"type:longtext" json:"body" form:"editormd-markdown-doc" binding:"required"` //富文本
+	Status        int8     `gorm:"default:-1" json:"status" form:"status" binding:"omitempty,eq=-1|eq=1"`     //文章状态 -1:未发布 1:发布
+	Abstract      string   `gorm:"size:128" json:"abstract" form:"abstract" binding:"lte=128"`                //摘要
+	Views         uint64   `gorm:"default:0" "json:"views" form:"views" binding:"-"`                          //浏览数
+	Likes         uint64   `gorm:"default:0" json:"likes" form:"likes"`                                       //点赞数
+	UserLikes     string   `gorm:"type:text" json:"user_likes"`                                               //点赞的用户
+	Weight        uint64   `gorm:"default:0" json:"weight" form:"weight"`                                     //推荐权重
+	Topped        int8     `gorm:"default:-1" json:"topped" form:"topped" binding:"omitempty,eq=-1|eq=1"`     //是否置顶, -1不置顶，1置顶
+	AttachmentUrl string   `gorm:"type:text" json:"attachment_url"`                                           //附件地址
+	Category      Category `gorm:"ForeignKey:CategoryId;save_associations:false" binding:"-"`
+	CategoryId    uint64   `json:"category_id" form:"category_id"`
+	Tags          []Tag    `gorm:"many2many:article_tag;save_associations:false" binding:"-" json:"tags"`
 
 	TagsId []uint64 `gorm:"-" json:"tags_id" binding:"dive,omitempty" form:"tags_id"`
 }
@@ -54,13 +54,28 @@ func (self *Article) Insert() error {
 		self.Abstract = self.Body[:bodyLen]
 	}
 	if self.CategoryId != 0 {
+		self.Category = Category{}
 		self.Category.ID = self.CategoryId
+	}
+	for _, tag_id := range self.TagsId {
+		tag := Tag{}
+		tag.ID = tag_id
+		self.Tags = append(self.Tags, tag)
 	}
 	db := DB.Omit("DeletedAt").Create(self)
 	return db.Error
 }
 
 func (self *Article) Update() error {
+	if self.CategoryId != 0 {
+		self.Category.ID = self.CategoryId
+	}
+	// TODO 要清除已有的tag_id
+	for _, tag_id := range self.TagsId {
+		tag := Tag{}
+		tag.ID = tag_id
+		self.Tags = append(self.Tags, tag)
+	}
 	return DB.Model(self).Omit("DeletedAt", "CreatedAt").Updates(self).Error
 }
 
@@ -127,6 +142,15 @@ func GetArticleById(id string) (article Article, err error) {
 	return
 }
 
+func GetFullArticleById(id string) (article Article, err error) {
+
+	//cate := Category{}
+	//tag := Tag{}
+	// 这里不能用TableName，否则字段名不对
+	err = DB.Where("id = ?", id).Preload("Category").Preload("Tags").First(&article).Error
+	return
+}
+
 func GetArticlesByCategory(category string) (articles []Article, err error) {
 	err = DB.Table("article ").Select("article.*").Where("cg.name = ?", category).Joins("join category cg on article.category_id=cg.id").Find(&articles).Error
 	return
@@ -148,6 +172,7 @@ func GetArticleByTag(tagName string) (articles []*Article, err error) {
 	return
 }
 
+// TODO tag_id要清除
 func DeleteArticleById(id uint64) error {
 	arti := Article{}
 	arti.ID = id

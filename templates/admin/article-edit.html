@@ -47,7 +47,7 @@
                             <div class="row">
                                 <div class="col-md-6">
                                     <div class="form-group">
-                                        <select class="form-control select2" data-placeholder="分类" style="width: 100%;" name="category_id">
+                                        <select class="form-control select2" data-placeholder="分类" style="width: 100%;" name="categories">
                                             {{ range .Cates }}
                                                 <option value="{{ .ID }}">{{ .Name }}</option>
                                             {{ end }}
@@ -57,7 +57,7 @@
 
                                 <div class="col-md-6">
                                     <div class="form-group">
-                                        <select class="form-control select2" multiple="multiple" data-placeholder="标签" style="width: 100%;" name="tags_id">
+                                        <select class="form-control select2" multiple="multiple" data-placeholder="标签" style="width: 100%;" name="tags">
                                             {{ range .Tags }}
                                                 <option value="{{ .ID }}">{{ .Name }}</option>
                                             {{ end }}
@@ -71,7 +71,7 @@
                                 <div class="col-md-4">
                                     <div class="form-group">
                                         <label>已关联的分类</label>
-                                        <input class="form-control" type="text" value="{ exist_categories }}" name="exist_categories">
+                                        <input class="form-control" type="text" value="{{ .Article.Category.Name }}" name="exist_categories">
                                     </div>
                                 </div>
 
@@ -92,7 +92,7 @@
                                 <div class="col-md-6">
                                     <div class="form-group">
                                         <label>已关联的标签</label>
-                                        <input class="form-control" type="text" value="{ exist_tag }}" name="exist_tag">
+                                        <input class="form-control" type="text" value="{{ .ExistTags }}" name="exist_tag">
                                     </div>
                                 </div>
                             </div>
@@ -148,6 +148,10 @@
             exist_tags = exist_tags.split(',');
             $("select[name='tags']").val(exist_tags).change()
         })
+    $(function () {
+        $("select[name='categories']").val("{{ .Article.Category.ID }}").change();
+        $("select[name='tags']").val({{ .ExistTags }}).change()
+    })
 
 			function setConfirm() {
 				is_confirm = true;

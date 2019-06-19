@@ -87,36 +87,36 @@
     <!-- DataTables -->
 <script src='/static/libs/AdminLTE/bower_components/datatables.net/js/jquery.dataTables.min.js'></script>
 <script src='/static/libs/AdminLTE/bower_components/datatables.net-bs/js/dataTables.bootstrap.min.js'></script>
-    <!-- page script -->
-    <script>
-        $(function () {
-			$("#articleList").DataTable({
-			    'order': [[6, 'desc']], //第7列降序排序
-					'bStateSave': true, //记录所在页数
-					'aLengthMenu': [[20, 40, 80, -1], [20, 40, 80, "All"]], //定义每页显示数据数量
-			});
-        });
-        function DeleteArticle(ID) {
-			var response = confirm('确定删除吗？');
-			if (response==true){
-                $.ajax({
-                    type: "DELETE",
-                    url: "article/" + ID,
-                    headers: {
-                        "X-CSRFToken": '{ csrf_token }}'
-                    },
-                    success: function (data) {
-                        data = JSON.parse(data);
-                        $('#Article' + data.aid).remove();
-                    },
-                    error: function (jqXHR, textStatus, errorThrown) {
-                        alert(jqXHR, textStatus, errorThrown);
-                    }
-                });
-			}
-		}
-        function EditArticle(ID) {
-            location.href = "article-edit?id=" + ID
-        }
-    </script>
+<!-- page script -->
+<script>
+  $(function () {
+    $("#articleList").DataTable({
+    'order': [[6, 'desc']], //第7列降序排序
+    'bStateSave': true, //记录所在页数
+    'aLengthMenu': [[20, 40, 80, -1], [20, 40, 80, "All"]], //定义每页显示数据数量
+    });
+  });
+  function DeleteArticle(ID) {
+    var response = confirm('确定删除吗？');
+    if (response==true){
+            $.ajax({
+                type: "DELETE",
+                url: "article/" + ID,
+                headers: {
+                    "X-CSRFToken": '{ csrf_token }}'
+                },
+                success: function (data) {
+                    data = JSON.parse(data);
+                    $('#Article' + data.aid).remove();
+                },
+                error: function (jqXHR, textStatus, errorThrown) {
+                    alert(jqXHR, textStatus, errorThrown);
+                }
+            });
+    }
+  }
+  function EditArticle(ID) {
+      location.href = "article-edit?id=" + ID
+  }
+</script>
 {{end}}

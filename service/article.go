@@ -130,11 +130,17 @@ func EditArticle(c *gin.Context) {
 		"Article": models.Article{},
 	}
 	if id != "" {
-		article, err := models.GetArticleById(id)
+		article, err := models.GetFullArticleById(id)
+		logger.Debug("get article: ", article)
 		if mc.CheckGormErr(err) != nil {
 			return
 		}
+		tags := make([]string, len(article.Tags))
+		for _, tag := range article.Tags {
+			tags = append(tags, utils.ToStr(tag.ID))
+		}
 		res["Article"] = article
+		res["ExistTags"] = tags
 	}
 	cates, err2 := models.GetAllCategories()
 	if mc.CheckGormErr(err2) != nil {

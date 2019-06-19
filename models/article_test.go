@@ -2,6 +2,8 @@ package models
 
 import (
 	"testing"
+
+	"cblog/utils"
 )
 
 func TestInsertArticle(t *testing.T) {
@@ -13,6 +15,32 @@ func TestInsertArticle(t *testing.T) {
 	article.Delete()
 	arti2 := Article{Title: "TestInsertArticle2"}
 	arti2.Delete()
+}
+
+func TestGetFullArticleById(t *testing.T) {
+	cate := Category{Name: "TestCategory"}
+	cate.Insert()
+	defer cate.Delete()
+	tag := Tag{Name: "TestTag"}
+	tag.Insert()
+	defer tag.Delete()
+	arti := Article{
+		Title:      "标题1",
+		Body:       "正文1",
+		CategoryId: cate.ID,
+		TagsId:     []uint64{tag.ID},
+	}
+	arti.Insert()
+	defer arti.Delete()
+
+	arti2, err := GetFullArticleById(utils.ToStr(arti.ID))
+	if err != nil {
+		t.Fatal("获取文章失败")
+	}
+	t.Log("获取全文章信息: ", arti2)
+	if len(arti2.Tags) != 1 {
+		t.Fatal("文章的tag个数不对")
+	}
 }
 
 func TestGetArticleByCategory(t *testing.T) {
@@ -36,7 +64,7 @@ func TestGetArticleByCategory(t *testing.T) {
 	article2 := Article{
 		Title:    "标题2",
 		Body:     "正文2",
-		Category: &cate,
+		Category: cate,
 	}
 	err = article2.Insert()
 	defer article2.Delete()
@@ -124,6 +152,7 @@ func TestGetArticleInfos(t *testing.T) {
 	articles, _ := GetAllArticleInfos()
 	// 返回是有顺序的
 	if len(articles) != 3 || articles[0].Abstract != "body2" {
+		t.Log(len(articles), articles[0].Abstract)
 		t.Fatal("获取文章信息失败:", articles[0], articles[1], articles[2])
 	}
 
