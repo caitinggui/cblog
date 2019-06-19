@@ -42,8 +42,8 @@
 																	{{range .Article}}
 																	<tr id="{{ .ID | ToStr }}">
 																			  <td><a onclick="EditArticle({{ .ID | ToStr }})">{{ .Title }}</a></td>
-                                        <td>{{ .CreatedAt }}</td>
-                                        <td>{{ .UpdatedAt }}</td>
+                                        <td>{{ .CreatedAt | ToStr }}</td>
+                                        <td>{{ .UpdatedAt | ToStr }}</td>
                                         <td>{{ .Views }}</td>
                                         <td>{{ .Likes }}</td>
                                         <td>{{ .Likes }}</td>

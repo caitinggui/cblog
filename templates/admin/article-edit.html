@@ -27,16 +27,26 @@
                                 <div class="col-xs-1">
                                     <div class="form-group">
                                         <select class="form-control" name="status">
-                                            <option value="1">发布</option>
-                                            <option value="-1">存稿</option>
+                                            {{ if eq .Article.Status 1}}
+                                              <option value="1">发布</option>
+                                              <option value="-1">存稿</option>
+                                            {{ else }}
+                                              <option value="-1">存稿</option>
+                                              <option value="1">发布</option>
+                                            {{ end }}
                                         </select>
                                     </div>
                                 </div>
                                 <div class="col-xs-1">
                                     <div class="form-group">
                                         <select class="form-control" name="topped">
-                                            <option value="-1">不置顶</option>
-                                            <option value="1">置顶</option>
+                                            {{ if eq .Article.Topped 1}}
+                                              <option value="1">置顶</option>
+                                              <option value="-1">不置顶</option>
+                                            {{ else }}
+                                              <option value="-1">不置顶</option>
+                                              <option value="1">置顶</option>
+                                            {{ end }}
                                         </select>
                                     </div>
                                 </div>
@@ -47,7 +57,7 @@
                             <div class="row">
                                 <div class="col-md-6">
                                     <div class="form-group">
-                                        <select class="form-control select2" data-placeholder="分类" style="width: 100%;" name="categories">
+                                        <select class="form-control select2" data-placeholder="分类" style="width: 100%;" name="category_id">
                                             {{ range .Cates }}
                                                 <option value="{{ .ID }}">{{ .Name }}</option>
                                             {{ end }}
@@ -57,7 +67,7 @@
 
                                 <div class="col-md-6">
                                     <div class="form-group">
-                                        <select class="form-control select2" multiple="multiple" data-placeholder="标签" style="width: 100%;" name="tags">
+                                        <select class="form-control select2" multiple="multiple" data-placeholder="标签" style="width: 100%;" name="tags_id">
                                             {{ range .Tags }}
                                                 <option value="{{ .ID }}">{{ .Name }}</option>
                                             {{ end }}
@@ -115,51 +125,45 @@
 {{end}}
 
 {{define "footer"}}
-    <script src="/static/libs/select2/select2.full.min.js"></script>
-    <script src="/static/libs/editormd/editormd.js"></script>
-    <script type="text/javascript">
-        var Editor;
-        $(function () {
-                Editor = editormd("editormd", {
-                    width: "100%",
-                    height: 740,
-					<!--根据浏览器调试信息和nginx error.log来更改路径-->
-                    path: '/static/libs/editormd/lib/',
-										markdown: {{ .Article.Body }},
-                    codeFold: true,
-                    saveHTMLToTextarea: true,
-                    searchReplace: true,
-                    htmlDecode: "style,script,iframe|on*",
-                    emoji: true,
-                    taskList: true,
-                    tocm: true,
-                    tex: true,
-                    flowChart: true,
-                    sequenceDiagram: true,
-                    imageUpload: true,
-                    imageFormats: ["jpg", "jpeg", "gif", "png", "bmp", "webp"],
-                    imageUploadURL: "/admin/upload/"
-            });
-            $(".select2").select2();
-        });
-        $(function () {
-            $("select[name='categories']").val("").change();
-            exist_tags = "";
-            exist_tags = exist_tags.split(',');
-            $("select[name='tags']").val(exist_tags).change()
-        })
-    $(function () {
-        $("select[name='categories']").val("{{ .Article.Category.ID }}").change();
-        $("select[name='tags']").val({{ .ExistTags }}).change()
-    })
+<script src="/static/libs/select2/select2.full.min.js"></script>
+<script src="/static/libs/editormd/editormd.js"></script>
+<script type="text/javascript">
+  var Editor;
+  $(function () {
+          Editor = editormd("editormd", {
+              width: "100%",
+              height: 740,
+    <!--根据浏览器调试信息和nginx error.log来更改路径-->
+              path: '/static/libs/editormd/lib/',
+              markdown: {{ .Article.Body }},
+              codeFold: true,
+              saveHTMLToTextarea: true,
+              searchReplace: true,
+              htmlDecode: "style,script,iframe|on*",
+              emoji: true,
+              taskList: true,
+              tocm: true,
+              tex: true,
+              flowChart: true,
+              sequenceDiagram: true,
+              imageUpload: true,
+              imageFormats: ["jpg", "jpeg", "gif", "png", "bmp", "webp"],
+              imageUploadURL: "/admin/upload/"
+      });
+      $(".select2").select2();
+  });
+  $(function () {
+      $("select[name='category_id']").val("{{ .Article.Category.ID }}").change();
+      $("select[name='tags_id']").val({{ .ExistTags }}).change()
+  })
 
-			function setConfirm() {
-				is_confirm = true;
-			}
+  function setConfirm() {
+    is_confirm = true;
+  }
 
-			window.onbeforeunload = function(){
-				if(window.is_confirm !== true)
-				 return "文章尚未保存";
-			}
-    </script>
+  window.onbeforeunload = function(){
+    if(window.is_confirm !== true)
+     return "文章尚未保存";
+  }
+</script>
 {{end}}

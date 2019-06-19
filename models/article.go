@@ -13,7 +13,7 @@ type Article struct {
 	Body          string   `gorm:"type:longtext" json:"body" form:"editormd-markdown-doc" binding:"required"` //富文本
 	Status        int8     `gorm:"default:-1" json:"status" form:"status" binding:"omitempty,eq=-1|eq=1"`     //文章状态 -1:未发布 1:发布
 	Abstract      string   `gorm:"size:128" json:"abstract" form:"abstract" binding:"lte=128"`                //摘要
-	Views         uint64   `gorm:"default:0" "json:"views" form:"views" binding:"-"`                          //浏览数
+	Views         uint64   `gorm:"default:0" json:"views" form:"views" binding:"-"`                           //浏览数
 	Likes         uint64   `gorm:"default:0" json:"likes" form:"likes"`                                       //点赞数
 	UserLikes     string   `gorm:"type:text" json:"user_likes"`                                               //点赞的用户
 	Weight        uint64   `gorm:"default:0" json:"weight" form:"weight"`                                     //推荐权重
@@ -95,6 +95,11 @@ func (self *Article) BeforeDelete() error {
 func (self *Article) Delete() error {
 	// TODO 可以记录一下tag有哪些
 	return DB.Delete(self).Error
+}
+
+// 替换tags
+func (self *Article) ReplaceTags(tags []Tag) error {
+	return DB.Model(&self).Association("Tags").Replace(tags).Error
 }
 
 func (self *Article) GetInfoColumn() string {

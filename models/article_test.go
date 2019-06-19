@@ -17,6 +17,37 @@ func TestInsertArticle(t *testing.T) {
 	arti2.Delete()
 }
 
+func TestReplaceTags(t *testing.T) {
+	tag1 := Tag{Name: "tag1"}
+	tag2 := Tag{Name: "tag2"}
+	tag3 := Tag{Name: "tag3"}
+	tag4 := Tag{Name: "tag4"}
+	tag1.Insert()
+	defer tag1.Delete()
+	tag2.Insert()
+	defer tag2.Delete()
+	tag3.Insert()
+	defer tag3.Delete()
+	tag4.Insert()
+	defer tag4.Delete()
+	arti := Article{
+		Title: "arti",
+		Body:  "body",
+		Tags:  []Tag{tag1, tag2},
+	}
+	arti.Insert()
+	defer arti.Delete()
+	err := arti.ReplaceTags([]Tag{tag3, tag4})
+	if err != nil {
+		t.Fatal("替换tags失败: ", err)
+	}
+	arti2, _ := GetFullArticleById(utils.ToStr(arti.ID))
+	t.Log("arti2 in ReplaceTags: ", arti2)
+	if arti2.Tags[0].ID != tag3.ID && arti2.Tags[0].ID != tag4.ID {
+		t.Fatal("查询替换后的tags不符合预期")
+	}
+}
+
 func TestGetFullArticleById(t *testing.T) {
 	cate := Category{Name: "TestCategory"}
 	cate.Insert()

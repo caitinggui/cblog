@@ -41,6 +41,14 @@ func CreateOrUpdateArticle(c *gin.Context) {
 		return
 	}
 	if form.ID != 0 {
+		var tags []models.Tag
+		for _, tagId := range form.TagsId {
+			tag := models.Tag{}
+			tag.ID = tagId
+			tags = append(tags, tag)
+		}
+		// TODO 这里不一定要用ReplaceTags，可以直接delete已去除的tag，然后update会全部insert
+		form.ReplaceTags(tags)
 		form.Update()
 	} else {
 		err = form.Insert()
