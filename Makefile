@@ -1,4 +1,3 @@
-GOPATH:=$(CURDIR):$(GOPATH)
 
 test:
 	# 加上-v就会输出详细信息（包括自定义日志）
