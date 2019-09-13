@@ -10,9 +10,6 @@
 [submodule "_ref/gorush"]
 	path = _ref/gorush
 	url = https://github.com/appleboy/gorush.git
-[submodule "_ref/blog"]
-	path = _ref/blog
-	url = https://github.com/Momo733/blog.git
 [submodule "_ref/goblog"]
 	path = _ref/goblog
 	url = https://github.com/fifsky/goblog
