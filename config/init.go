@@ -25,6 +25,7 @@ type mysql struct {
 type praseIp struct {
 	Interval time.Duration
 	Capacity int
+	IsOpen bool
 }
 
 type config struct {
@@ -43,12 +44,6 @@ type uniqueId struct {
 
 var Config config
 var LoggerConfig []byte
-
-func PanicErr(err error) {
-	if err != nil {
-		panic(err)
-	}
-}
 
 // 定时更新配置(5min)，但是数据库链接等更新了也没法使用
 func UpdateConfigFrequency(configPath string) {
@@ -98,12 +93,12 @@ func init() {
 	}
 	logger.Info("configPath: ", configPath)
 	LoggerConfig, err = ioutil.ReadFile(configPath + "log.xml")
-	PanicErr(err)
+	utils.PanicErr(err)
 	content, err = ioutil.ReadFile(configPath + "config.yaml")
-	PanicErr(err)
+	utils.PanicErr(err)
 
 	err = yaml.Unmarshal(content, &Config)
-	PanicErr(err)
+	utils.PanicErr(err)
 	logger.Info("config.yaml: ", Config)
 
 	password := utils.UidDecrypt(Config.Mysql.Password)

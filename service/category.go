@@ -28,7 +28,7 @@ func CreateCategory(c *gin.Context) {
 		form models.Category
 		err  error
 	)
-	mc := Gin{C: c}
+	mc := NewAdvancedGinContext(c)
 	err = c.ShouldBind(&form)
 	if mc.CheckBindErr(err) != nil {
 		return
@@ -61,7 +61,7 @@ func CreateCategory(c *gin.Context) {
 *    }
  */
 func GetCategories(c *gin.Context) {
-	mc := Gin{C: c}
+	mc := NewAdvancedGinContext(c)
 	cates, err := models.GetAllCategories()
 	if mc.CheckGormErr(err) != nil {
 		return
@@ -89,7 +89,7 @@ func UpdateCategory(c *gin.Context) {
 		form models.Category
 		err  error
 	)
-	mc := Gin{C: c}
+	mc := NewAdvancedGinContext(c)
 	err = c.ShouldBind(&form)
 	logger.Info("UpdateCategory form: ", form)
 	if err != nil || form.ID == 0 {
@@ -118,10 +118,10 @@ func UpdateCategory(c *gin.Context) {
 *}
  */
 func DeleteCategory(c *gin.Context) {
-	mc := Gin{C: c}
+	mc := NewAdvancedGinContext(c)
 	id := c.Param("id")
 	logger.Info("try to delete category: ", id)
-	intId := utils.StrToUnit64(id)
+	intId := utils.StrToUint64(id)
 	if intId == 0 {
 		mc.WebJson(e.ERR_INVALID_PARAM, nil)
 		return

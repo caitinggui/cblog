@@ -30,20 +30,12 @@ func Health(c *gin.Context) {
 	}
 }
 
-func Hello(c *gin.Context) {
-	c.HTML(http.StatusOK, "blog/hello.html", gin.H{"title": "ctg"})
-}
-
-func Index(c *gin.Context) {
-	c.HTML(http.StatusOK, "admin/index.html", gin.H{"test": "test"})
-}
-
 func BindRoute(router *gin.Engine) {
 	// 可以注册根目录，不影响router在根目录继续添加路由
 	admin := router.Group("/admin")
 	admin.Use(service.LoginRequired())
 	{
-		admin.GET("", Index)
+		admin.GET("", service.AdminIndex)
 		admin.GET("/article", service.GetArticles)
 		admin.GET("/article-edit", service.EditArticle)
 		admin.GET("/article/:id", service.GetArticle)
@@ -69,6 +61,11 @@ func BindRoute(router *gin.Engine) {
 		admin.GET("/visitor", service.GetVisitors)
 	}
 
+	blog := router.Group("/blog")
+	blog.GET("/article/:id", service.GetArticle)
+	blog.GET("/tag/:id", service.GetTag)
+	blog.GET("/link/:id", service.GetLink)
+
 	router.POST("/login", service.PostLogin)
 	router.GET("/login", service.GetLogin)
 	router.GET("/logout", service.Logout)
@@ -76,13 +73,7 @@ func BindRoute(router *gin.Engine) {
 	router.GET("/health", Health)
 	//router.GET("/hello", Hello)
 
-	router.GET("/article/:id", service.GetArticle)
-
-	router.GET("/tag/:id", service.GetTag)
-
-	router.GET("/link/:id", service.GetLink)
-
-	router.GET("/", Hello)
+	router.GET("/", service.GetArticleIndex)
 
 	router.GET("/testadd", func(c *gin.Context) {
 		models.SetCache("test", 100, 0)
@@ -111,8 +102,7 @@ func ListenAndServeGrace(listen string, router http.Handler) error {
 		if err == http.ErrServerClosed {
 			logger.Info("正常结束服务: ", err)
 		} else {
-			logger.Info("服务结束异常: ", err)
-			panic(err)
+			logger.Critical("服务结束异常: ", err)
 		}
 	}()
 	stop := make(chan os.Signal, 1)
@@ -165,7 +155,9 @@ func InitRouterAndDb() (router *gin.Engine, db *gorm.DB) {
 
 	})
 	router.Use(sessions.Sessions("cblog", store))
-	router.Use(service.RecordClientIp())
+	if config.Config.PraseIp.IsOpen {
+		router.Use(service.RecordClientIp())
+	}
 	router.Use(service.AbortClientCache())
 	BindRoute(router)
 

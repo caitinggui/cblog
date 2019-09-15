@@ -12,9 +12,9 @@ import (
 )
 
 func GetVisitors(c *gin.Context) {
-	mc := Gin{C: c}
-	page := utils.StrToUnit64(c.Query("page"))
-	pageSize := utils.StrToUnit64(c.Query("pageSize"))
+	mc := NewAdvancedGinContext(c)
+	page := utils.StrToUint(c.Query("page"))
+	pageSize := utils.StrToUint(c.Query("pageSize"))
 	if pageSize == 0 || pageSize > V.MaxPageSize {
 		pageSize = V.MaxPageSize
 	}
@@ -25,7 +25,7 @@ func GetVisitors(c *gin.Context) {
 }
 
 func GetVisitor(c *gin.Context) {
-	id := utils.StrToUnit64(c.Param("id"))
+	id := utils.StrToUint64(c.Param("id"))
 	logger.Info("get visitor by id: ", id)
 	visitor, err := models.GetVisitorById(id)
 	logger.Info("get visitor result: ", err)
@@ -61,7 +61,7 @@ func UpdateVisitor(c *gin.Context) {
 }
 
 func DeleteVisitor(c *gin.Context) {
-	id := utils.StrToUnit64(c.Param("id"))
+	id := utils.StrToUint64(c.Param("id"))
 	logger.Info("delete visitor by id: ", id)
 	err := models.DeleteVisitorById(id)
 	logger.Info("delete visitor result: ", err)

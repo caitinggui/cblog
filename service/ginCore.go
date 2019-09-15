@@ -1,9 +1,11 @@
 package service
 
 import (
+	"fmt"
 	"html/template"
 	"net/http"
 	"path/filepath"
+	"strings"
 	"time"
 
 	logger "github.com/caitinggui/seelog"
@@ -17,6 +19,13 @@ import (
 
 type Gin struct {
 	C *gin.Context
+	Res gin.H
+}
+
+// new a Gin struct
+func NewAdvancedGinContext(c *gin.Context) *Gin {
+	mc := Gin{C: c, Res: gin.H{}}
+	return &mc
 }
 
 // 临时重定向
@@ -66,43 +75,37 @@ func (self *Gin) CheckBindErr(err error) error {
 	return nil
 }
 
+// load template directory
+func loadTemplateDir(r multitemplate.Renderer, funcMap template.FuncMap, templatesDir string, module string) {
+	logger.Infof("loac template module: %s/%s", templatesDir, module)
+	moduleBase, err := filepath.Glob(fmt.Sprint(templatesDir, "/layouts/", module, "-base.html"))
+	utils.PanicErr(err)
+	moduleHtmls, err := filepath.Glob(fmt.Sprint(templatesDir , "/", module, "/*.html"))
+	utils.PanicErr(err)
+	for _, adminHtml := range moduleHtmls {
+		layoutCopy := make([]string, len(moduleBase))
+		copy(layoutCopy, moduleBase)
+		files := append(layoutCopy, adminHtml)
+		relativePath, err := filepath.Rel(templatesDir, adminHtml)
+		utils.PanicErr(err)
+		logger.Info("template name: ", relativePath)
+		r.AddFromFilesFuncs(relativePath, funcMap, files...)
+	}
+}
+
 // 加载模板
 func LoadTemplates(templatesDir string) multitemplate.Renderer {
-	var relativePath string
+	//var relativePath string
 	r := multitemplate.NewRenderer()
 	// 定义模板函数
 	funcMap := template.FuncMap{
 		"FormatAsDate": FormatAsDate,
 		"ToStr":        utils.ToStr,
+		"Split":        SplitSring,
 	}
 
-	adminBase, err := filepath.Glob(templatesDir + "/layouts/admin-base.html")
-	if err != nil {
-		panic(err.Error())
-
-	}
-
-	adminHtmls, err := filepath.Glob(templatesDir + "/admin/*.html")
-	if err != nil {
-		panic(err.Error())
-
-	}
-	logger.Info("adminBase: ", adminBase)
-	logger.Info("adminHtmls: ", adminHtmls)
-
-	// Generate our templates map from our adminBase/ and admin/ directories
-	for _, adminHtml := range adminHtmls {
-		layoutCopy := make([]string, len(adminBase))
-		copy(layoutCopy, adminBase)
-		files := append(layoutCopy, adminHtml)
-		relativePath, err = filepath.Rel(templatesDir, adminHtml)
-		if err != nil {
-			panic(err)
-		}
-		logger.Info("template name: ", relativePath)
-		r.AddFromFilesFuncs(relativePath, funcMap, files...)
-
-	}
+	loadTemplateDir(r, funcMap, templatesDir, "admin")
+	loadTemplateDir(r, funcMap, templatesDir, "blog")
 	// login.html模板不使用base.html渲染
 	r.AddFromFilesFuncs("login.html", funcMap, templatesDir+"/login.html")
 
@@ -114,6 +117,11 @@ func LoadTemplates(templatesDir string) multitemplate.Renderer {
 // html模板函数，时间转为字符串格式
 func FormatAsDate(t time.Time) string {
 	return t.Format("2006-01-02 15:04:05")
+}
+
+// template function
+func SplitSring(s string, sep string) []string {
+	return strings.Split(s, sep)
 }
 
 // 用来logger记录gin框架的log

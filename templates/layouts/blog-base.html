@@ -1,0 +1,73 @@
+{{define "blog-base.html"}}
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:float="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8">
+    <meta name='keywords' content="技术博客,低调诺,程序员,码农,">
+    <meta name='author' content="低调诺">
+    <meta name='description' content="一个程序员的技术积累，包括各种各样的问题">
+    <title>低调诺的博客</title>
+    <link rel="shortcut icon" type="image/x-icon" href="/static/img/favicon.ico" media="screen" />
+    <link rel="stylesheet" href=/static/css/index-style.css>
+    <link rel="stylesheet" href="/static/libs/AdminLTE/bower_components/bootstrap/dist/css/bootstrap.min.css">
+	<style type="text/css">
+		body { background: #000; margin: 0; padding:0; }
+		canvas {position: fixed; z-index: -1}
+	</style>
+    <script src="/static/libs/AdminLTE/bower_components/jquery/dist/jquery.min.js"></script>
+    <!--script type="text/javascript" src="{% static 'blog/js/ajaxdebug.js' %}"></script-->
+</head>
+<body>
+<canvas id='canvas'></canvas>
+<div id="header" class="transparent">
+    <div id="header-warp" class="form-group row">
+        <a href="/admin" title="我的博客" id="logo"></a>
+        <a href="/" css="float left">首页</a>
+
+{{/*        <div id="header-right" class="login">*/}}
+{{/*            <div class="user">*/}}
+{{/*            {% if request.session.username %}*/}}
+{{/*                <div id='userimgdiv'>*/}}
+{{/*                    <img class='img-circle' id='userimg' src="{{ MEDIAURL }}{{ request.session.userimg }}" alt='头像'>*/}}
+{{/*                </div>*/}}
+{{/*                <a id='username' href="{% url 'blog:logout' %}" float:left>{{ request.session.username }}</a>*/}}
+{{/*                <a id='usercomment' href="{% url 'blog:account' %}">评论过的文章</a>*/}}
+{{/*            {% else %}*/}}
+{{/*                <a href="{% url 'blog:regist' %}">注册</a>*/}}
+{{/*                <a href="{% url 'blog:login' %}">登陆</a>*/}}
+{{/*            {% endif %}*/}}
+{{/*            </div>*/}}
+            
+    <form method='get' action='/search'>
+        <input name='q' id='id_q' placeholder="输入要搜索的关键字">
+        <input id='search' value="搜索" type='submit'>
+    </form>
+    </div>
+</div>
+    
+{{template "content" .}}
+<div class="row" id="friend">
+  {{ range .Links }}
+  <div class="col-md-1">
+		<a class="friend-url" href="{{ .Url }}" target="_blank" title={{ .Desc }}>{{ .Name }}</a>
+  </div>
+  {{ end }}
+</div>
+
+<div class="row">
+  <div class="col-md-5 col-md-offset-3">Copyright © 2006-2016 caitinggui(caitinggui@qq.com).All Rights Reserved</div>
+</div>
+<div class="row">
+  <div class="col-md-3 col-md-offset-3">
+      <a href="http://www.miitbeian.gov.cn" target="_blank">粤ICP备16122044号</a>
+  </div>
+  <div class="col-md-2">
+      <a href="mailto:caitinggui@qq.com">联系我</a>
+  </div>
+</div>
+</body>
+
+<script type="text/javascript" src="/static/js/index.js"></script>
+{{template "footer" .}}
+</html>
+{{ end }}

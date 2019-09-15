@@ -23,7 +23,7 @@ import (
 *    }
  */
 func GetTags(c *gin.Context) {
-	mc := Gin{C: c}
+	mc := NewAdvancedGinContext(c)
 	tags, err := models.GetAllTags()
 	logger.Info("get tags result: ", err)
 	if mc.CheckGormErr(err) != nil {
@@ -45,8 +45,8 @@ func GetTags(c *gin.Context) {
 *}
  */
 func GetTag(c *gin.Context) {
-	mc := Gin{C: c}
-	id := utils.StrToUnit64(c.Param("id"))
+	mc := NewAdvancedGinContext(c)
+	id := utils.StrToUint64(c.Param("id"))
 	logger.Info("get tag by id: ", id)
 	tag, err := models.GetTagById(id)
 	logger.Info("get tag result: ", err)
@@ -73,7 +73,7 @@ func GetTag(c *gin.Context) {
 // 为避免字段改变影响到业务，所以不用c.PostForm来获取参数，统一用c.Bind
 func CreateTag(c *gin.Context) {
 	var tagNum int64
-	mc := Gin{C: c}
+	mc := NewAdvancedGinContext(c)
 	form := &models.Tag{}
 	// bind会优先json，xml，然后匹配不到才找form
 	err := c.ShouldBind(form)
@@ -111,7 +111,7 @@ func CreateTag(c *gin.Context) {
  */
 func UpdateTag(c *gin.Context) {
 	var form, tag models.Tag
-	mc := Gin{C: c}
+	mc := NewAdvancedGinContext(c)
 	err := c.Bind(&form)
 	logger.Info("origin form: ", form, " err: ", err)
 	if err != nil || form.ID == V.EmptyIntId {
@@ -145,8 +145,8 @@ func UpdateTag(c *gin.Context) {
 *}
  */
 func DeleteTag(c *gin.Context) {
-	mc := Gin{C: c}
-	id := utils.StrToUnit64(c.Param("id"))
+	mc := NewAdvancedGinContext(c)
+	id := utils.StrToUint64(c.Param("id"))
 	logger.Info("delete tag by id: ", id)
 	err := models.DeleteTagById(id)
 	if mc.CheckGormErr(err) != nil {

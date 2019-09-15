@@ -1,0 +1,122 @@
+{{define "header"}}
+    <link rel="stylesheet" href="/static/libs/editormd/css/editormd.css"/>
+{{end}}
+{{define "content"}}
+<div class="container">
+    <div class="row">
+        <div id="bd" class="wrp clear-fix transparent ">
+            <div id="main">
+                <div id="detail-title">
+                    <ul id="single-nav">
+                        <li><a href="/">首页</a></li>
+                        <li>&gt;</li>
+                        <li>
+                            <ul class="post-categories">
+                                <li><a href="{% url 'blog:category' .Article.category.id %}" title=""
+                                       rel="category">{{ .Article.Category.Name }}</a>
+                                </li>
+                            </ul>
+                        </li>
+                        <li>&gt;</li>
+                        <li class="title-active"><a href="/blog/article/{{ .Article.ID }}"
+                                                    rel="bookmark">{{ .Article.Title }}</a>
+                        </li>
+                    </ul>
+                </div>
+                <div id="post-1951"
+                     class="post-1951 post type-post status-publish format-standard hentry category-meida-report">
+                    <div class="post-hd">
+                        <h1 class="title">{{ .Article.Title }}</h1>
+                    </div>
+                    <div class="date-read">
+                        <i class="icon-date"></i><span
+                            class="date">{{ .Article.UpdatedAt|FormatAsDate }}</span>
+                        <a href="/admin/article-edit?id={{ .Article.ID }}">编辑</a>&nbsp;&nbsp;&nbsp;&nbsp;
+                        <input type='image' class='praise' src="/static/img/gb21.png" href="/blog/.Article/{{ .Article.ID }}/praise">
+                        <span class='likes_num'>{{ .Article.Likes}}</span>&nbsp;&nbsp;&nbsp;&nbsp;
+                        <span>阅读量:{{ .Article.Views}}</span>
+                    </div>
+                    <div class='upload' >
+                        <form class="form" action="/blog/article/{{ .Article.ID }}/upload" method="post" enctype="multipart/form-data">
+                            <input name='uploadfile' type='file'>
+                            <input type="submit" value="附件上传" >
+                        </form>
+                    </div>
+                    <div id="editormd">
+                      <textarea style="display:none">{{ .Article.Body }}</textarea>
+                    </div>
+                    <div class="post-bd">
+                        <h3 class="title">附件:</h3>
+                        {{ $url := Split .Article.AttachmentUrl ","}}
+                        {{ range $index, $elem := $url }}
+                            <a href="/blog/article/{{ $.Article.ID }}/download/{{ $index }}">{{ $elem }}</a><br>
+                        {{ end }}
+                    </div>
+                </div>
+            </div>
+        </div>
+     
+{{/*        <div class="comment transparent">*/}}
+{{/*            <div class="comment-main">*/}}
+{{/*                <p class="head">评论详情</p>*/}}
+{{/*                <form method="post" action="{% url 'blog:comment' .Article.pk %}">*/}}
+{{/*                    <div class="row">*/}}
+{{/*                        {% for field in form %}*/}}
+{{/*                        {{ field }}*/}}
+{{/*                    {{ field.errors }}*/}}
+{{/*                        <br>*/}}
+{{/*                        {% endfor %}*/}}
+{{/*                    </div>*/}}
+{{/*                    <button type="submit" class="com-button">评论</button>*/}}
+{{/*                </form>*/}}
+{{/*                <p class="comment-count">共{{ comment_nums }}条评论</p>*/}}
+{{/*                <hr>*/}}
+{{/*                {% for comment in comment_list %}*/}}
+{{/*                <div class="main-content">*/}}
+{{/*                    {% if comment.commentator.userprofile.nickname %}*/}}
+{{/*                    <span class="user-nickname">网友: {{ comment.commentator.userprofile.nickname }}</span>*/}}
+{{/*                    {% else %}*/}}
+{{/*                    <span class="user-nickname">网友: {{ comment.commentator}}</span>*/}}
+{{/*                    {% endif %}*/}}
+{{/*                    <time class="time">{{ comment.created_time | date:'Y-m-j H:i' }}</time>*/}}
+{{/*                    <div class="comment-content">*/}}
+{{/*                        {{ comment.body }}*/}}
+{{/*                    </div>*/}}
+{{/*                    {#                <a href="">回复</a>#}*/}}
+{{/*                </div>*/}}
+{{/*                <hr>*/}}
+{{/*                {% endfor %}*/}}
+{{/*            </div>*/}}
+{{/*        </div>*/}}
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-md-2 obvious-color">
+    <p>最近访客</p>
+  </div>
+  {{ range .Visitors }}
+  <div class="col-md-2">
+    <p>{{ .IP }}[{{ .City }}]  <sup>{{ .CreatedAt | FormatAsDate }}</sup></p>
+  </div>
+  {{ end }}
+</div>
+{{ end }}
+{{define "footer"}}
+    <script src="/static/libs/editormd/editormd.js"></script>
+    <script src="/static/libs/editormd/lib/marked.min.js"></script>
+    <script src="/static/libs/editormd/lib/prettify.min.js"></script>
+    <script type="text/javascript">
+        var Editor;
+        $(function () {
+                Editor = editormd.markdownToHTML("editormd", {
+                    path: '/static/admin/editormd/lib/',
+                    htmlDecode: "style,script,iframe|on*",
+                    emoji: true,
+                    taskList: true,
+                    tocm: true,
+                    tex: true,
+                });
+        });
+    </script>
+{{end}}

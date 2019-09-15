@@ -1,8 +1,10 @@
 package service
 
 import (
+	"cblog/utils/V"
 	logger "github.com/caitinggui/seelog"
 	"github.com/gin-gonic/gin"
+	"net/http"
 
 	"cblog/models"
 	"cblog/utils"
@@ -34,7 +36,7 @@ func CreateOrUpdateArticle(c *gin.Context) {
 		form models.Article
 		err  error
 	)
-	mc := Gin{C: c}
+	mc := NewAdvancedGinContext(c)
 	err = c.ShouldBind(&form)
 	logger.Debug("创建文章: ", form)
 	if mc.CheckBindErr(err) != nil {
@@ -84,7 +86,7 @@ func UpdateArticle(c *gin.Context) {
 		form models.Article
 		err  error
 	)
-	mc := Gin{C: c}
+	mc := NewAdvancedGinContext(c)
 	err = c.ShouldBind(&form)
 	if mc.CheckBindErr(err) != nil {
 		return
@@ -109,14 +111,20 @@ func UpdateArticle(c *gin.Context) {
 *}
  */
 func GetArticle(c *gin.Context) {
-	mc := Gin{C: c}
+	mc := NewAdvancedGinContext(c)
 	id := c.Param("id")
 	logger.Info("get article : ", id)
-	article, err := models.GetArticleById(id)
+	article, err := models.GetFullArticleById(id)
 	if mc.CheckGormErr(err) != nil {
 		return
 	}
-	mc.WebJson(e.SUCCESS, article)
+	visitors, err := models.GetVisitorsByArticle(id)
+	if mc.CheckGormErr(err) != nil {
+		return
+	}
+	mc.Res = gin.H{"Article": article, "Visitors": visitors}
+	logger.Debugf("response: %+v", mc.Res)
+	mc.SuccessHtml("blog/detail.html", mc.Res)
 }
 
 /**
@@ -132,14 +140,14 @@ func GetArticle(c *gin.Context) {
 *}
 **/
 func EditArticle(c *gin.Context) {
-	mc := Gin{C: c}
+	mc := NewAdvancedGinContext(c)
 	id := c.Query("id")
 	res := gin.H{
 		"Article": models.Article{},
 	}
 	if id != "" {
 		article, err := models.GetFullArticleById(id)
-		logger.Debug("get article: ", article)
+		logger.Debugf("get article: %+v", article)
 		if mc.CheckGormErr(err) != nil {
 			return
 		}
@@ -176,10 +184,10 @@ func EditArticle(c *gin.Context) {
 *}
  */
 func DeleteArticle(c *gin.Context) {
-	mc := Gin{C: c}
+	mc := NewAdvancedGinContext(c)
 	id := c.Param("id")
 	logger.Info("try to delete article: ", id)
-	intId := utils.StrToUnit64(id)
+	intId := utils.StrToUint64(id)
 	if intId == 0 {
 		mc.WebJson(e.ERR_INVALID_PARAM, nil)
 		return
@@ -211,7 +219,7 @@ func GetArticles(c *gin.Context) {
 		articles []*models.Article
 		err      error
 	)
-	mc := Gin{C: c}
+	mc := NewAdvancedGinContext(c)
 	err = c.ShouldBindQuery(&form)
 	logger.Info("form: ", form)
 	if mc.CheckBindErr(err) != nil {
@@ -224,12 +232,71 @@ func GetArticles(c *gin.Context) {
 	mc.SuccessHtml("admin/article-list.html", gin.H{"Article": articles})
 }
 
+func GetArticleIndex(c *gin.Context) {
+	var (
+		form     models.ArticleListParam
+		articles []*models.Article
+		err      error
+	)
+	mc := NewAdvancedGinContext(c)
+	err = c.ShouldBindQuery(&form)
+	logger.Infof("get article index, form: %+v", form)
+	if mc.CheckBindErr(err) != nil {
+		return
+	}
+	articles, err = models.GetArticleInfos(form)
+	if mc.CheckGormErr(err) != nil {
+		return
+	}
+	cates, err := models.GetAllCategories()
+	if mc.CheckGormErr(err) != nil {
+		return
+	}
+	tags, err := models.GetAllTags()
+	if mc.CheckGormErr(err) != nil {
+		return
+	}
+	visitors, err := models.GetVisitors(0, V.DefaultPageSize)
+	if mc.CheckGormErr(err) != nil {
+		return
+	}
+	visitorSum, _ := models.GetCache(V.VisitorSum)
+	mc.Res = map[string]interface{}{
+		"Articles": articles,
+		"Cates": cates,
+		"Tags": tags,
+		"Visitors": visitors,
+		"VisitorSum": visitorSum,
+	}
+	mc.SuccessHtml("blog/index.html", mc.Res)
+}
+
 func GetArticleNames(c *gin.Context) {
-	mc := Gin{C: c}
+	mc := NewAdvancedGinContext(c)
 	logger.Info("get articles name")
 	names, err := models.GetAllArticleNames()
 	if mc.CheckGormErr(err) != nil {
 		return
 	}
 	mc.WebJson(e.SUCCESS, names)
+}
+
+// admin index
+func AdminIndex(c *gin.Context) {
+	mc := NewAdvancedGinContext(c)
+	updateBlogTemplateContext(mc)
+	c.HTML(http.StatusOK, "admin/index.html", mc.Res)
+}
+
+func updateBlogTemplateContext(mc *Gin) {
+	if value, ok := mc.Res["Links"]; ok {
+		logger.Errorf("template context exist same key: Links, the value: %v", value)
+		return
+	}
+	links, err := models.GetAllLinks()
+	if mc.CheckGormErr(err) != nil {
+		return
+	}
+	mc.Res["Links"] = links
+	return
 }

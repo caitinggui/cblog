@@ -35,3 +35,9 @@ func GetCache(key string) (data interface{}, ok bool) {
 	data, ok = Cache.Get(key)
 	return
 }
+
+// add one a time
+func IncrUint(key string) (n uint, err error) {
+	n, err = Cache.IncrementUint(key, 1)
+	return
+}

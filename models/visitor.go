@@ -1,6 +1,7 @@
 package models
 
 import (
+	"cblog/utils/V"
 	"errors"
 
 	"cblog/utils"
@@ -87,8 +88,9 @@ func GetAllVisitors() (visitors []Visitor, err error) {
 	return
 }
 
-// Find要放order之类的后面
-func GetVisitors(page, pageSize uint64) (visitors []Visitor, err error) {
+// page start from 0
+func GetVisitors(page, pageSize uint) (visitors []Visitor, err error) {
+	// Find要放order之类的后面
 	err = DB.Order("ID desc").Offset(pageSize * page).Limit(pageSize).Find(&visitors).Error
 	return
 }
@@ -100,4 +102,14 @@ func GetVisitorById(id uint64) (visitor Visitor, err error) {
 
 func DeleteVisitorById(id uint64) error {
 	return DB.Where("id = ?", id).Delete(&Visitor{}).Error
+}
+
+func GetVisitorsByArticle(articleId string) (visitors []Visitor, err error) {
+	err = DB.Order("ID desc").Limit(V.DefaultPageSize).Where("article_id=?", articleId).Find(&visitors).Error
+	return
+}
+
+func CountVisitor() (n uint, err error) {
+	err = DB.Model(&Visitor{}).Count(&n).Error
+	return
 }

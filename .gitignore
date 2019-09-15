@@ -19,4 +19,7 @@
 # Others
 foo.db
 logs
-static
+.idea/
+cache.dump
+cblog
+gin-bin

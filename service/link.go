@@ -10,7 +10,7 @@ import (
 )
 
 func GetLinks(c *gin.Context) {
-	mc := Gin{C: c}
+	mc := NewAdvancedGinContext(c)
 	links, err := models.GetAllLinks()
 	logger.Info("get links result: ", err)
 	if mc.CheckGormErr(err) != nil {
@@ -20,8 +20,8 @@ func GetLinks(c *gin.Context) {
 }
 
 func GetLink(c *gin.Context) {
-	mc := Gin{C: c}
-	id := utils.StrToUnit64(c.Param("id"))
+	mc := NewAdvancedGinContext(c)
+	id := utils.StrToUint64(c.Param("id"))
 	logger.Info("get link by id: ", id)
 	link, err := models.GetLinkById(id)
 	logger.Info("get link result: ", err)
@@ -33,7 +33,7 @@ func GetLink(c *gin.Context) {
 
 // 为避免字段改变影响到业务，所以不用c.PostForm来获取参数，统一用c.ShouldBind
 func CreateLink(c *gin.Context) {
-	mc := Gin{C: c}
+	mc := NewAdvancedGinContext(c)
 	form := models.Link{}
 	// bind会优先json，xml，然后匹配不到才找form
 	err := c.ShouldBind(&form)
@@ -54,7 +54,7 @@ func CreateLink(c *gin.Context) {
 
 func UpdateLink(c *gin.Context) {
 	var form models.Link
-	mc := Gin{C: c}
+	mc := NewAdvancedGinContext(c)
 	err := c.ShouldBind(&form)
 	logger.Info("origin form: ", form, " err: ", err)
 	if mc.CheckBindErr(err) != nil {
@@ -69,8 +69,8 @@ func UpdateLink(c *gin.Context) {
 }
 
 func DeleteLink(c *gin.Context) {
-	mc := Gin{C: c}
-	id := utils.StrToUnit64(c.Param("id"))
+	mc := NewAdvancedGinContext(c)
+	id := utils.StrToUint64(c.Param("id"))
 	logger.Info("delete link by id: ", id)
 	err := models.DeleteLinkById(id)
 	logger.Info("delete link result: ", err)

@@ -25,7 +25,12 @@ import (
 var UID *uniqueid.UniqueId
 var HttpClient = http.Client{Timeout: 3 * time.Second}
 
-func StrToUnit64(s string) (n uint64) {
+func StrToUint(s string) uint {
+	n, _ := strconv.ParseUint(s, 10, 64)
+	return uint(n)
+}
+
+func StrToUint64(s string) (n uint64) {
 	// 10进制，64位
 	n, _ = strconv.ParseUint(s, 10, 64)
 	return n
@@ -301,5 +306,11 @@ func CronFuncDaily(f func() error, hour, min, sec int) {
 		logger.Info("定时任务执行完成: ", err, " 开始下一次定时: ", nextDay)
 		timer.Reset(nextDay.Sub(now))
 		<-timer.C
+	}
+}
+
+func PanicErr(err error) {
+	if err != nil {
+		panic(err)
 	}
 }

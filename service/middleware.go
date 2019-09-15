@@ -60,6 +60,16 @@ func AdminRequierd() gin.HandlerFunc {
 func RecordClientIp() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var article_id string
+		// update visitor sum
+		if _, err := models.IncrUint(V.VisitorSum); err != nil {
+			logger.Warnf("there doesn't exist %s in cache", V.VisitorSum)
+			visitorSum, err := models.CountVisitor()
+			if err != nil {
+				logger.Error("count visitor failed: ", err)
+			} else {
+				models.SetCache(V.VisitorSum, visitorSum, 0)
+			}
+		}
 		clientIp := c.ClientIP()
 		url := c.Request.URL.String()
 		if strings.HasPrefix(url, "/article/") {
