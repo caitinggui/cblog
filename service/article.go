@@ -248,6 +248,11 @@ func GetArticleIndex(c *gin.Context) {
 	if mc.CheckGormErr(err) != nil {
 		return
 	}
+	articleNum, err := models.CountArticle()
+	if mc.CheckGormErr(err) != nil {
+		return
+	}
+	pages := Paginator(form.Page, form.PageSize, articleNum)
 	cates, err := models.GetAllCategories()
 	if mc.CheckGormErr(err) != nil {
 		return
@@ -267,7 +272,9 @@ func GetArticleIndex(c *gin.Context) {
 		"Tags": tags,
 		"Visitors": visitors,
 		"VisitorSum": visitorSum,
+		"Paginator": pages,
 	}
+	logger.Debugf("res: %+v", mc.Res)
 	mc.SuccessHtml("blog/index.html", mc.Res)
 }
 

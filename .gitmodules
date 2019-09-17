@@ -1,6 +1,6 @@
 [submodule "_ref/Blog"]
 	path = _ref/Blog
-	url = https://github.com/caitinggui/Blog.git
+	url = https://github.com/caitinggui/Blog
 [submodule "_ref/go-gin-example"]
 	path = _ref/go-gin-example
 	url = https://github.com/EDDYCJY/go-gin-example

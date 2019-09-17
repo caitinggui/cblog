@@ -3,6 +3,7 @@ package service
 import (
 	"fmt"
 	"html/template"
+	"math"
 	"net/http"
 	"path/filepath"
 	"strings"
@@ -18,7 +19,7 @@ import (
 )
 
 type Gin struct {
-	C *gin.Context
+	C   *gin.Context
 	Res gin.H
 }
 
@@ -80,7 +81,7 @@ func loadTemplateDir(r multitemplate.Renderer, funcMap template.FuncMap, templat
 	logger.Infof("loac template module: %s/%s", templatesDir, module)
 	moduleBase, err := filepath.Glob(fmt.Sprint(templatesDir, "/layouts/", module, "-base.html"))
 	utils.PanicErr(err)
-	moduleHtmls, err := filepath.Glob(fmt.Sprint(templatesDir , "/", module, "/*.html"))
+	moduleHtmls, err := filepath.Glob(fmt.Sprint(templatesDir, "/", module, "/*.html"))
 	utils.PanicErr(err)
 	for _, adminHtml := range moduleHtmls {
 		layoutCopy := make([]string, len(moduleBase))
@@ -102,14 +103,14 @@ func LoadTemplates(templatesDir string) multitemplate.Renderer {
 		"FormatAsDate": FormatAsDate,
 		"ToStr":        utils.ToStr,
 		"Split":        SplitSring,
+		"AddUint64":    AddUint64,
+		"SubUint64":    SubUint64,
 	}
 
 	loadTemplateDir(r, funcMap, templatesDir, "admin")
 	loadTemplateDir(r, funcMap, templatesDir, "blog")
 	// login.html模板不使用base.html渲染
 	r.AddFromFilesFuncs("login.html", funcMap, templatesDir+"/login.html")
-
-	r.AddFromFilesFuncs("blog/hello.html", funcMap, templatesDir+"/blog/hello.html")
 	return r
 
 }
@@ -124,10 +125,77 @@ func SplitSring(s string, sep string) []string {
 	return strings.Split(s, sep)
 }
 
+// template function
+func AddUint64(i, x uint64) uint64 {
+	return i + x
+}
+
+// template function
+func SubUint64(i, x uint64) uint64 {
+	return i - x
+}
+
 // 用来logger记录gin框架的log
 type GinLog struct{}
 
 func (self GinLog) Write(p []byte) (n int, err error) {
 	logger.Trace(string(p))
 	return len(p), nil
+}
+
+func Paginator(page, pageSize, nums uint64) map[string]interface{} {
+	var (
+		left      uint64 = 2
+		right     uint64 = 2
+		leftStart uint64
+	)
+	pages := make([]uint64, 0, left+right)
+	//根据nums总数，和pageSize每页数量 生成分页总数
+	totalpages := uint64(math.Ceil(float64(nums) / float64(pageSize))) //page总数
+	if page > totalpages {
+		page = totalpages
+	}
+	// pages contain can't contain 1 and the lastPage
+	// if page-left == 1, then leftStart should equal 2
+	if page-left < 2 {
+		leftStart = 2
+	} else {
+		leftStart = page - left
+	}
+	switch page {
+	case 1:
+		// right list
+		// can't contain self when page=1
+		for x := page + 1; x < page+right+1 && x < totalpages; x++ {
+			pages = append(pages, x)
+		}
+	case totalpages:
+		// left list
+		for x := leftStart; x < page; x++ {
+			pages = append(pages, x)
+		}
+	default:
+		// left list
+		for x := leftStart; x < page; x++ {
+			pages = append(pages, x)
+		}
+		// right list
+		for x := page; x < page+right+1 && x < totalpages; x++ {
+			pages = append(pages, x)
+		}
+	}
+	paginatorMap := make(map[string]interface{})
+	paginatorMap["Pages"] = pages
+	paginatorMap["FirstPage"] = uint64(1)
+	paginatorMap["LastPage"] = totalpages
+	paginatorMap["CurrPage"] = page
+	paginatorMap["Totals"] = nums
+	if len(pages) != 0 {
+		paginatorMap["FirstLeftPage"] = pages[0]
+		paginatorMap["LastRightPage"] = pages[len(pages)-1] + 1
+	} else {
+		paginatorMap["FirstLeftPage"] = 1
+		paginatorMap["LastRightPage"] = 2
+	}
+	return paginatorMap
 }

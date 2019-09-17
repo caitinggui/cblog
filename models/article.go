@@ -31,8 +31,8 @@ type ArticleListParam struct {
 	Status int8 `form:"status" binding:"omitempty,eq=-1|eq=1"` //文章状态 -1:未发布 1:发布
 	Topped int8 `form:"topped" binding:"omitempty,eq=-1|eq=1"` //是否置顶, -1不置顶，1置顶
 
-	Offset     uint64 `gorm:"-" form:"offset"`                             // 用于分页
-	Size       uint64 `gorm:"-" form:"size,default=10" binding:"lte=1000"` // 用于分页
+	Page       uint64 `gorm:"-" form:"page,default=1" binding:"gte=1"`          // 用于分页, start from 0
+	PageSize   uint64 `gorm:"-" form:"page_size,default=10" binding:"lte=1000"` // 用于分页
 	CategoryId uint64 `gorm:"-" form:"category_id"`
 	TagId      uint64 `gorm:"-" form:"tag_id"` // 用于根据tag查找
 }
@@ -131,7 +131,7 @@ func GetAllArticleNames() (articles []*Article, err error) {
 // form不用引用是为了规范一下，毕竟form不能再修改
 func GetArticleInfos(form ArticleListParam) (articles []*Article, err error) {
 	arti := Article{}
-	err = DB.Where(&form).Select(arti.GetInfoColumn()).Limit(form.Size).Offset(form.Offset).Order(arti.GetDefaultOrder()).Find(&articles).Error
+	err = DB.Where(&form).Select(arti.GetInfoColumn()).Limit(form.PageSize).Offset((form.Page - 1) * form.PageSize).Order(arti.GetDefaultOrder()).Find(&articles).Error
 	return
 }
 
@@ -182,4 +182,9 @@ func DeleteArticleById(id uint64) error {
 	arti := Article{}
 	arti.ID = id
 	return arti.Delete()
+}
+
+func CountArticle() (n uint64, err error) {
+	err = DB.Model(&Article{}).Count(&n).Error
+	return
 }

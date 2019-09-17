@@ -188,8 +188,8 @@ func TestGetArticleInfos(t *testing.T) {
 	}
 
 	form := ArticleListParam{
-		Offset: 1,
-		Size:   10,
+		Page: 1,
+		PageSize:   10,
 	}
 	articles, _ = GetArticleInfos(form)
 	// 返回是有顺序的
