@@ -105,6 +105,8 @@ func LoadTemplates(templatesDir string) multitemplate.Renderer {
 		"Split":        SplitSring,
 		"AddUint64":    AddUint64,
 		"SubUint64":    SubUint64,
+		"Addint":       Addint,
+		"Subint":       Subint,
 	}
 
 	loadTemplateDir(r, funcMap, templatesDir, "admin")
@@ -126,6 +128,16 @@ func SplitSring(s string, sep string) []string {
 }
 
 // template function
+func Addint(i, x int) int {
+	return i + x
+}
+
+// template function
+func Subint(i, x int) int {
+	return i - x
+}
+
+// template function
 func AddUint64(i, x uint64) uint64 {
 	return i + x
 }
@@ -143,7 +155,7 @@ func (self GinLog) Write(p []byte) (n int, err error) {
 	return len(p), nil
 }
 
-func Paginator(page, pageSize, nums uint64) map[string]interface{} {
+func PaginatorSlow(page, pageSize, nums uint64) map[string]interface{} {
 	var (
 		left      uint64 = 2
 		right     uint64 = 2
@@ -190,6 +202,48 @@ func Paginator(page, pageSize, nums uint64) map[string]interface{} {
 	paginatorMap["LastPage"] = totalpages
 	paginatorMap["CurrPage"] = page
 	paginatorMap["Totals"] = nums
+	if len(pages) != 0 {
+		paginatorMap["FirstLeftPage"] = pages[0]
+		paginatorMap["LastRightPage"] = pages[len(pages)-1] + 1
+	} else {
+		paginatorMap["FirstLeftPage"] = 1
+		paginatorMap["LastRightPage"] = 2
+	}
+	return paginatorMap
+}
+
+func Paginator(currPage, pageSize, totalNums int) map[string]interface{} {
+	var (
+		left      int = 2
+		right     int = 2
+		startPage int
+	)
+
+	pages := make([]int, 0, left+right)
+	totalPages := int(math.Ceil(float64(totalNums) / float64(pageSize))) //page总数
+
+	if currPage > totalPages {
+		currPage = totalPages
+	}
+
+	if currPage-left > 1 {
+		startPage = currPage - left
+	} else {
+		startPage = 2
+	}
+
+	// <= is necessful
+	for page := startPage; page < totalPages && page-currPage <= right; page++ {
+		//logger.Infof("page: %v, page-currPage: %v, res: %v", page, page-currPage, page < totalPages && page-currPage < right)
+		pages = append(pages, page)
+	}
+
+	paginatorMap := make(map[string]interface{})
+	paginatorMap["Pages"] = pages
+	paginatorMap["FirstPage"] = 1
+	paginatorMap["LastPage"] = totalPages
+	paginatorMap["CurrPage"] = currPage
+	paginatorMap["Totals"] = totalNums
 	if len(pages) != 0 {
 		paginatorMap["FirstLeftPage"] = pages[0]
 		paginatorMap["LastRightPage"] = pages[len(pages)-1] + 1

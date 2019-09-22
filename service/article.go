@@ -252,7 +252,7 @@ func GetArticleIndex(c *gin.Context) {
 	if mc.CheckGormErr(err) != nil {
 		return
 	}
-	pages := Paginator(form.Page, form.PageSize, articleNum)
+	pages := Paginator(int(form.Page), int(form.PageSize), int(articleNum))
 	cates, err := models.GetAllCategories()
 	if mc.CheckGormErr(err) != nil {
 		return
@@ -267,12 +267,12 @@ func GetArticleIndex(c *gin.Context) {
 	}
 	visitorSum, _ := models.GetCache(V.VisitorSum)
 	mc.Res = map[string]interface{}{
-		"Articles": articles,
-		"Cates": cates,
-		"Tags": tags,
-		"Visitors": visitors,
+		"Articles":   articles,
+		"Cates":      cates,
+		"Tags":       tags,
+		"Visitors":   visitors,
 		"VisitorSum": visitorSum,
-		"Paginator": pages,
+		"Paginator":  pages,
 	}
 	logger.Debugf("res: %+v", mc.Res)
 	mc.SuccessHtml("blog/index.html", mc.Res)

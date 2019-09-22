@@ -1290,7 +1290,8 @@ img.aligncenter, img.alignright, img.alignleft {
 }
 
 #pagenavi .first-page {
-    margin-left: 250px;
+    margin-left: 180px;
+    color: white;
 }
 
 #pagenavi .next-page .icon-next {
@@ -1387,6 +1388,10 @@ img.aligncenter, img.alignright, img.alignleft {
 
 #pagenavi .pages {
 	color: white;
+}
+
+#pagenavi .dots {
+    color: white;
 }
 
 #friend .friend-url {

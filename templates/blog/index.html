@@ -76,7 +76,7 @@
                             {{ end }}
                             <div id="pagenavi" class="noselect">
                                 {{ if gt .Paginator.CurrPage 1}}
-                                <a class="previous-page pages" href="?page={{ SubUint64 .Paginator.CurrPage 1 }}">
+                                <a class="previous-page pages" href="?page={{ Subint .Paginator.CurrPage 1 }}">
                                     <span class="icon-previous"></span>上一页
                                 </a>
                                 {{ end }}
@@ -88,7 +88,7 @@
                                 {{ end }}
 
                                 {{ if gt .Paginator.FirstLeftPage 2 }}
-                                <span>...</span>
+                                <span class="dots">...</span>
                                 {{ end }}
 
                                 {{ range $index, $page := .Paginator.Pages }}
@@ -100,7 +100,7 @@
                                 {{ end }}
 
                                 {{ if lt .Paginator.LastRightPage .Paginator.LastPage }}
-                                <span>...</span>
+                                <span class="dots">...</span>
                                 {{ end }}
 
                                 {{ if ne .Paginator.LastPage 1 }}
@@ -112,7 +112,7 @@
                                 {{ end }}
 
                                 {{ if lt .Paginator.CurrPage .Paginator.LastPage }}
-                                <a class="next-page pages" href="?page={{ AddUint64 .Paginator.CurrPage 1 }}">
+                                <a class="next-page pages" href="?page={{ Addint .Paginator.CurrPage 1 }}">
                                     下一页<span class="icon-next"></span>
                                 </a>
                                 {{ end }}
