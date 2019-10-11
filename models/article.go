@@ -156,6 +156,12 @@ func GetFullArticleById(id string) (article Article, err error) {
 	return
 }
 
+// get all article detail for search index
+func GetFullArticle() (articles []Article, err error) {
+	err = DB.Preload("Category").Preload("Tags").Find(&articles).Error
+	return
+}
+
 func GetArticlesByCategory(category string) (articles []Article, err error) {
 	err = DB.Table("article ").Select("article.*").Where("cg.name = ?", category).Joins("join category cg on article.category_id=cg.id").Find(&articles).Error
 	return

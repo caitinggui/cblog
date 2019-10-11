@@ -185,6 +185,8 @@ func main() {
 	defer db.Close()
 	defer models.DumpCache(config.Config.CacheFile)
 
+	models.Search()
+
 	err = ListenAndServeGrace(config.Config.Listen, router)
 	logger.Errorf("stop server: %2v", err)
 }
