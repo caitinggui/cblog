@@ -1,43 +1,86 @@
 package models
 
 import (
+	"cblog/config"
+	"cblog/utils"
 	"encoding/gob"
 	"fmt"
 	logger "github.com/caitinggui/seelog"
 	"github.com/go-ego/riot"
 	"github.com/go-ego/riot/types"
+	"strings"
 )
 
-var (
-	// searcher is coroutine safe
-	Searcher = riot.Engine{}
+// searcher is coroutine safe
+var Searcher = &riot.Engine{}
 
-	text  = "Google Is Experimenting With Virtual Reality Advertising"
-	text1 = `Google accidentally pushed Bluetooth update for Home
-	speaker early`
-	text2 = `Google is testing another Search results layout with 
-	rounded cards, new colors, and the 4 mysterious colored dots again`
-
-	opts = types.EngineOpts{
-		Using:         1,
-		GseDict:       "static/dict/dictionary.txt",
-		StopTokenFile: "static/dict/stop_tokens.txt",
+func InitSearcher() {
+	opts := types.EngineOpts{
+		Using: 1,
 		IndexerOpts: &types.IndexerOpts{
 			IndexType: types.FrequenciesIndex,
 		},
-		UseStore: true,
+		UseStore: !config.Config.Searcher.IsTest,
 		// StoreFolder: path,
 		StoreEngine: "bg", // bg: badger, lbd: leveldb, bolt: bolt
 	}
-)
+	if utils.IfPathExist(config.Config.Searcher.DictoryPath) && utils.IfPathExist(config.Config.Searcher.StopWordPath) {
+		logger.Info("stopworkpath exists")
+		opts.StopTokenFile = config.Config.Searcher.StopWordPath
+		opts.GseDict = config.Config.Searcher.DictoryPath
+	}
+	Searcher.Init(opts)
+}
 
-func InitIndex() {
+// index full article
+func IndexDoc(doc Article) {
+	if doc.ID == 0 {
+		return
+	}
+	Searcher.Index(fmt.Sprint(doc.ID), types.DocData{
+		Content: fmt.Sprintf("%s %s %s %s", doc.Title, doc.Abstract, doc.Body, doc.Category.Name),
+		Attri:   doc,
+	})
+	return
+}
+
+// index full article by id
+func IndexArticleById(id string) {
+	arti, err := GetFullArticleById(id)
+	if err != nil {
+		logger.Info("article(%v) doesn't exist: %v", id, err)
+		return
+	}
+	IndexDoc(arti)
+}
+
+// index full article by ids
+func IndexArticleByIds(ids []string) {
+	if len(ids) == 0 {
+		return
+	}
+	artis, err := GetFullArticleByIds(ids)
+	if err != nil {
+		logger.Warnf("get %v articles failed: ", ids)
+	}
+	for _, x := range artis {
+		IndexDoc(x)
+	}
+}
+
+// remove single doc index
+func RemoveIndexById(id string) {
+	Searcher.RemoveDoc(id, true)
+}
+
+func InitIndex() *riot.Engine {
 	// gob.Register(MyAttriStruct{})
 	gob.Register(Article{})
 
 	// var path = "./riot-index"
-	Searcher.Init(opts)
-	defer Searcher.Close()
+	InitSearcher()
+	// Searcher can't close here, otherwise we can't index doc to disk
+	//defer Searcher.Close()
 	// os.MkdirAll(path, 0777)
 
 	arts, err := GetFullArticle()
@@ -45,32 +88,53 @@ func InitIndex() {
 		panic("load article index failed: " + err.Error())
 	}
 	for _, v := range arts {
-		Searcher.Index(fmt.Sprint(v.ID), types.DocData{
-			Content: fmt.Sprintf("%s %s %s %s", v.Title, v.Abstract, v.Body, v.Category.Name),
-			Attri:   v,
-		})
+		IndexDoc(v)
 	}
 
 	// Wait for the index to refresh
 	Searcher.Flush()
 
 	logger.Info("Created index number: ", Searcher.NumDocsIndexed())
+	return Searcher
 }
 
-func RestoreIndex() {
-	// var path = "./riot-index"
+// return *riot.Engine to close
+// must use *riot.Engine not riot.Engine
+func RestoreIndex() *riot.Engine {
 	gob.Register(Article{})
-	Searcher.Init(opts)
-	defer Searcher.Close()
-	// os.MkdirAll(path, 0777)
+	InitSearcher()
+	//defer Searcher.Close()
 
 	// Wait for the index to refresh
 	Searcher.Flush()
 
 	logger.Info("recover index number: ", Searcher.NumDocsIndexed())
+	return Searcher
 }
 
-func Search() {
+// search full article
+func SearchFullArticle(text string, page, pageSize int) ([]Article, int) {
+	se := Searcher.SearchDoc(types.SearchReq{
+		Text: text,
+		RankOpts: &types.RankOpts{
+			OutputOffset: (page - 1) * pageSize,
+			MaxOutputs:   pageSize,
+		}})
+	res := []Article{}
+	logger.Info("total resul %v of keyword: %v from query: %v", se.NumDocs, se.Tokens, text)
+	for _, doc := range se.Docs {
+		d := doc.Attri.(Article)
+		for _, t := range se.Tokens {
+			d.Title = strings.Replace(d.Title, t, "<font color=red>"+t+"</font>", -1)
+			d.Abstract = strings.Replace(d.Abstract, t, "<font color=red>"+t+"</font>", -1)
+			d.Category.Name = strings.Replace(d.Category.Name, t, "<font color=red>"+t+"</font>", -1)
+		}
+		res = append(res, d)
+	}
+	return res, se.NumDocs
+}
+
+func TestSearch() {
 	InitIndex()
 	//RestoreIndex()
 

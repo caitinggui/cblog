@@ -1,6 +1,10 @@
 package models
 
-import ()
+import (
+	"fmt"
+
+	logger "github.com/caitinggui/seelog"
+)
 
 // 文章标签
 // form，json，binding都可用于c.Bind
@@ -26,6 +30,19 @@ func (self *Tag) Update() error {
 	return DB.Model(self).Omit("DeletedAt", "CreatedAt").Updates(self).Error
 }
 
+func (self *Tag) AfterUpdate() error {
+	logger.Infof("index articles after tag(%v) change", self.ID)
+	go func() {
+		artis, _ := GetArticleIdsByTagId(self.ID)
+		ids := make([]string, len(artis))
+		for _, arti := range artis {
+			ids = append(ids, fmt.Sprint(arti.ID))
+		}
+		IndexArticleByIds(ids)
+	}()
+	return nil
+}
+
 //如果没有id，会删除整个表，所以要检查一下
 func (self *Tag) BeforeDelete() error {
 	if self.ID == 0 {
@@ -35,6 +52,15 @@ func (self *Tag) BeforeDelete() error {
 		return err
 	}
 	err := InsertToDeleteDataTable(self)
+	go func() {
+		logger.Infof("Update index after Tag %v deleted", self.ID)
+		artis, _ := GetArticleIdsByTagId(self.ID)
+		ids := make([]string, len(artis))
+		for _, arti := range artis {
+			ids = append(ids, fmt.Sprint(arti.ID))
+		}
+		IndexArticleByIds(ids)
+	}()
 	return err
 }
 

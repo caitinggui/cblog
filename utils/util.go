@@ -12,6 +12,7 @@ import (
 	"io/ioutil"
 	"math/rand"
 	"net/http"
+	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -24,6 +25,11 @@ import (
 
 var UID *uniqueid.UniqueId
 var HttpClient = http.Client{Timeout: 3 * time.Second}
+
+func IfPathExist(path string) bool {
+	_, err := os.Stat(path)
+	return !os.IsNotExist(err)
+}
 
 func StrToUint(s string) uint {
 	n, _ := strconv.ParseUint(s, 10, 64)

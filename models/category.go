@@ -1,6 +1,7 @@
 package models
 
 import (
+	"fmt"
 	logger "github.com/caitinggui/seelog"
 	"github.com/jinzhu/gorm"
 )
@@ -20,6 +21,19 @@ func (self *Category) Insert() error {
 	return db.Error
 }
 
+func (self *Category) AfterUpdate() error {
+	logger.Infof("index articles after category(%v) change", self.ID)
+	go func() {
+		artis, _ := GetArticleIdsByCategory(self.Name)
+		ids := make([]string, len(artis))
+		for _, arti := range artis {
+			ids = append(ids, fmt.Sprint(arti.ID))
+		}
+		IndexArticleByIds(ids)
+	}()
+	return nil
+}
+
 func (self *Category) Update() error {
 	return DB.Model(self).Omit("DeletedAt", "CreatedAt").Updates(self).Error
 }
@@ -33,6 +47,15 @@ func (self *Category) BeforeDelete() error {
 		return err
 	}
 	err := InsertToDeleteDataTable(self)
+	go func() {
+		logger.Infof("Update index after Category %v deleted", self.ID)
+		artis, _ := GetArticleIdsByCategory(self.Name)
+		ids := make([]string, len(artis))
+		for _, arti := range artis {
+			ids = append(ids, fmt.Sprint(arti.ID))
+		}
+		IndexArticleByIds(ids)
+	}()
 	return err
 }
 

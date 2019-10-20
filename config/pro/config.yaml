@@ -15,3 +15,7 @@ praseip:   # 解析来源IP的时间间隔
   interval: 30s
   capacity: 2
   isopen: true
+searcher:
+  istest: true  # when true, system only index in memory
+  dictorypath: static/dict/dictionary.txt
+  stopwordpath: static/dict/stop_tokens.txt

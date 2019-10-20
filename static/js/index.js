@@ -25,6 +25,15 @@ function submit_qrcode(){
             })
 };
 
+function JumpIndexPage(page) {
+    if (window.location.search.startsWith("?text")) {
+        window.location.search = window.location.search.split("&")[0] + "&page=" + page
+    } else {
+        window.location.search = "?page=" + page
+    }
+    return false
+}
+
 function praise(){
     var target_url = $(this).attr('href');
     var likes = $(this).next()

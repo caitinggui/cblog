@@ -232,6 +232,45 @@ func GetArticles(c *gin.Context) {
 	mc.SuccessHtml("admin/article-list.html", gin.H{"Article": articles})
 }
 
+func SearchArticles(c *gin.Context) {
+	var (
+		form models.ArticleSearchParam
+		err  error
+	)
+	mc := NewAdvancedGinContext(c)
+	err = c.ShouldBindQuery(&form)
+	logger.Infof("search article:  %v", form.Text)
+	if mc.CheckBindErr(err) != nil {
+		return
+	}
+	articles, articleNum := models.SearchFullArticle(form.Text, form.Page, form.PageSize)
+	pages := Paginator(int(form.Page), int(form.PageSize), int(articleNum))
+	cates, err := models.GetAllCategories()
+	if mc.CheckGormErr(err) != nil {
+		return
+	}
+	tags, err := models.GetAllTags()
+	if mc.CheckGormErr(err) != nil {
+		return
+	}
+	visitors, err := models.GetVisitors(0, V.DefaultPageSize)
+	if mc.CheckGormErr(err) != nil {
+		return
+	}
+	visitorSum, _ := models.GetCache(V.VisitorSum)
+	mc.Res = map[string]interface{}{
+		"Articles":   articles,
+		"Cates":      cates,
+		"Tags":       tags,
+		"Visitors":   visitors,
+		"VisitorSum": visitorSum,
+		"Paginator":  pages,
+		"IsQuery":    true,
+	}
+	logger.Debugf("res: %+v", mc.Res)
+	mc.SuccessHtml("blog/index.html", mc.Res)
+}
+
 func GetArticleIndex(c *gin.Context) {
 	var (
 		form     models.ArticleListParam

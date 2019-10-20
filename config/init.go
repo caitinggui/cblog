@@ -22,10 +22,16 @@ type mysql struct {
 	LogMode  bool
 }
 
+type searcher struct {
+	IsTest       bool
+	DictoryPath  string
+	StopWordPath string
+}
+
 type praseIp struct {
 	Interval time.Duration
 	Capacity int
-	IsOpen bool
+	IsOpen   bool
 }
 
 type config struct {
@@ -34,6 +40,7 @@ type config struct {
 	UniqueId  uniqueId
 	CacheFile string
 	Secret    string
+	Searcher  searcher
 	PraseIp   praseIp
 }
 

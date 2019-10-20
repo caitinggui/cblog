@@ -107,6 +107,7 @@ func LoadTemplates(templatesDir string) multitemplate.Renderer {
 		"SubUint64":    SubUint64,
 		"Addint":       Addint,
 		"Subint":       Subint,
+		"UnEscaped":    UnEscape,
 	}
 
 	loadTemplateDir(r, funcMap, templatesDir, "admin")
@@ -120,6 +121,11 @@ func LoadTemplates(templatesDir string) multitemplate.Renderer {
 // html模板函数，时间转为字符串格式
 func FormatAsDate(t time.Time) string {
 	return t.Format("2006-01-02 15:04:05")
+}
+
+// unescape
+func UnEscape(s string) interface{} {
+	return template.HTML(s)
 }
 
 // template function

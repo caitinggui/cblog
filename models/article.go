@@ -1,6 +1,7 @@
 package models
 
 import (
+	"fmt"
 	"unicode/utf8"
 
 	logger "github.com/caitinggui/seelog"
@@ -31,10 +32,16 @@ type ArticleListParam struct {
 	Status int8 `form:"status" binding:"omitempty,eq=-1|eq=1"` //文章状态 -1:未发布 1:发布
 	Topped int8 `form:"topped" binding:"omitempty,eq=-1|eq=1"` //是否置顶, -1不置顶，1置顶
 
-	Page       uint64 `gorm:"-" form:"page,default=1" binding:"gte=1"`          // 用于分页, start from 0
+	Page       uint64 `gorm:"-" form:"page,default=1" binding:"gte=1"`          // 用于分页, start from 1
 	PageSize   uint64 `gorm:"-" form:"page_size,default=10" binding:"lte=1000"` // 用于分页
 	CategoryId uint64 `gorm:"-" form:"category_id"`
 	TagId      uint64 `gorm:"-" form:"tag_id"` // 用于根据tag查找
+}
+
+type ArticleSearchParam struct {
+	Text     string `gorm:"-" form:"text" bingding:"required,lte=70"`
+	Page     int    `gorm:"-" form:"page,default=1" binding:"gte=1"`          // 用于分页, start from 1
+	PageSize int    `gorm:"-" form:"page_size,default=10" binding:"lte=1000"` // 用于分页
 }
 
 func (self *Article) TableName() string {
@@ -66,6 +73,18 @@ func (self *Article) Insert() error {
 	return db.Error
 }
 
+func (self *Article) AfterCreate() error {
+	logger.Debug("create index after article created")
+	go IndexArticleById(fmt.Sprint(self.ID))
+	return nil
+}
+
+func (self *Article) AfterUpdate() error {
+	logger.Debug("update index after article update")
+	go IndexArticleById(fmt.Sprint(self.ID))
+	return nil
+}
+
 func (self *Article) Update() error {
 	if self.CategoryId != 0 {
 		self.Category.ID = self.CategoryId
@@ -88,6 +107,7 @@ func (self *Article) BeforeDelete() error {
 		return err
 	}
 	err := InsertToDeleteDataTable(self)
+	go RemoveIndexById(fmt.Sprint(self.ID))
 	return err
 }
 
@@ -148,11 +168,14 @@ func GetArticleById(id string) (article Article, err error) {
 }
 
 func GetFullArticleById(id string) (article Article, err error) {
-
-	//cate := Category{}
-	//tag := Tag{}
 	// 这里不能用TableName，否则字段名不对
 	err = DB.Where("id = ?", id).Preload("Category").Preload("Tags").First(&article).Error
+	return
+}
+
+func GetFullArticleByIds(ids []string) (articles []Article, err error) {
+	// 这里不能用TableName，否则字段名不对
+	err = DB.Where("id in (?)", ids).Preload("Category").Preload("Tags").Find(&articles).Error
 	return
 }
 
@@ -164,6 +187,11 @@ func GetFullArticle() (articles []Article, err error) {
 
 func GetArticlesByCategory(category string) (articles []Article, err error) {
 	err = DB.Table("article ").Select("article.*").Where("cg.name = ?", category).Joins("join category cg on article.category_id=cg.id").Find(&articles).Error
+	return
+}
+
+func GetArticleIdsByCategory(category string) (articles []Article, err error) {
+	err = DB.Table("article ").Select("article.ID").Where("cg.name = ?", category).Joins("join category cg on article.category_id=cg.id").Find(&articles).Error
 	return
 }
 
@@ -183,6 +211,12 @@ func GetArticleByTag(tagName string) (articles []*Article, err error) {
 	return
 }
 
+func GetArticleIdsByTagId(tagId uint64) (articles []*Article, err error) {
+	err = DB.Table("article").Select("article.ID").Where("ag.tag_id = ?", tagId).Joins("join article_tag ag on article.id=ag.article_id").Find(&articles).Error
+	return
+}
+
+// TODO tag_id要清除
 // TODO tag_id要清除
 func DeleteArticleById(id uint64) error {
 	arti := Article{}

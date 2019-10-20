@@ -62,9 +62,12 @@ func BindRoute(router *gin.Engine) {
 	}
 
 	blog := router.Group("/blog")
-	blog.GET("/article/:id", service.GetArticle)
-	blog.GET("/tag/:id", service.GetTag)
-	blog.GET("/link/:id", service.GetLink)
+	{
+		blog.GET("/article/:id", service.GetArticle)
+		blog.GET("/tag/:id", service.GetTag)
+		blog.GET("/link/:id", service.GetLink)
+		blog.GET("/search", service.SearchArticles)
+	}
 
 	router.POST("/login", service.PostLogin)
 	router.GET("/login", service.GetLogin)
@@ -185,8 +188,12 @@ func main() {
 	defer db.Close()
 	defer models.DumpCache(config.Config.CacheFile)
 
-	models.Search()
+	//models.Search()
+	se := models.InitIndex()
+	//se := models.RestoreIndex()
+	// will stop exit
+	defer se.Close()
 
 	err = ListenAndServeGrace(config.Config.Listen, router)
-	logger.Errorf("stop server: %2v", err)
+	logger.Errorf("stop server: %v", err)
 }
