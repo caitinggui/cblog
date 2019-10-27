@@ -64,7 +64,6 @@ func BindRoute(router *gin.Engine) {
 	blog := router.Group("/blog")
 	{
 		blog.GET("/article/:id", service.GetArticle)
-		blog.GET("/tag/:id", service.GetTag)
 		blog.GET("/link/:id", service.GetLink)
 		blog.GET("/search", service.SearchArticles)
 	}

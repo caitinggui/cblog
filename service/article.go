@@ -11,6 +11,13 @@ import (
 	"cblog/utils/e"
 )
 
+type indexContext struct {
+	Cates      []models.Category
+	Tags       []models.Tag
+	Visitors   []models.Visitor
+	VisitorSum interface{}
+}
+
 /**
 * @api {post} /v1/article 创建文章
 * @apiGroup Article
@@ -225,7 +232,7 @@ func GetArticles(c *gin.Context) {
 	if mc.CheckBindErr(err) != nil {
 		return
 	}
-	articles, err = models.GetArticleInfos(form)
+	articles, _, err = models.GetArticleInfos(form)
 	if mc.CheckGormErr(err) != nil {
 		return
 	}
@@ -245,25 +252,17 @@ func SearchArticles(c *gin.Context) {
 	}
 	articles, articleNum := models.SearchFullArticle(form.Text, form.Page, form.PageSize)
 	pages := Paginator(int(form.Page), int(form.PageSize), int(articleNum))
-	cates, err := models.GetAllCategories()
-	if mc.CheckGormErr(err) != nil {
+
+	res, err := getIndexContext(mc)
+	if err != nil {
 		return
 	}
-	tags, err := models.GetAllTags()
-	if mc.CheckGormErr(err) != nil {
-		return
-	}
-	visitors, err := models.GetVisitors(0, V.DefaultPageSize)
-	if mc.CheckGormErr(err) != nil {
-		return
-	}
-	visitorSum, _ := models.GetCache(V.VisitorSum)
 	mc.Res = map[string]interface{}{
 		"Articles":   articles,
-		"Cates":      cates,
-		"Tags":       tags,
-		"Visitors":   visitors,
-		"VisitorSum": visitorSum,
+		"Cates":      res.Cates,
+		"Tags":       res.Tags,
+		"Visitors":   res.Visitors,
+		"VisitorSum": res.VisitorSum,
 		"Paginator":  pages,
 		"IsQuery":    true,
 	}
@@ -271,49 +270,35 @@ func SearchArticles(c *gin.Context) {
 	mc.SuccessHtml("blog/index.html", mc.Res)
 }
 
+// index page
 func GetArticleIndex(c *gin.Context) {
 	var (
-		form     models.ArticleListParam
-		articles []*models.Article
-		err      error
+		form models.ArticleListParam
 	)
 	mc := NewAdvancedGinContext(c)
-	err = c.ShouldBindQuery(&form)
+	err := c.ShouldBindQuery(&form)
 	logger.Infof("get article index, form: %+v", form)
 	if mc.CheckBindErr(err) != nil {
 		return
 	}
-	articles, err = models.GetArticleInfos(form)
+	articles, articleNum, err := models.GetArticleInfos(form)
 	if mc.CheckGormErr(err) != nil {
 		return
 	}
-	articleNum, err := models.CountArticle()
-	if mc.CheckGormErr(err) != nil {
+	pages := Paginator(int(form.Page), int(form.PageSize), articleNum)
+	res, err := getIndexContext(mc)
+	if err != nil {
 		return
 	}
-	pages := Paginator(int(form.Page), int(form.PageSize), int(articleNum))
-	cates, err := models.GetAllCategories()
-	if mc.CheckGormErr(err) != nil {
-		return
-	}
-	tags, err := models.GetAllTags()
-	if mc.CheckGormErr(err) != nil {
-		return
-	}
-	visitors, err := models.GetVisitors(0, V.DefaultPageSize)
-	if mc.CheckGormErr(err) != nil {
-		return
-	}
-	visitorSum, _ := models.GetCache(V.VisitorSum)
 	mc.Res = map[string]interface{}{
 		"Articles":   articles,
-		"Cates":      cates,
-		"Tags":       tags,
-		"Visitors":   visitors,
-		"VisitorSum": visitorSum,
+		"Cates":      res.Cates,
+		"Tags":       res.Tags,
+		"Visitors":   res.Visitors,
+		"VisitorSum": res.VisitorSum,
 		"Paginator":  pages,
 	}
-	logger.Debugf("res: %+v", mc.Res)
+	logger.Debugf("res: %+v, articles len: %v", mc.Res, len(articles))
 	mc.SuccessHtml("blog/index.html", mc.Res)
 }
 
@@ -345,4 +330,27 @@ func updateBlogTemplateContext(mc *Gin) {
 	}
 	mc.Res["Links"] = links
 	return
+}
+
+func getIndexContext(mc *Gin) (res indexContext, err error) {
+	cates, err := models.GetAllCategories()
+	if mc.CheckGormErr(err) != nil {
+		return
+	}
+	tags, err := models.GetAllTags()
+	if mc.CheckGormErr(err) != nil {
+		return
+	}
+	visitors, err := models.GetVisitors(0, V.DefaultPageSize)
+	if mc.CheckGormErr(err) != nil {
+		return
+	}
+	visitorSum, _ := models.GetCache(V.VisitorSum)
+	res = indexContext{
+		Cates:      cates,
+		Tags:       tags,
+		Visitors:   visitors,
+		VisitorSum: visitorSum,
+	}
+	return res, err
 }

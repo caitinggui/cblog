@@ -188,10 +188,10 @@ func TestGetArticleInfos(t *testing.T) {
 	}
 
 	form := ArticleListParam{
-		Page: 1,
-		PageSize:   10,
+		Page:     1,
+		PageSize: 10,
 	}
-	articles, _ = GetArticleInfos(form)
+	articles, _, _ = GetArticleInfos(form)
 	// 返回是有顺序的
 	if len(articles) != 2 || articles[0].Abstract != "body3" {
 		t.Fatal("获取分页文章信息失败:", articles[0])

@@ -26,8 +26,8 @@ function submit_qrcode(){
 };
 
 function JumpIndexPage(page) {
-    if (window.location.search.startsWith("?text")) {
-        window.location.search = window.location.search.split("&")[0] + "&page=" + page
+    if (window.location.search.startsWith("?")) {
+        window.location.search = window.location.search + "&page=" + page
     } else {
         window.location.search = "?page=" + page
     }

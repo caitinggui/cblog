@@ -12,7 +12,7 @@
                         <li>&gt;</li>
                         <li>
                             <ul class="post-categories">
-                                <li><a href="{% url 'blog:category' .Article.category.id %}" title=""
+                                <li><a href="/?cate={{ .Article.Category.ID }}" title=""
                                        rel="category">{{ .Article.Category.Name }}</a>
                                 </li>
                             </ul>

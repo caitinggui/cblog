@@ -227,6 +227,7 @@ func Paginator(currPage, pageSize, totalNums int) map[string]interface{} {
 
 	pages := make([]int, 0, left+right)
 	totalPages := int(math.Ceil(float64(totalNums) / float64(pageSize))) //page总数
+	logger.Info("total pages: ", totalPages)
 
 	if currPage > totalPages {
 		currPage = totalPages

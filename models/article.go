@@ -2,6 +2,7 @@ package models
 
 import (
 	"fmt"
+	"reflect"
 	"unicode/utf8"
 
 	logger "github.com/caitinggui/seelog"
@@ -34,8 +35,8 @@ type ArticleListParam struct {
 
 	Page       uint64 `gorm:"-" form:"page,default=1" binding:"gte=1"`          // 用于分页, start from 1
 	PageSize   uint64 `gorm:"-" form:"page_size,default=10" binding:"lte=1000"` // 用于分页
-	CategoryId uint64 `gorm:"-" form:"category_id"`
-	TagId      uint64 `gorm:"-" form:"tag_id"` // 用于根据tag查找
+	CategoryId uint64 `gorm:"-" form:"cate"`
+	TagId      uint64 `gorm:"-" form:"tag"` // 用于根据tag查找
 }
 
 type ArticleSearchParam struct {
@@ -44,8 +45,13 @@ type ArticleSearchParam struct {
 	PageSize int    `gorm:"-" form:"page_size,default=10" binding:"lte=1000"` // 用于分页
 }
 
+// Get struct name by reflect
 func (self *Article) TableName() string {
-	return "article"
+	if t := reflect.TypeOf(self); t.Kind() == reflect.Ptr {
+		return t.Elem().Name()
+	} else {
+		return t.Name()
+	}
 }
 
 // 增删改查在业务端记录log
@@ -149,9 +155,21 @@ func GetAllArticleNames() (articles []*Article, err error) {
 // 分页获取文章简单信息
 // Omit不在查询中生效，仅在Update中生效
 // form不用引用是为了规范一下，毕竟form不能再修改
-func GetArticleInfos(form ArticleListParam) (articles []*Article, err error) {
-	arti := Article{}
-	err = DB.Where(&form).Select(arti.GetInfoColumn()).Limit(form.PageSize).Offset((form.Page - 1) * form.PageSize).Order(arti.GetDefaultOrder()).Find(&articles).Error
+func GetArticleInfos(form ArticleListParam) (articles []*Article, total int, err error) {
+	var db *gorm.DB
+	arti := Article{
+		CategoryId: form.CategoryId,
+	}
+	if form.TagId != 0 {
+		db = DB.Table(arti.TableName()).Where("ag.tag_id = ?", form.TagId).Joins(fmt.Sprintf("join article_tag ag on %s.id=ag.article_id", arti.TableName()))
+	} else {
+		db = DB.Where(&arti)
+	}
+	err = db.Select(arti.GetInfoColumn()).Limit(form.PageSize).Offset((form.Page - 1) * form.PageSize).Order(arti.GetDefaultOrder()).Find(&articles).Error
+	if err != nil {
+		return
+	}
+	err = db.Count(&total).Error
 	return
 }
 
