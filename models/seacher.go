@@ -12,9 +12,14 @@ import (
 )
 
 // searcher is coroutine safe
-var Searcher = &riot.Engine{}
+var Searcher *riot.Engine
 
 func InitSearcher() {
+	if Searcher != nil {
+		logger.Info("Searcher has been init")
+		return
+	}
+	Searcher = &riot.Engine{}
 	opts := types.EngineOpts{
 		Using: 1,
 		IndexerOpts: &types.IndexerOpts{

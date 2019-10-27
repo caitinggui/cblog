@@ -139,8 +139,6 @@ func InitDB() (db *gorm.DB) {
 	db.DB().SetConnMaxLifetime(time.Hour * config.Config.Mysql.MaxLife)
 	db.LogMode(config.Config.Mysql.LogMode)
 	db.AutoMigrate(&Article{}, &Category{}, &DeletedData{}, &Comment{}, &Tag{}, &Link{}, &Visitor{}, &User{}, &Permission{}, &Role{})
-	if config.Config.Searcher.IsTest {
-		InitIndex()
-	}
+	InitSearcher()
 	return
 }
