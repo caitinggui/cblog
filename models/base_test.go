@@ -14,3 +14,10 @@ func TestMain(m *testing.M) {
 	defer db.Close()
 	m.Run()
 }
+
+func TestTableName(t *testing.T) {
+	table := IntIdModelWithoutDeletedAt{ID: 12}
+	if table.TableName() != "IntIdModelWithoutDeleteAt" {
+		t.Fatalf("table error, expectd: %v, get: %v ", "IntIdModelWithoutDeletedAt", table.TableName())
+	}
+}

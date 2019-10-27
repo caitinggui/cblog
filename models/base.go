@@ -3,6 +3,7 @@ package models
 import (
 	"encoding/json"
 	"errors"
+	"reflect"
 	"time"
 
 	logger "github.com/caitinggui/seelog"
@@ -53,8 +54,13 @@ type IntIdModelWithoutDeletedAt struct {
 	UpdatedAt time.Time `json:"updated_at" binding:"-"`
 }
 
+// Get struct name by reflect
 func (self *IntIdModelWithoutDeletedAt) TableName() string {
-	return "base"
+	if t := reflect.TypeOf(self); t.Kind() == reflect.Ptr {
+		return t.Elem().Name()
+	} else {
+		return t.Name()
+	}
 }
 
 func (self *IntIdModelWithoutDeletedAt) BeforeCreate(scope *gorm.Scope) error {
