@@ -163,13 +163,13 @@ func GetArticleInfos(form ArticleListParam) (articles []*Article, total int, err
 	if form.TagId != 0 {
 		db = DB.Table(arti.TableName()).Where("ag.tag_id = ?", form.TagId).Joins(fmt.Sprintf("join article_tag ag on %s.id=ag.article_id", arti.TableName()))
 	} else {
-		db = DB.Where(&arti)
+		db = DB.Table(arti.TableName()).Where(&arti)
 	}
 	err = db.Select(arti.GetInfoColumn()).Limit(form.PageSize).Offset((form.Page - 1) * form.PageSize).Order(arti.GetDefaultOrder()).Find(&articles).Error
 	if err != nil {
 		return
 	}
-	err = db.Model(Article{}).Count(&total).Error
+	err = db.Count(&total).Error
 	return
 }
 
