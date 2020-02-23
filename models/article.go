@@ -2,7 +2,6 @@ package models
 
 import (
 	"fmt"
-	"reflect"
 	"unicode/utf8"
 
 	logger "github.com/caitinggui/seelog"
@@ -47,11 +46,12 @@ type ArticleSearchParam struct {
 
 // Get struct name by reflect
 func (self *Article) TableName() string {
-	if t := reflect.TypeOf(self); t.Kind() == reflect.Ptr {
-		return t.Elem().Name()
-	} else {
-		return t.Name()
-	}
+	return "article"
+	//if t := reflect.TypeOf(self); t.Kind() == reflect.Ptr {
+	//	return strings.ToLower(t.Elem().Name())
+	//} else {
+	//	return strings.ToLower(t.Name())
+	//}
 }
 
 // 增删改查在业务端记录log
@@ -169,7 +169,7 @@ func GetArticleInfos(form ArticleListParam) (articles []*Article, total int, err
 	if err != nil {
 		return
 	}
-	err = db.Count(&total).Error
+	err = db.Model(Article{}).Count(&total).Error
 	return
 }
 
