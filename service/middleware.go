@@ -88,15 +88,17 @@ func RecordClientIp() gin.HandlerFunc {
 			if err != nil {
 				logger.Error("Save visitor Ip failed: ", visitor, err)
 			}
-			lm.Wait()
-			err = visitor.PraseIp()
-			if err != nil {
-				logger.Error("Prase visitor Ip failed: ", visitor, err)
-				return
-			}
-			err = visitor.Update()
-			if err != nil {
-				logger.Error("Update visitor Ip failed: ", visitor, err)
+			if config.Config.PraseIp.IsOpen {
+				lm.Wait()
+				err = visitor.PraseIp()
+				if err != nil {
+					logger.Error("Prase visitor Ip failed: ", visitor, err)
+					return
+				}
+				err = visitor.Update()
+				if err != nil {
+					logger.Error("Update visitor Ip failed: ", visitor, err)
+				}
 			}
 		}()
 	}

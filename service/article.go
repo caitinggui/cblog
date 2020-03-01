@@ -285,18 +285,34 @@ func GetArticleIndex(c *gin.Context) {
 	if mc.CheckGormErr(err) != nil {
 		return
 	}
+	articleByMonth, err := models.CountArticleByMonth()
+	if mc.CheckGormErr(err) != nil {
+		return
+	}
+	hotArticle, err := models.GetArticleInfoByWeight(10)
+	if mc.CheckGormErr(err) != nil {
+		return
+	}
+	logger.Debug("articleByMonth", articleByMonth)
 	pages := Paginator(int(form.Page), int(form.PageSize), articleNum)
 	res, err := getIndexContext(mc)
 	if err != nil {
 		return
 	}
+	comment, err := models.GetCommentByCreatedAt(10)
+	if mc.CheckGormErr(err) != nil {
+		return
+	}
 	mc.Res = map[string]interface{}{
-		"Articles":   articles,
-		"Cates":      res.Cates,
-		"Tags":       res.Tags,
-		"Visitors":   res.Visitors,
-		"VisitorSum": res.VisitorSum,
-		"Paginator":  pages,
+		"Articles":      articles,
+		"Cates":         res.Cates,
+		"Tags":          res.Tags,
+		"Visitors":      res.Visitors,
+		"VisitorSum":    res.VisitorSum,
+		"Paginator":     pages,
+		"DateArchive":   articleByMonth,
+		"HotArticle":    hotArticle,
+		"RecentComment": comment,
 	}
 	logger.Debugf("res: %+v, articles len: %v", mc.Res, len(articles))
 	mc.SuccessHtml("blog/index.html", mc.Res)

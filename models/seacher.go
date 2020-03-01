@@ -126,7 +126,7 @@ func SearchFullArticle(text string, page, pageSize int) ([]Article, int) {
 			MaxOutputs:   pageSize,
 		}})
 	res := []Article{}
-	logger.Info("total resul %v of keyword: %v from query: %v", se.NumDocs, se.Tokens, text)
+	logger.Infof("total resul %v of keyword: %v from query: %v", se.NumDocs, se.Tokens, text)
 	for _, doc := range se.Docs {
 		d := doc.Attri.(Article)
 		for _, t := range se.Tokens {

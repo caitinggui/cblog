@@ -44,3 +44,10 @@ func (self *Comment) BeforeDelete() error {
 func (self *Comment) Delete() error {
 	return DB.Delete(self).Error
 }
+
+// 获取最新评论
+func GetCommentByCreatedAt(limit int64) (comment []*Comment, err error) {
+	com := Comment{}
+	err = DB.Model(&com).Order("created_at desc").Limit(limit).Find(&comment).Error
+	return
+}

@@ -77,7 +77,7 @@ func UpdateConfigFrequency(configPath string) {
 }
 
 // 根据GIN_MODE环境变量，获取相应的logger的配置和应用配置, 也可以用-configPath指定绝对目录
-func init() {
+func InitConfig() {
 	var (
 		content    []byte
 		err        error

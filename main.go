@@ -157,10 +157,7 @@ func InitRouterAndDb() (router *gin.Engine, db *gorm.DB) {
 
 	})
 	router.Use(sessions.Sessions("cblog", store))
-	if config.Config.PraseIp.IsOpen {
-		router.Use(service.RecordClientIp())
-	}
-	router.Use(service.AbortClientCache())
+	router.Use(service.AbortClientCache(), service.RecordClientIp())
 	BindRoute(router)
 
 	err := models.InitCache(config.Config.CacheFile)
@@ -173,6 +170,7 @@ func InitRouterAndDb() (router *gin.Engine, db *gorm.DB) {
 }
 
 func main() {
+	config.InitConfig()
 	log, err := logger.LoggerFromConfigAsBytes(config.LoggerConfig)
 	if err != nil {
 		panic(err)

@@ -2,6 +2,7 @@ package models
 
 import (
 	"testing"
+	"time"
 
 	"cblog/utils"
 )
@@ -15,6 +16,12 @@ func TestInsertArticle(t *testing.T) {
 	article.Delete()
 	arti2 := Article{Title: "TestInsertArticle2"}
 	arti2.Delete()
+}
+
+func TestTimeFormat(t *testing.T) {
+	tStr := "2019-12"
+	temp, err := time.ParseInLocation("2006-01", tStr, time.Local)
+	t.Log("time and err:", temp, err)
 }
 
 func TestReplaceTags(t *testing.T) {

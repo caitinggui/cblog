@@ -2,6 +2,8 @@ package models
 
 import (
 	"fmt"
+	"strings"
+	"time"
 	"unicode/utf8"
 
 	logger "github.com/caitinggui/seelog"
@@ -32,16 +34,22 @@ type ArticleListParam struct {
 	Status int8 `form:"status" binding:"omitempty,eq=-1|eq=1"` //文章状态 -1:未发布 1:发布
 	Topped int8 `form:"topped" binding:"omitempty,eq=-1|eq=1"` //是否置顶, -1不置顶，1置顶
 
-	Page       uint64 `gorm:"-" form:"page,default=1" binding:"gte=1"`          // 用于分页, start from 1
-	PageSize   uint64 `gorm:"-" form:"page_size,default=10" binding:"lte=1000"` // 用于分页
-	CategoryId uint64 `gorm:"-" form:"cate"`
-	TagId      uint64 `gorm:"-" form:"tag"` // 用于根据tag查找
+	Page        uint64 `gorm:"-" form:"page,default=1" binding:"gte=1"`          // 用于分页, start from 1
+	PageSize    uint64 `gorm:"-" form:"page_size,default=10" binding:"lte=1000"` // 用于分页
+	CategoryId  uint64 `gorm:"-" form:"cate"`
+	TagId       uint64 `gorm:"-" form:"tag"` // 用于根据tag查找
+	TimeByMonth string `gorm:"-" form:"time_by_month"`
 }
 
 type ArticleSearchParam struct {
 	Text     string `gorm:"-" form:"text" bingding:"required,lte=70"`
 	Page     int    `gorm:"-" form:"page,default=1" binding:"gte=1"`          // 用于分页, start from 1
 	PageSize int    `gorm:"-" form:"page_size,default=10" binding:"lte=1000"` // 用于分页
+}
+
+type ArticleByMonth struct {
+	Months string `gorm:"months" json:"months"`
+	Number int    `gorm:"number" json:"number"`
 }
 
 // Get struct name by reflect
@@ -165,6 +173,20 @@ func GetArticleInfos(form ArticleListParam) (articles []*Article, total int, err
 	} else {
 		db = DB.Table(arti.TableName()).Where(&arti)
 	}
+	if form.TimeByMonth != "" {
+		tempStr := strings.Split(form.TimeByMonth, "-")
+		// 截取到月份
+		if len(tempStr) >= 2 {
+			t, err := time.ParseInLocation("2006-01", strings.Join(tempStr[0:2], "-"), time.Local)
+			logger.Debug("time params: ", t, err)
+			if err == nil && !t.IsZero() {
+				logger.Debug("按照月份过滤")
+				nextMonth := t.AddDate(0, 1, 0)
+				//db = DB.Where("created_at >= ? ", t).Where("created_at <", nextMonth)
+				db = db.Where("created_at >= ? and created_at < ?", t, nextMonth)
+			}
+		}
+	}
 	err = db.Select(arti.GetInfoColumn()).Limit(form.PageSize).Offset((form.Page - 1) * form.PageSize).Order(arti.GetDefaultOrder()).Find(&articles).Error
 	if err != nil {
 		return
@@ -244,5 +266,19 @@ func DeleteArticleById(id uint64) error {
 
 func CountArticle() (n uint64, err error) {
 	err = DB.Model(&Article{}).Count(&n).Error
+	return
+}
+
+// 按月统计文章数量
+func CountArticleByMonth() (articleByMonth []*ArticleByMonth, err error) {
+	arti := Article{}
+	err = DB.Table(arti.TableName()).Select("DATE_FORMAT(created_at,'%Y-%m') as months,count(created_at) as number").Group("months").Find(&articleByMonth).Error
+	return
+}
+
+// 获取热门文章
+func GetArticleInfoByWeight(limit int64) (articles []*Article, err error) {
+	arti := Article{}
+	err = DB.Model(&arti).Select(arti.GetInfoColumn()).Order("weight desc").Limit(limit).Find(&articles).Error
 	return
 }

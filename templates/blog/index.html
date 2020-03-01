@@ -109,25 +109,25 @@
                 </div>
 
                 <!-- archive -->
-                <h3 class="obvious-color">文章归档：</h3>
+                <h3 class="obvious-color">时间线：</h3>
                 <div class="panel-group" id="accordion" role="tablist" aria-multiselectable="true">
-                    {--- for year,months in date_archive }}
+{{/*                    {--- for year,months in date_archive }}*/}}
                         <div class="panel panel-default">
                             <div class="panel-heading" role="tab" id="heading">
                                 <h4 class="panel-title">
                                     <a role="button" data-toggle="collapse" data-parent="#accordion"
                                        href="#collapse"
                                        aria-expanded="true" aria-controls="collapse">
-                                        {--- year }} 年
+{{/*                                        {--- year }} 年*/}}
                                     </a>
                                 </h4>
                             </div>
                             <div id="collapse" class="panel-collapse collapse in" role="tabpanel"
                                  aria-labelledby="heading">
                                 <div class="panel-body">
-                                    {--- for month in months }}
-                                        <a href="{--- url 'blog:archive' year month }}"><p>{--- month }} 月</p></a>
-                                    {--- end }}
+                                    {{ range .DateArchive }}
+                                        <a href="/?time_by_month={{ .Months }}"><p>{{ .Months }}({{ .Number }})</p></a>
+                                    {{ end }}
                                 </div>
                             </div>
                         </div>
@@ -147,9 +147,9 @@
                             <div id="collapse" class="panel-collapse collapse in" role="tabpanel"
                                  aria-labelledby="heading">
                                 <div class="panel-body">
-                                    {--- for article in hot_article }}
-                                        <a href="{--- url 'blog:detail' article.id }}"><p>{--- article.title|truncatewords:2 }}</p></a>
-                                    {--- end }}
+                                    {{ range .HotArticle }}
+                                        <a href="/blog/article/{{ .ID }}"><p>{{ .Title }}</p></a>
+                                    {{ end }}
                                 </div>
                             </div>
                         </div>
@@ -168,9 +168,9 @@
                             <div id="collapse" class="panel-collapse collapse in" role="tabpanel"
                                  aria-labelledby="heading">
                                 <div class="panel-body">
-                                    {--- for comment in recent_comment }}
-                                        <a href="{--- url 'blog:detail' comment.article.id }}"><p>{--- comment.body }}</p></a>
-                                    {--- end }}
+                                    {{ range .RecentComment }}
+                                        <a href="/blog/article/{{ .ArticleId }}"><p>{{ .Comment }}</p></a>
+                                    {{ end }}
                                 </div>
                             </div>
                         </div>

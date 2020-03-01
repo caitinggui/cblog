@@ -8,7 +8,7 @@ import (
 
 	logger "github.com/caitinggui/seelog"
 	"github.com/jinzhu/gorm"
-	_ "github.com/jinzhu/gorm/dialects/sqlite"
+	_ "github.com/jinzhu/gorm/dialects/mysql"
 
 	"cblog/config"
 	"cblog/utils"
@@ -133,11 +133,11 @@ func Ping() error {
 }
 
 func InitDB() (db *gorm.DB) {
-	db, err := gorm.Open("sqlite3", "./foo.db")
+	//db, err := gorm.Open("sqlite3", "./foo.db")
+	db, err := gorm.Open("mysql", "root:123456@/cblog?charset=utf8&parseTime=True")
 	if err != nil {
 		panic(err)
 	}
-	//db, err := gorm.Open("mysql", "root:mysql@/wblog?charset=utf8&parseTime=True&loc=Asia/Shanghai")
 	DB = db
 	db.SingularTable(true) //全局设置表名不可以为复数形式。
 	db.DB().SetMaxIdleConns(config.Config.Mysql.MaxIdle)
