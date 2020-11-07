@@ -36,8 +36,17 @@ func GetCache(key string) (data interface{}, ok bool) {
 	return
 }
 
+// 获取缓存中的数字
+func GetCacheInt64(key string) (num int64, ok bool) {
+	data, ok := Cache.Get(key)
+	if ok {
+		num, ok = data.(int64)
+	}
+	return
+}
+
 // add one a time
-func IncrUint(key string) (n uint, err error) {
+func IncrCacheUint(key string) (n uint, err error) {
 	n, err = Cache.IncrementUint(key, 1)
 	return
 }

@@ -1,10 +1,10 @@
 package models
 
 import (
+	"cblog/utils"
 	"cblog/utils/V"
 	"errors"
-
-	"cblog/utils"
+	logger "github.com/caitinggui/seelog"
 )
 
 var ERR_EMPTY_IP = errors.New("Empty IP")
@@ -30,6 +30,14 @@ func (self *Visitor) Insert() error {
 		return ERR_EXIST_ID
 	}
 	db := DB.Omit("DeletedAt").Create(self)
+	go func() {
+		// 新增失败就重新统计
+		if _, err := IncrCacheUint(V.VisitorSum); err != nil {
+			logger.Warnf("there doesn't exist %s in cache", V.VisitorSum)
+			visitorSum, _ := CountVisitor()
+			SetCache(V.VisitorSum, visitorSum, 0)
+		}
+	}()
 	return db.Error
 }
 
@@ -111,5 +119,6 @@ func GetVisitorsByArticle(articleId string) (visitors []Visitor, err error) {
 
 func CountVisitor() (n uint, err error) {
 	err = DB.Model(&Visitor{}).Count(&n).Error
+	//visitorSum, _ := GetCache(V.VisitorSum)
 	return
 }

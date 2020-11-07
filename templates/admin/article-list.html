@@ -101,13 +101,12 @@
     if (response==true){
             $.ajax({
                 type: "DELETE",
-                url: "/blog/article/" + ID,
+                url: "/admin/article/" + ID,
                 headers: {
                     "X-CSRFToken": '{ csrf_token }}'
                 },
-                success: function (data) {
-                    data = JSON.parse(data);
-                    $('#Article' + data.aid).remove();
+                success: function () {
+                    $('#' + ID).remove();
                 },
                 error: function (jqXHR, textStatus, errorThrown) {
                     alert(jqXHR, textStatus, errorThrown);

@@ -60,16 +60,6 @@ func AdminRequierd() gin.HandlerFunc {
 func RecordClientIp() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var article_id string
-		// update visitor sum
-		if _, err := models.IncrUint(V.VisitorSum); err != nil {
-			logger.Warnf("there doesn't exist %s in cache", V.VisitorSum)
-			visitorSum, err := models.CountVisitor()
-			if err != nil {
-				logger.Error("count visitor failed: ", err)
-			} else {
-				models.SetCache(V.VisitorSum, visitorSum, 0)
-			}
-		}
 		clientIp := c.ClientIP()
 		url := c.Request.URL.String()
 		if strings.HasPrefix(url, "/article/") {
@@ -84,6 +74,7 @@ func RecordClientIp() gin.HandlerFunc {
 		logger.Info("visitor: ", visitor)
 		go func() {
 			// 先创建，后更新，主要是为了保证createAt是正确的时间
+			// insert 会自动计数
 			err := visitor.Insert()
 			if err != nil {
 				logger.Error("Save visitor Ip failed: ", visitor, err)
@@ -104,7 +95,7 @@ func RecordClientIp() gin.HandlerFunc {
 	}
 }
 
-// 紧张浏览器缓存
+// 清除浏览器缓存
 func AbortClientCache() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		c.Next()
