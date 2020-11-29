@@ -293,7 +293,6 @@ func GetArticleIndex(c *gin.Context) {
 	if mc.CheckGormErr(err) != nil {
 		return
 	}
-	logger.Debug("articleByMonth", articleByMonth)
 	pages := Paginator(int(form.Page), int(form.PageSize), articleNum)
 	res, err := getIndexContext(mc)
 	if err != nil {
@@ -314,7 +313,6 @@ func GetArticleIndex(c *gin.Context) {
 		"HotArticle":    hotArticle,
 		"RecentComment": comment,
 	}
-	logger.Debugf("res: %+v, articles len: %v", mc.Res, len(articles))
 	mc.SuccessHtml("blog/index.html", mc.Res)
 }
 

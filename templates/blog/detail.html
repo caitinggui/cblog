@@ -47,7 +47,7 @@
                     </div>
                     <div class="post-bd">
                         <h3 class="title">附件:</h3>
-                        {{ $url := Split .Article.AttachmentUrl ","}}
+                        {{ $url := Split .Article.AttachmentUrl "/"}}
                         {{ range $index, $elem := $url }}
                             <a href="/blog/article/{{ $.Article.ID }}/download/{{ $index }}">{{ $elem }}</a><br>
                         {{ end }}

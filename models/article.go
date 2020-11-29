@@ -137,11 +137,19 @@ func (self *Article) ReplaceTags(tags []Tag) error {
 }
 
 func (self *Article) GetInfoColumn() string {
-	return "id, title, abstract, likes, status, topped, views, weight, created_time, last_modified_time"
+	arti := Article{}
+	column := "id, title, abstract, likes, status, topped, views, weight, created_time, last_modified_time"
+	columns := strings.Split(column, ", ")
+	res := make([]string, 0, len(columns))
+	for _, v := range columns {
+		res = append(res, arti.TableName()+"."+v)
+	}
+	return strings.Join(res, ", ")
 }
 
 func (self *Article) GetDefaultOrder() string {
-	return "topped desc, id desc"
+	arti := Article{}
+	return fmt.Sprintf("%s.topped desc, %s.id desc", arti.TableName(), arti.TableName())
 }
 
 // 所有字段都更新
@@ -185,8 +193,8 @@ func GetArticleInfos(form ArticleListParam, ifMustPublic bool) (articles []*Arti
 			if err == nil && !t.IsZero() {
 				logger.Debug("按照月份过滤")
 				nextMonth := t.AddDate(0, 1, 0)
-				//db = DB.Where("created_at >= ? ", t).Where("created_at <", nextMonth)
-				db = db.Where("created_at >= ? and created_at < ?", t, nextMonth)
+				//db = DB.Where("created_time >= ? ", t).Where("created_time <", nextMonth)
+				db = db.Where("created_time >= ? and created_time < ?", t, nextMonth)
 			}
 		}
 	}
@@ -275,7 +283,7 @@ func CountArticle() (n uint64, err error) {
 // 按月统计文章数量
 func CountArticleByMonth() (articleByMonth []*ArticleByMonth, err error) {
 	arti := Article{}
-	err = DB.Table(arti.TableName()).Select("DATE_FORMAT(created_at,'%Y-%m') as months,count(created_at) as number").Group("months").Find(&articleByMonth).Error
+	err = DB.Table(arti.TableName()).Select("DATE_FORMAT(created_time,'%Y-%m') as months,count(created_time) as number").Group("months").Find(&articleByMonth).Error
 	return
 }
 
