@@ -232,7 +232,7 @@ func GetArticles(c *gin.Context) {
 	if mc.CheckBindErr(err) != nil {
 		return
 	}
-	articles, _, err = models.GetArticleInfos(form)
+	articles, _, err = models.GetArticleInfos(form, false)
 	if mc.CheckGormErr(err) != nil {
 		return
 	}
@@ -281,7 +281,7 @@ func GetArticleIndex(c *gin.Context) {
 	if mc.CheckBindErr(err) != nil {
 		return
 	}
-	articles, articleNum, err := models.GetArticleInfos(form)
+	articles, articleNum, err := models.GetArticleInfos(form, true)
 	if mc.CheckGormErr(err) != nil {
 		return
 	}

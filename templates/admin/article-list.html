@@ -42,7 +42,7 @@
 									{{range .Article}}
 									<tr id="{{ .ID | ToStr }}">
 									<td><a onclick="EditArticle({{ .ID | ToStr }})">{{ .Title }}</a></td>
-                                    <td>{{ .CreatedAt | ToStr }}</td>
+                                    <td>{{ .CreatedAt | FormatAsDate }}</td>
                                     <td>{{ .UpdatedAt | ToStr }}</td>
                                     <td>{{ .Views }}</td>
                                     <td>{{ .Likes }}</td>
@@ -55,7 +55,7 @@
                                         {{ end }}
                                     </td>
                                     <td>
-                                        {{ if eq .Status 1}}
+                                        {{ if eq .Status "p"}}
                                             <button type="button" class="btn btn-primary" style="font-size: 12px">发布</button>
                                         {{ else }}
                                             <button type="button" class="btn btn-info" style="font-size: 12px">存稿</button>

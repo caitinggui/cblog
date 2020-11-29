@@ -27,12 +27,12 @@
                                 <div class="col-xs-1">
                                     <div class="form-group">
                                         <select class="form-control" name="status">
-                                            {{ if eq .Article.Status 1}}
-                                              <option value="1">发布</option>
-                                              <option value="-1">存稿</option>
+                                            {{ if eq .Article.Status "p"}}
+                                              <option value="p">发布</option>
+                                              <option value="d">存稿</option>
                                             {{ else }}
-                                              <option value="-1">存稿</option>
-                                              <option value="1">发布</option>
+                                              <option value="p">存稿</option>
+                                              <option value="d">发布</option>
                                             {{ end }}
                                         </select>
                                     </div>

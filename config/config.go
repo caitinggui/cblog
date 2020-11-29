@@ -108,11 +108,11 @@ func InitConfig() {
 	utils.PanicErr(err)
 	logger.Info("config.yaml: ", Config)
 
-	password := utils.UidDecrypt(Config.Mysql.Password)
-	if password == "" {
-		panic("Db password error")
-	}
-	Config.Mysql.Server = strings.Replace(Config.Mysql.Server, "{password}", password, -1)
+	//password := utils.UidDecrypt(Config.Mysql.Password)
+	//if password == "" {
+	//	panic("Db password error")
+	//}
+	Config.Mysql.Server = strings.Replace(Config.Mysql.Server, "{password}", Config.Mysql.Password, -1)
 	go UpdateConfigFrequency(configPath)
 	return
 }

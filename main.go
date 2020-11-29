@@ -33,7 +33,7 @@ func Health(c *gin.Context) {
 func BindRoute(router *gin.Engine) {
 	// 可以注册根目录，不影响router在根目录继续添加路由
 	admin := router.Group("/admin")
-	admin.Use(service.LoginRequired())
+	admin.Use(service.LoginRequired(), service.AdminRequierd())
 	{
 		admin.GET("", service.AdminIndex)
 		admin.GET("/article", service.GetArticles)

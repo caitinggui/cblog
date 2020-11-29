@@ -6,8 +6,8 @@ import ()
 type User struct {
 	IntIdModelWithoutDeletedAt
 	Email       string `gorm:"varchar(128);unique_index;default:null" json:"email" binding:"lte=128,email,required"` //邮箱
-	UserName    string `gorm:"varchar(64);unique_index" json:"username" binding:"lte=64,required"`                   // 用户名
-	Password    string `gorm:"varchar(48);not null" json:"password" binding:"lte=48,required"`                       //密码
+	UserName    string `gorm:"varchar(128);unique_index" json:"username" binding:"lte=64,required"`                  // 用户名
+	Password    string `gorm:"varchar(128);not null" json:"password" binding:"lte=48,required"`                      //密码
 	VerifyState int8   `gorm:"default:-1" json:"verify_state" binding:"oneof=-1 1"`                                  //邮箱验证状态
 	AvatarUrl   string `gorm:"varchar(256)" json:"avatar_url" binding:"url"`                                         // 头像链接, 允许和github头像地址重复
 	LockState   int8   `gorm:"default:-1" json:"lock_state" binding:"oneof=-1 1"`                                    //锁定状态, 1表示锁定，-1表示未锁定

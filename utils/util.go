@@ -125,7 +125,7 @@ func UidDecrypt(hexStr string) (outString string) {
 	outString = ""
 	hexStr = strings.Replace(hexStr, "-", "", -1)
 	data, _ := hex.DecodeString(hexStr)
-	out, err := DesEcbDecrypt(data, []byte("yanglong"))
+	out, err := DesEcbDecrypt(data, []byte("rysbkeug"))
 	if err != nil {
 		return
 	}

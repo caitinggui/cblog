@@ -14,7 +14,7 @@ type Article struct {
 	IntIdModelWithoutDeletedAt
 	Title         string   `gorm:"size:70" json:"title" form:"title" binding:"lte=70,required"`               //文章标题
 	Body          string   `gorm:"type:longtext" json:"body" form:"editormd-markdown-doc" binding:"required"` //富文本
-	Status        int8     `gorm:"default:-1" json:"status" form:"status" binding:"omitempty,eq=-1|eq=1"`     //文章状态 -1:未发布 1:发布
+	Status        string   `gorm:"default:d" json:"status" form:"status" binding:"omitempty,eq=d|eq=p"`       //文章状态 d:未发布 p:发布
 	Abstract      string   `gorm:"size:128" json:"abstract" form:"abstract" binding:"lte=128"`                //摘要
 	Views         uint64   `gorm:"default:0" json:"views" form:"views" binding:"-"`                           //浏览数
 	Likes         uint64   `gorm:"default:0" json:"likes" form:"likes"`                                       //点赞数
@@ -31,8 +31,8 @@ type Article struct {
 
 type ArticleListParam struct {
 	// TODO 等gin支持validator.v9时，加上oneof
-	Status int8 `form:"status" binding:"omitempty,eq=-1|eq=1"` //文章状态 -1:未发布 1:发布
-	Topped int8 `form:"topped" binding:"omitempty,eq=-1|eq=1"` //是否置顶, -1不置顶，1置顶
+	Status string `form:"status" binding:"omitempty,eq=d|eq=p"`  //文章状态 d:未发布 p:发布
+	Topped int8   `form:"topped" binding:"omitempty,eq=-1|eq=1"` //是否置顶, -1不置顶，1置顶
 
 	Page        uint64 `gorm:"-" form:"page,default=1" binding:"gte=1"`          // 用于分页, start from 1
 	PageSize    uint64 `gorm:"-" form:"page_size,default=10" binding:"lte=1000"` // 用于分页
@@ -137,7 +137,7 @@ func (self *Article) ReplaceTags(tags []Tag) error {
 }
 
 func (self *Article) GetInfoColumn() string {
-	return "id, title, abstract, likes, status, topped, views, weight, created_at, updated_at"
+	return "id, title, abstract, likes, status, topped, views, weight, created_time, last_modified_time"
 }
 
 func (self *Article) GetDefaultOrder() string {
@@ -163,7 +163,7 @@ func GetAllArticleNames() (articles []*Article, err error) {
 // 分页获取文章简单信息
 // Omit不在查询中生效，仅在Update中生效
 // form不用引用是为了规范一下，毕竟form不能再修改
-func GetArticleInfos(form ArticleListParam) (articles []*Article, total int, err error) {
+func GetArticleInfos(form ArticleListParam, ifMustPublic bool) (articles []*Article, total int, err error) {
 	var db *gorm.DB
 	arti := Article{
 		CategoryId: form.CategoryId,
@@ -172,6 +172,9 @@ func GetArticleInfos(form ArticleListParam) (articles []*Article, total int, err
 		db = DB.Table(arti.TableName()).Where("ag.tag_id = ?", form.TagId).Joins(fmt.Sprintf("join article_tag ag on %s.id=ag.article_id", arti.TableName()))
 	} else {
 		db = DB.Table(arti.TableName()).Where(&arti)
+	}
+	if ifMustPublic {
+		db = db.Where("status = 'p'")
 	}
 	if form.TimeByMonth != "" {
 		tempStr := strings.Split(form.TimeByMonth, "-")

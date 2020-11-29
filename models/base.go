@@ -50,8 +50,8 @@ type StrIdModel struct {
 // TODO 有个bug，没有检查传来的updated_at等参数，等validator升到V9再修复
 type IntIdModelWithoutDeletedAt struct {
 	ID        uint64    `gorm:"primary_key" json:"id" form:"id"` // 如果用"gorm:bigint"，在sqlite下无法自增
-	CreatedAt time.Time `json:"created_at" binding:"-" time_format:"2006-01-02T15:04:05"`
-	UpdatedAt time.Time `json:"updated_at" binding:"-"`
+	CreatedAt time.Time `gorm:"column:created_time" json:"created_at" binding:"-" time_format:"2006-01-02T15:04:05"`
+	UpdatedAt time.Time `gorm:"column:last_modified_time" json:"updated_at" binding:"-"`
 }
 
 // Get struct name by reflect
@@ -134,7 +134,7 @@ func Ping() error {
 
 func InitDB() (db *gorm.DB) {
 	//db, err := gorm.Open("sqlite3", "./foo.db")
-	db, err := gorm.Open("mysql", "root:123456@/cblog?charset=utf8&parseTime=True")
+	db, err := gorm.Open("mysql", config.Config.Mysql.Server)
 	if err != nil {
 		panic(err)
 	}
