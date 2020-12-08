@@ -5,6 +5,7 @@ import (
 	logger "github.com/caitinggui/seelog"
 	"github.com/gin-gonic/gin"
 	"net/http"
+	"os"
 	"path"
 	"strings"
 
@@ -204,7 +205,9 @@ func UploadArticleAttachment(c *gin.Context) {
 	if mc.CheckGormErr(err) != nil {
 		return
 	}
-	err = c.SaveUploadedFile(attachment, path.Join(V.AttachmentDirectory, id, attachment.Filename))
+	attachmentDirectory := path.Join(V.AttachmentDirectory, id)
+	os.MkdirAll(attachmentDirectory, os.ModePerm) // 如果目录存在，函数会返回nil
+	err = c.SaveUploadedFile(attachment, path.Join(attachmentDirectory, attachment.Filename))
 	if err != nil {
 		logger.Error("upload file failed: ", err)
 		mc.WebJson(e.ERROR, err)
