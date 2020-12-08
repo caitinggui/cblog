@@ -113,7 +113,7 @@ func DeleteVisitorById(id uint64) error {
 }
 
 func GetVisitorsByArticle(articleId string) (visitors []Visitor, err error) {
-	err = DB.Order("ID desc").Limit(V.DefaultPageSize).Where("article_id=?", articleId).Find(&visitors).Error
+	err = DB.Order("ID desc").Limit(5).Where("article_id=?", articleId).Find(&visitors).Error
 	return
 }
 

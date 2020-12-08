@@ -320,3 +320,11 @@ func PanicErr(err error) {
 		panic(err)
 	}
 }
+
+func FormatIP(ip string) string {
+	res := strings.Split(ip, ".")
+	if len(res) < 2 {
+		return res[0] + "*"
+	}
+	return res[0] + ".*.*." + res[len(res)-1]
+}

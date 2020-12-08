@@ -15,6 +15,7 @@ type indexContext struct {
 	Cates      []models.Category
 	Tags       []models.Tag
 	Visitors   []models.Visitor
+	Links      []models.Link
 	VisitorSum interface{}
 }
 
@@ -126,6 +127,9 @@ func GetArticle(c *gin.Context) {
 		return
 	}
 	visitors, err := models.GetVisitorsByArticle(id)
+	for k, _ := range visitors {
+		visitors[k].IP = utils.FormatIP(visitors[k].IP)
+	}
 	if mc.CheckGormErr(err) != nil {
 		return
 	}
@@ -265,6 +269,7 @@ func SearchArticles(c *gin.Context) {
 		"VisitorSum": res.VisitorSum,
 		"Paginator":  pages,
 		"IsQuery":    true,
+		"Links":      res.Links,
 	}
 	logger.Debugf("res: %+v", mc.Res)
 	mc.SuccessHtml("blog/index.html", mc.Res)
@@ -308,6 +313,7 @@ func GetArticleIndex(c *gin.Context) {
 		"Tags":          res.Tags,
 		"Visitors":      res.Visitors,
 		"VisitorSum":    res.VisitorSum,
+		"Links":         res.Links,
 		"Paginator":     pages,
 		"DateArchive":   articleByMonth,
 		"HotArticle":    hotArticle,
@@ -359,12 +365,20 @@ func getIndexContext(mc *Gin) (res indexContext, err error) {
 	if mc.CheckGormErr(err) != nil {
 		return
 	}
+	for k, _ := range visitors {
+		visitors[k].IP = utils.FormatIP(visitors[k].IP)
+	}
 	visitorSum, _ := models.GetCache(V.VisitorSum)
+	links, err := models.GetAllLinks()
+	if mc.CheckGormErr(err) != nil {
+		return
+	}
 	res = indexContext{
 		Cates:      cates,
 		Tags:       tags,
 		Visitors:   visitors,
 		VisitorSum: visitorSum,
+		Links:      links,
 	}
 	return res, err
 }
