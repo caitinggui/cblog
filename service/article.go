@@ -5,6 +5,8 @@ import (
 	logger "github.com/caitinggui/seelog"
 	"github.com/gin-gonic/gin"
 	"net/http"
+	"path"
+	"strings"
 
 	"cblog/models"
 	"cblog/utils"
@@ -134,8 +136,87 @@ func GetArticle(c *gin.Context) {
 		return
 	}
 	mc.Res = gin.H{"Article": article, "Visitors": visitors}
-	logger.Debugf("response: %+v", mc.Res)
 	mc.SuccessHtml("blog/detail.html", mc.Res)
+}
+
+/**
+* @api {get} /v1/article/:id/download?fileId= 下载文章附件
+* @apiGroup Article
+* @apiVersion 0.1.0
+*
+ */
+func PraiseArticle(c *gin.Context) {
+	mc := NewAdvancedGinContext(c)
+	id := c.Param("id")
+	arti, err := models.GetArticleById(id)
+	if mc.CheckGormErr(err) != nil {
+		return
+	}
+	arti.Likes += 1
+	err = arti.Update()
+	if mc.CheckGormErr(err) != nil {
+		return
+	}
+	mc.WebJson(e.SUCCESS, arti.Likes)
+}
+
+/**
+* @api {get} /v1/article/:id/download?fileId= 下载文章附件
+* @apiGroup Article
+* @apiVersion 0.1.0
+*
+ */
+func DownloadArticleAttachment(c *gin.Context) {
+	mc := NewAdvancedGinContext(c)
+	id := c.Param("id")
+	fileId := c.Query("fileId")
+	arti, err := models.GetArticleById(id)
+	if mc.CheckGormErr(err) != nil {
+		return
+	}
+	fileIdInt := utils.StrToInt64(fileId)
+	attachments := strings.Split(arti.AttachmentUrl, V.AttachmentSeparator)
+	if len(attachments) < int(fileIdInt) {
+		logger.Warnf("用户%s在下载不存在的附件%s,文章为:%s", mc.GetCurrentUser(), fileId, id)
+		mc.Redirect("/blog/article/" + id)
+		return
+	}
+	mc.ServeFile(path.Join(V.AttachmentDirectory, id), attachments[fileIdInt])
+}
+
+/**
+* @api {get} /v1/article/:id/upload 上传文章附件
+* @apiGroup Article
+* @apiVersion 0.1.0
+*
+ */
+func UploadArticleAttachment(c *gin.Context) {
+	mc := NewAdvancedGinContext(c)
+	id := c.Param("id")
+	attachment, err := c.FormFile("uploadfile")
+	if mc.CheckBindErr(err) != nil {
+		return
+	}
+	if len(attachment.Filename) > 256 {
+		mc.WebJson(e.ERR_INVALID_PARAM, "附件文件名过长")
+	}
+	arti, err := models.GetArticleById(id)
+	if mc.CheckGormErr(err) != nil {
+		return
+	}
+	err = c.SaveUploadedFile(attachment, path.Join(V.AttachmentDirectory, id, attachment.Filename))
+	if err != nil {
+		logger.Error("upload file failed: ", err)
+		mc.WebJson(e.ERROR, err)
+		return
+	}
+	arti.AttachmentUrl = arti.AttachmentUrl + V.AttachmentSeparator + attachment.Filename
+	err = arti.Update()
+	if mc.CheckGormErr(err) != nil {
+		return
+	}
+	logger.Infof("success upload article %d attachment: %s", arti.ID, attachment.Filename)
+	mc.Redirect("/blog/article/" + id)
 }
 
 /**

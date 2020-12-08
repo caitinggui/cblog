@@ -38,12 +38,13 @@ function praise(){
     var target_url = $(this).attr('href');
     var likes = $(this).next()
     $.ajax({
-        type: "GET",
+        type: "POST",
         url: target_url,
         dataType: 'json',
         success: function(data){
-            var error_code = data.error_code;
-            var likes_num = data.likes;
+            var error_code = data.errCode;
+            var likes_num = data.data;
+            console.log(error_code)
             if (error_code == 0)
                 likes.text(likes_num);
             else if (error_code == -3)

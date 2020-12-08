@@ -59,17 +59,23 @@ func AdminRequierd() gin.HandlerFunc {
 // 记录访问者ip
 func RecordClientIp() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		var article_id string
+		var articleId uint64
 		clientIp := c.ClientIP()
 		url := c.Request.URL.String()
-		if strings.HasPrefix(url, "/article/") {
-			article_id = strings.Split(url, "/")[2]
+		if strings.Contains(url, "/article/") {
+			path := strings.Split(url, "/")
+			for k, v := range path {
+				if v == "article" && k+1 < len(path) {
+					articleId = utils.StrToUint64(path[k+1])
+					break
+				}
+			}
 		}
-		logger.Debug("request url: ", c.Request.URL, " client Ip: ", clientIp)
+		logger.Debug("request url: ", c.Request.URL, " client Ip: ", clientIp, " articleId: ", articleId)
 		visitor := models.Visitor{
 			IP:        clientIp,
 			Referer:   c.Request.Referer(),
-			ArticleId: article_id,
+			ArticleId: articleId,
 		}
 		logger.Info("visitor: ", visitor)
 		go func() {

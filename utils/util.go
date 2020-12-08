@@ -38,7 +38,10 @@ func StrToUint(s string) uint {
 
 func StrToUint64(s string) (n uint64) {
 	// 10进制，64位
-	n, _ = strconv.ParseUint(s, 10, 64)
+	n, err := strconv.ParseUint(s, 10, 64)
+	if err != nil {
+		logger.Warn("str to uint64 failed: ", err)
+	}
 	return n
 }
 

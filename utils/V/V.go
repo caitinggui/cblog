@@ -23,4 +23,8 @@ const (
 
 	// cache keys
 	VisitorSum = "VisitorSum"
+
+	// 附件所在目录
+	AttachmentDirectory = "media/blog/attachments/"
+	AttachmentSeparator = "/"
 )

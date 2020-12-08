@@ -88,18 +88,19 @@ func InitIndex() *riot.Engine {
 	//defer Searcher.Close()
 	// os.MkdirAll(path, 0777)
 
-	arts, err := GetFullArticle()
-	if err != nil {
-		panic("load article index failed: " + err.Error())
-	}
-	for _, v := range arts {
-		IndexDoc(v)
-	}
+	go func() {
+		arts, err := GetFullArticle()
+		if err != nil {
+			panic("load article index failed: " + err.Error())
+		}
+		for _, v := range arts {
+			IndexDoc(v)
+		}
+		// Wait for the index to refresh
+		Searcher.Flush()
+		logger.Info("Created index number: ", Searcher.NumDocsIndexed())
+	}()
 
-	// Wait for the index to refresh
-	Searcher.Flush()
-
-	logger.Info("Created index number: ", Searcher.NumDocsIndexed())
 	return Searcher
 }
 

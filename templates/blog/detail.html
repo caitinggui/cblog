@@ -32,7 +32,7 @@
                         <i class="icon-date"></i><span
                             class="date">{{ .Article.UpdatedAt|FormatAsDate }}</span>
                         <a href="/admin/article-edit?id={{ .Article.ID }}">编辑</a>&nbsp;&nbsp;&nbsp;&nbsp;
-                        <input type='image' class='praise' src="/static/img/gb21.png" href="/blog/.Article/{{ .Article.ID }}/praise">
+                        <input type='image' class='praise' src="/static/img/gb21.png" href="/blog/article/{{ .Article.ID }}/praise">
                         <span class='likes_num'>{{ .Article.Likes}}</span>&nbsp;&nbsp;&nbsp;&nbsp;
                         <span>阅读量:{{ .Article.Views}}</span>
                     </div>
@@ -49,7 +49,7 @@
                         <h3 class="title">附件:</h3>
                         {{ $url := Split .Article.AttachmentUrl "/"}}
                         {{ range $index, $elem := $url }}
-                            <a href="/blog/article/{{ $.Article.ID }}/download/{{ $index }}">{{ $elem }}</a><br>
+                            <a href="/blog/article/{{ $.Article.ID }}/download?fileId={{ $index }}">{{ $elem }}</a><br>
                         {{ end }}
                     </div>
                 </div>

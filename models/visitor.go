@@ -18,7 +18,7 @@ type Visitor struct {
 	Isp       string   `gorm:"size:128" json:"isp"`
 	Referer   string   `gorm:"size:255" json:"referer"` // 来源地
 	Article   *Article `gorm:"ForeignKey:ArticleId;association_autoupdate:false" binding:"-"`
-	ArticleId string   `json:"article_id"`
+	ArticleId uint64   `json:"article_id"`
 }
 
 func (self *Visitor) TableName() string {

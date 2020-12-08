@@ -63,10 +63,14 @@ func BindRoute(router *gin.Engine) {
 
 	blog := router.Group("/blog")
 	{
+		blog.GET("/article/:id/download", service.DownloadArticleAttachment)
 		blog.GET("/article/:id", service.GetArticle)
+		blog.POST("/article/:id/praise", service.PraiseArticle)
 		blog.GET("/link/:id", service.GetLink)
 		blog.GET("/search", service.SearchArticles)
 	}
+
+	router.POST("/blog/article/:id/upload", service.UploadArticleAttachment, service.LoginRequired(), service.AdminRequierd())
 
 	router.POST("/login", service.PostLogin)
 	router.GET("/login", service.GetLogin)
@@ -191,6 +195,7 @@ func main() {
 	// will stop exit
 	defer se.Close()
 
+	logger.Info("start server: ", config.Config.Listen)
 	err = ListenAndServeGrace(config.Config.Listen, router)
 	logger.Errorf("stop server: %v", err)
 }

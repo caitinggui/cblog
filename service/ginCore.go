@@ -1,10 +1,13 @@
 package service
 
 import (
+	"cblog/utils/V"
 	"fmt"
+	"github.com/gin-contrib/sessions"
 	"html/template"
 	"math"
 	"net/http"
+	"path"
 	"path/filepath"
 	"strings"
 	"time"
@@ -67,6 +70,7 @@ func (self *Gin) CheckGormErr(err error) error {
 	return err
 }
 
+// 从session获取当前用户id,空表示未登录
 func (self *Gin) CheckBindErr(err error) error {
 	if err != nil {
 		logger.Info("解析参数失败:", err)
@@ -74,6 +78,20 @@ func (self *Gin) CheckBindErr(err error) error {
 		return err
 	}
 	return nil
+}
+
+// 返回文件流
+func (self *Gin) ServeFile(directory, filename string) {
+	self.C.FileAttachment(path.Join(directory, filename), filename)
+}
+
+func (self *Gin) GetCurrentUser() string {
+	session := sessions.Default(self.C)
+	user := session.Get(V.CurrentUser)
+	if uid, ok := user.(string); ok {
+		return uid
+	}
+	return ""
 }
 
 // load template directory
