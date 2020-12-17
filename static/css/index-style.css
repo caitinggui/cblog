@@ -90,7 +90,7 @@ embed {
 
 #header #header-warp {
     width: 961px;
-    height: 72px;
+    height: 36px;
     margin: 0 auto;
 }
 
@@ -99,12 +99,11 @@ embed {
     width: 152px;
     height: 37px;
     float: left;
-    margin: 18px 73px 17px 1px;
 }
 
 #header #header-warp #header-nav {
     float: left;
-    height: 72px;
+    height: 36px;
     font-size: 0;
 }
 
@@ -115,7 +114,6 @@ embed {
     padding: 0px 7px;
     margin: 0 12px 0 12px;
     font-size: 18px;
-    border-bottom: 2px #fefefe solid;
 }
 
 #header #header-warp #header-nav li:hover {
@@ -134,7 +132,7 @@ embed {
 #header #header-warp #header-nav a {
     color: #7c808c;
     text-decoration: none;
-    line-height: 70px;
+    line-height: 36px;
     display: block;
 }
 
