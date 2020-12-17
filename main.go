@@ -66,6 +66,7 @@ func BindRoute(router *gin.Engine) {
 		blog.GET("/article/:id/download", service.DownloadArticleAttachment)
 		blog.GET("/article/:id", service.GetArticle)
 		blog.POST("/article/:id/praise", service.PraiseArticle)
+		blog.POST("/article/:id/comment", service.PostComment)
 		blog.GET("/link/:id", service.GetLink)
 		blog.GET("/search", service.SearchArticles)
 	}

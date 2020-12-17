@@ -1,9 +1,7 @@
 package service
 
 import (
-	"cblog/utils/V"
 	"fmt"
-	"github.com/gin-contrib/sessions"
 	"html/template"
 	"math"
 	"net/http"
@@ -14,10 +12,12 @@ import (
 
 	logger "github.com/caitinggui/seelog"
 	"github.com/gin-contrib/multitemplate"
+	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"github.com/jinzhu/gorm"
 
 	"cblog/utils"
+	"cblog/utils/V"
 	"cblog/utils/e"
 )
 
@@ -125,6 +125,7 @@ func LoadTemplates(templatesDir string) multitemplate.Renderer {
 		"SubUint64":    SubUint64,
 		"Addint":       Addint,
 		"Subint":       Subint,
+		"CountList":    CountList,
 		"UnEscaped":    UnEscape,
 	}
 
@@ -149,6 +150,11 @@ func UnEscape(s string) interface{} {
 // template function
 func SplitSring(s string, sep string) []string {
 	return strings.Split(s, sep)
+}
+
+// template function
+func CountList(data []interface{}) int {
+	return len(data)
 }
 
 // template function

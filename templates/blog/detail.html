@@ -56,38 +56,30 @@
             </div>
         </div>
      
-{{/*        <div class="comment transparent">*/}}
-{{/*            <div class="comment-main">*/}}
-{{/*                <p class="head">评论详情</p>*/}}
-{{/*                <form method="post" action="{% url 'blog:comment' .Article.pk %}">*/}}
-{{/*                    <div class="row">*/}}
-{{/*                        {% for field in form %}*/}}
-{{/*                        {{ field }}*/}}
-{{/*                    {{ field.errors }}*/}}
-{{/*                        <br>*/}}
-{{/*                        {% endfor %}*/}}
-{{/*                    </div>*/}}
-{{/*                    <button type="submit" class="com-button">评论</button>*/}}
-{{/*                </form>*/}}
-{{/*                <p class="comment-count">共{{ comment_nums }}条评论</p>*/}}
-{{/*                <hr>*/}}
-{{/*                {% for comment in comment_list %}*/}}
-{{/*                <div class="main-content">*/}}
-{{/*                    {% if comment.commentator.userprofile.nickname %}*/}}
-{{/*                    <span class="user-nickname">网友: {{ comment.commentator.userprofile.nickname }}</span>*/}}
-{{/*                    {% else %}*/}}
-{{/*                    <span class="user-nickname">网友: {{ comment.commentator}}</span>*/}}
-{{/*                    {% endif %}*/}}
-{{/*                    <time class="time">{{ comment.created_time | date:'Y-m-j H:i' }}</time>*/}}
-{{/*                    <div class="comment-content">*/}}
-{{/*                        {{ comment.body }}*/}}
-{{/*                    </div>*/}}
-{{/*                    {#                <a href="">回复</a>#}*/}}
-{{/*                </div>*/}}
-{{/*                <hr>*/}}
-{{/*                {% endfor %}*/}}
-{{/*            </div>*/}}
-{{/*        </div>*/}}
+        <div class="comment transparent">
+            <div class="comment-main">
+                <p class="head">评论详情</p>
+                <form method="post" action="/blog/article/{{ .Article.ID }}/comment">
+                    <div class="row">
+                        <textarea cols="40" id="id_body" name="body" placeholder="我来评两句~" rows="10"></textarea>
+                    </div>
+                    <button type="submit" class="com-button">评论</button>
+                </form>
+                <p class="comment-count">共{{ .CommentsNum }}条评论</p>
+                <hr>
+                {{ range $index, $elem := .Comments }}
+                <div class="main-content">
+                    <span class="user-nickname">{{ $elem.Name }}</span>
+                    <time class="time">{{ $elem.CreatedAt | FormatAsDate }}</time>
+                    <div class="comment-content">
+                        {{ $elem.Body }}
+                    </div>
+{{/*                    {#<a href="">回复</a>#}*/}}
+                </div>
+                <hr>
+                {{ end }}
+            </div>
+        </div>
   </div>
 </div>
 

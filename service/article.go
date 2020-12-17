@@ -136,7 +136,11 @@ func GetArticle(c *gin.Context) {
 	if mc.CheckGormErr(err) != nil {
 		return
 	}
-	mc.Res = gin.H{"Article": article, "Visitors": visitors}
+	comments, err := models.GetCommentByArticleId(article.ID)
+	if mc.CheckGormErr(err) != nil {
+		return
+	}
+	mc.Res = gin.H{"Article": article, "Visitors": visitors, "Comments": comments, "CommentsNum": len(comments)}
 	mc.SuccessHtml("blog/detail.html", mc.Res)
 }
 
@@ -387,7 +391,7 @@ func GetArticleIndex(c *gin.Context) {
 	if err != nil {
 		return
 	}
-	comment, err := models.GetCommentByCreatedAt(10)
+	comment, err := models.GetCommentsByCreatedAt(10)
 	if mc.CheckGormErr(err) != nil {
 		return
 	}
@@ -421,6 +425,26 @@ func AdminIndex(c *gin.Context) {
 	mc := NewAdvancedGinContext(c)
 	updateBlogTemplateContext(mc)
 	c.HTML(http.StatusOK, "admin/index.html", mc.Res)
+}
+
+func PostComment(c *gin.Context) {
+	mc := NewAdvancedGinContext(c)
+	articleId := c.Param("id")
+	body := c.PostForm("body")
+	if len(body) == 0 || utils.StrToUint64(articleId) == 0 {
+		mc.Redirect("/")
+		return
+	}
+	form := models.Comment{
+		ArticleId: utils.StrToUint64(articleId),
+		Body:      body,
+		Name:      utils.RandomName(),
+	}
+	err := form.Insert()
+	if mc.CheckGormErr(err) != nil {
+		return
+	}
+	mc.Redirect("/blog/article/" + articleId)
 }
 
 func updateBlogTemplateContext(mc *Gin) {
