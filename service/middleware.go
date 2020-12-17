@@ -3,6 +3,7 @@ package service
 import (
 	"net/http"
 	"strings"
+	"time"
 
 	logger "github.com/caitinggui/seelog"
 	"github.com/gin-contrib/sessions"
@@ -15,6 +16,7 @@ import (
 )
 
 var lm = utils.NewRateLimter(config.Config.PraseIp.Interval, config.Config.PraseIp.Capacity)
+var ipRateLimter = map[string]*utils.RateLimiter{}
 
 // 从cookie检查是否已登录
 func LoginRequired() gin.HandlerFunc {
@@ -71,13 +73,12 @@ func RecordClientIp() gin.HandlerFunc {
 				}
 			}
 		}
-		logger.Debug("request url: ", c.Request.URL, " client Ip: ", clientIp, " articleId: ", articleId)
+		//logger.Debug("request url: ", c.Request.URL, " client Ip: ", clientIp, " articleId: ", articleId)
 		visitor := models.Visitor{
 			IP:        clientIp,
 			Referer:   c.Request.Referer(),
 			ArticleId: articleId,
 		}
-		logger.Info("visitor: ", visitor)
 		go func() {
 			// 先创建，后更新，主要是为了保证createAt是正确的时间
 			// insert 会自动计数
@@ -98,6 +99,25 @@ func RecordClientIp() gin.HandlerFunc {
 				}
 			}
 		}()
+	}
+}
+
+// 根据ip限制访问频率
+func RateLimted() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		clientIp := c.ClientIP()
+		ipRate, ok := ipRateLimter[clientIp]
+		if !ok {
+			ipRate = utils.NewRateLimter(time.Minute, 2)
+			ipRateLimter[clientIp] = ipRate
+		}
+		if !ipRate.Allow() {
+			logger.Warnf("%s visite %s too quick, abort!", clientIp, c.Request.URL.String())
+			c.String(http.StatusTooManyRequests, "访问太频繁，请稍后重试")
+			c.Abort()
+			return
+		}
+		c.Next()
 	}
 }
 

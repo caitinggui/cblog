@@ -292,6 +292,10 @@ func (self RateLimiter) Wait() error {
 	return self.Limiter.Wait(self.Ctx)
 }
 
+func (self RateLimiter) Allow() bool {
+	return self.Limiter.Allow()
+}
+
 func NewRateLimter(Interval time.Duration, Capacity int) *RateLimiter {
 	ctx := context.Background()
 	rlm := RateLimiter{

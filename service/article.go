@@ -1,6 +1,7 @@
 package service
 
 import (
+	"cblog/config"
 	"cblog/utils/V"
 	logger "github.com/caitinggui/seelog"
 	"github.com/gin-gonic/gin"
@@ -140,7 +141,13 @@ func GetArticle(c *gin.Context) {
 	if mc.CheckGormErr(err) != nil {
 		return
 	}
-	mc.Res = gin.H{"Article": article, "Visitors": visitors, "Comments": comments, "CommentsNum": len(comments)}
+	mc.Res = gin.H{
+		"Article":       article,
+		"Visitors":      visitors,
+		"Comments":      comments,
+		"CommentsNum":   len(comments),
+		"IsCommentOpen": config.Config.IsCommentOpen,
+	}
 	mc.SuccessHtml("blog/detail.html", mc.Res)
 }
 
@@ -433,6 +440,11 @@ func PostComment(c *gin.Context) {
 	body := c.PostForm("body")
 	if len(body) == 0 || utils.StrToUint64(articleId) == 0 {
 		mc.Redirect("/")
+		return
+	}
+	if !config.Config.IsCommentOpen {
+		logger.Warn("评论已关闭")
+		mc.Redirect("/blog/article/" + articleId)
 		return
 	}
 	form := models.Comment{

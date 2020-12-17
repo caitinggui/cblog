@@ -34,14 +34,21 @@ type praseIp struct {
 	IsOpen   bool
 }
 
+type ipLimiter struct {
+	Interval time.Duration
+	Capacity int
+}
+
 type config struct {
-	Listen    string
-	Mysql     mysql
-	UniqueId  uniqueId
-	CacheFile string
-	Secret    string
-	Searcher  searcher
-	PraseIp   praseIp
+	Listen        string
+	Mysql         mysql
+	UniqueId      uniqueId
+	CacheFile     string
+	Secret        string
+	Searcher      searcher
+	PraseIp       praseIp
+	IpLimiter     ipLimiter
+	IsCommentOpen bool
 }
 
 type uniqueId struct {

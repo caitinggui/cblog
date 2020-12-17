@@ -59,12 +59,14 @@
         <div class="comment transparent">
             <div class="comment-main">
                 <p class="head">评论详情</p>
-                <form method="post" action="/blog/article/{{ .Article.ID }}/comment">
-                    <div class="row">
-                        <textarea cols="40" id="id_body" name="body" placeholder="我来评两句~" rows="10"></textarea>
-                    </div>
-                    <button type="submit" class="com-button">评论</button>
-                </form>
+                {{ if .IsCommentOpen }}
+                    <form method="post" action="/blog/article/{{ .Article.ID }}/comment">
+                        <div class="row">
+                            <textarea cols="40" id="id_body" name="body" placeholder="我来评两句~" rows="10"></textarea>
+                        </div>
+                        <button type="submit" class="com-button">评论</button>
+                    </form>
+                {{end}}
                 <p class="comment-count">共{{ .CommentsNum }}条评论</p>
                 <hr>
                 {{ range $index, $elem := .Comments }}
