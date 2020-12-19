@@ -162,6 +162,11 @@ func (article *Article) UpdateByField(data map[string]interface{}) error {
 	return DB.Model(article).Updates(data).Error
 }
 
+// 判断是否已发布
+func (article *Article) IsPublished() bool {
+	return article.Status == "p"
+}
+
 // 获取所有文章名
 func GetAllArticleNames() (articles []*Article, err error) {
 	err = DB.Select("id, title").Find(&articles).Error

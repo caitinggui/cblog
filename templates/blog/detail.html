@@ -71,7 +71,7 @@
                 <hr>
                 {{ range $index, $elem := .Comments }}
                 <div class="main-content">
-                    <span class="user-nickname">{{ $elem.Name }}</span>
+                    <span class="user-nickname">{{ $elem.UserName }}</span>
                     <time class="time">{{ $elem.CreatedAt | FormatAsDate }}</time>
                     <div class="comment-content">
                         {{ $elem.Body }}

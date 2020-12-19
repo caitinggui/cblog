@@ -24,7 +24,7 @@
                     <div class="box">
                         <!-- /.box-header -->
                         <div class="box-body">
-                            <table id="articleList" class="table table-bordered table-striped">
+                            <table id="commentList" class="table table-bordered table-striped">
                                 <thead>
                                 <tr>
                                     <th>文章标题</th>
@@ -43,7 +43,7 @@
                                     <td>{{ .CreatedAt | FormatAsDate }}</td>
                                     <td>
                                         <button onclick="DeleteComment({{ .ID | ToStr }})" type="button" class="btn btn-danger" style="font-size: 12px">删除</button>
-                                        <a href="/blog/article/{{ .ID }}"><button type="button" class="btn btn-default" style="font-size: 12px">访问</button></a>
+                                        <a href="/blog/article/{{ .ArticleId | ToStr }}"><button type="button" class="btn btn-default" style="font-size: 12px">访问</button></a>
                                     </td>
                                     </tr>
                                   {{end}}
@@ -69,8 +69,8 @@
 <!-- page script -->
 <script>
   $(function () {
-    $("#articleList").DataTable({
-    'order': [[6, 'desc']], //第7列降序排序
+    $("#commentList").DataTable({
+    'order': [[3, 'desc']], //第4列降序排序
     'bStateSave': true, //记录所在页数
     'aLengthMenu': [[20, 40, 80, -1], [20, 40, 80, "All"]], //定义每页显示数据数量
     });

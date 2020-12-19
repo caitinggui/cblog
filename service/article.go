@@ -130,6 +130,11 @@ func GetArticle(c *gin.Context) {
 	if mc.CheckGormErr(err) != nil {
 		return
 	}
+	// 为发表的文章只有管理员能看
+	if !article.IsPublished() && mc.GetCurrentUser() != config.Config.Admin.Name {
+		mc.Redirect("/")
+		return
+	}
 	visitors, err := models.GetVisitorsByArticle(id)
 	for k, _ := range visitors {
 		visitors[k].IP = utils.FormatIP(visitors[k].IP)
@@ -331,6 +336,7 @@ func GetArticles(c *gin.Context) {
 	if mc.CheckBindErr(err) != nil {
 		return
 	}
+	form.PageSize = 10000 // 管理后台可以把文章全部取出
 	articles, _, err = models.GetArticleInfos(form, false)
 	if mc.CheckGormErr(err) != nil {
 		return
