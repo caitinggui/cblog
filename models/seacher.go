@@ -39,7 +39,7 @@ func InitSearcher() {
 
 // index full article
 func IndexDoc(doc Article) {
-	if doc.ID == 0 {
+	if doc.ID == 0 || !doc.IsPublished() {
 		return
 	}
 	Searcher.Index(fmt.Sprint(doc.ID), types.DocData{
@@ -53,9 +53,10 @@ func IndexDoc(doc Article) {
 func IndexArticleById(id string) {
 	arti, err := GetFullArticleById(id)
 	if err != nil {
-		logger.Info("article(%v) doesn't exist: %v", id, err)
+		logger.Infof("article(%v) doesn't exist: %v", id, err)
 		return
 	}
+
 	IndexDoc(arti)
 }
 
