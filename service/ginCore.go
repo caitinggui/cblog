@@ -127,6 +127,7 @@ func LoadTemplates(templatesDir string) multitemplate.Renderer {
 		"Subint":       Subint,
 		"CountList":    CountList,
 		"UnEscaped":    UnEscape,
+		"RandomTime":   RandomTime,
 	}
 
 	loadTemplateDir(r, funcMap, templatesDir, "admin")
@@ -175,6 +176,11 @@ func AddUint64(i, x uint64) uint64 {
 // template function
 func SubUint64(i, x uint64) uint64 {
 	return i - x
+}
+
+// template function
+func RandomTime() int64 {
+	return time.Now().Unix()
 }
 
 // 用来logger记录gin框架的log

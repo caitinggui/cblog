@@ -81,7 +81,6 @@ func RemoveIndexById(id string) {
 func InitIndex() *riot.Engine {
 	// gob.Register(MyAttriStruct{})
 	gob.Register(Article{})
-
 	// var path = "./riot-index"
 	InitSearcher()
 	// Searcher can't close here, otherwise we can't index doc to disk

@@ -1,6 +1,7 @@
 package service
 
 import (
+	"cblog/config"
 	"net/http"
 
 	logger "github.com/caitinggui/seelog"
@@ -17,7 +18,7 @@ func PostLogin(c *gin.Context) {
 	redirect_uri := c.DefaultQuery("redirect_uri", "/")
 	logger.Info("redirect_uri: ", redirect_uri)
 	session := sessions.Default(c)
-	if username != "test" || password != "test" {
+	if username != config.Config.Admin.Name || password != config.Config.Admin.Password {
 		// 密码错误则清空session, 一定要Save，否则前端不响应.本质上是通过Set-Cookie
 		//这个http header生效
 		session.Clear()
@@ -35,12 +36,14 @@ func PostLogin(c *gin.Context) {
 }
 
 // 登出
-// TODO 有时候登出失败
 func Logout(c *gin.Context) {
+	mc := NewAdvancedGinContext(c)
+	logger.Info("-----", c.Writer.Header())
 	session := sessions.Default(c)
 	session.Clear()
-	session.Save()
-	c.Redirect(http.StatusMovedPermanently, "/")
+	err := session.Save()
+	logger.Warnf("logout: %v %+v", err, c.Writer.Header())
+	mc.Redirect("/")
 }
 
 // 获取登录页面

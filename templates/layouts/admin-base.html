@@ -91,7 +91,7 @@
                   <a href="#" class="btn btn-default btn-flat">Profile</a>
                 </div>
                 <div class="pull-right">
-                  <a href="/logout" class="btn btn-default btn-flat">Sign out</a>
+                  <a href="/logout?t={{RandomTime}}" class="btn btn-default btn-flat">Sign out</a>
                 </div>
               </li>
             </ul>
@@ -131,6 +131,7 @@
           <ul class="treeview-menu" style="display: block;">
             <li><a href="/admin/article-edit">添加文章</a></li>
             <li><a href="/admin/article">文章列表</a></li>
+            <li><a href="/admin/comment">评论列表</a></li>
           </ul>
         </li>
         <li class="treeview menu-open">
@@ -147,8 +148,6 @@
         <li class="header">系统配置</li>
 					<li><a href="/admin/link"><i class="fa fa-link"></i> <span>友情链接</span></a></li>
 					<li><a href="/admin/visitor?pageSize=500"><i class="fa fa-link"></i> <span>访客列表</span></a></li>
-					<li><a href="/admin/user"><i class="fa fa-link"></i> <span>用户列表</span></a></li>
-					<li><a href="/admin/visitor"><i class="fa fa-link"></i> <span>个人信息</span></a></li>
         </li>
       </ul>
       <!-- /.sidebar-menu -->

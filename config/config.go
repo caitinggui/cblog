@@ -39,6 +39,11 @@ type ipLimiter struct {
 	Capacity int
 }
 
+type admin struct {
+	Name     string
+	Password string
+}
+
 type config struct {
 	Listen        string
 	Mysql         mysql
@@ -49,6 +54,7 @@ type config struct {
 	PraseIp       praseIp
 	IpLimiter     ipLimiter
 	IsCommentOpen bool
+	Admin         admin
 }
 
 type uniqueId struct {

@@ -1,0 +1,100 @@
+{{define "header"}}
+<link rel="stylesheet" href="/static/libs/AdminLTE/bower_components/datatables.net-bs/css/dataTables.bootstrap.min.css">
+{{end}}
+
+{{define "content"}}
+    <div class="content-wrapper">
+        <!-- Content Header (Page header) -->
+        <section class="content-header">
+            <h1>
+                评论
+                <small>包含已发布的评论</small>
+            </h1>
+            <ol class="breadcrumb">
+                <li><a href="#"><i class="fa fa-dashboard"></i> 首页</a></li>
+                <li><a href="#">文章管理</a></li>
+                <li class="active">评论列表</li>
+            </ol>
+        </section>
+
+        <!-- Main content -->
+        <section class="content">
+            <div class="row">
+                <div class="col-xs-12">
+                    <div class="box">
+                        <!-- /.box-header -->
+                        <div class="box-body">
+                            <table id="articleList" class="table table-bordered table-striped">
+                                <thead>
+                                <tr>
+                                    <th>文章标题</th>
+                                    <th>评论内容</th>
+                                    <th>用户昵称</th>
+                                    <th>评论时间</th>
+                                    <th>操作</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+									{{range .Comments}}
+									<tr id="{{ .ID | ToStr }}">
+									<td><a onclick="EditArticle({{ .ArticleId | ToStr }})">{{ .Title }}</a></td>
+                                    <td>{{ .Body }}</td>
+                                    <td>{{ .UserName }}</td>
+                                    <td>{{ .CreatedAt | FormatAsDate }}</td>
+                                    <td>
+                                        <button onclick="DeleteComment({{ .ID | ToStr }})" type="button" class="btn btn-danger" style="font-size: 12px">删除</button>
+                                        <a href="/blog/article/{{ .ID }}"><button type="button" class="btn btn-default" style="font-size: 12px">访问</button></a>
+                                    </td>
+                                    </tr>
+                                  {{end}}
+                                </tbody>
+                            </table>
+                        </div>
+                        <!-- /.box-body -->
+                    </div>
+                    <!-- /.box -->
+                </div>
+                <!-- /.col -->
+            </div>
+            <!-- /.row -->
+        </section>
+        <!-- /.content -->
+    </div>
+{{end}}
+
+{{define "footer"}}
+    <!-- DataTables -->
+<script src='/static/libs/AdminLTE/bower_components/datatables.net/js/jquery.dataTables.min.js'></script>
+<script src='/static/libs/AdminLTE/bower_components/datatables.net-bs/js/dataTables.bootstrap.min.js'></script>
+<!-- page script -->
+<script>
+  $(function () {
+    $("#articleList").DataTable({
+    'order': [[6, 'desc']], //第7列降序排序
+    'bStateSave': true, //记录所在页数
+    'aLengthMenu': [[20, 40, 80, -1], [20, 40, 80, "All"]], //定义每页显示数据数量
+    });
+  });
+  function DeleteComment(ID) {
+    var response = confirm('确定删除吗？');
+    if (response==true){
+            $.ajax({
+                type: "DELETE",
+                url: "/admin/comment/" + ID,
+                headers: {
+                    "X-CSRFToken": '{ csrf_token }}'
+                },
+                success: function () {
+                    $('#' + ID).remove();
+                },
+                error: function (jqXHR, textStatus, errorThrown) {
+                    alert(jqXHR, textStatus, errorThrown);
+                }
+            });
+    }
+  }
+  function EditArticle(ID) {
+      location.href = "article-edit?id=" + ID
+  }
+</script>
+{{end}}

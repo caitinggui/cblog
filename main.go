@@ -43,6 +43,9 @@ func BindRoute(router *gin.Engine) {
 		admin.PUT("/article", service.UpdateArticle)
 		admin.DELETE("/article/:id", service.DeleteArticle)
 
+		admin.GET("/comment", service.GetComments)
+		admin.DELETE("/comment/:id", service.DeleteComment)
+
 		admin.GET("/category", service.GetCategories)
 		admin.POST("/category", service.CreateCategory)
 		admin.PUT("/category", service.UpdateCategory)
@@ -76,7 +79,7 @@ func BindRoute(router *gin.Engine) {
 
 	router.POST("/blog/article/:id/upload", service.UploadArticleAttachment, service.LoginRequired(), service.AdminRequierd())
 
-	router.POST("/login", service.PostLogin)
+	router.POST("/login", service.PostLogin, service.RateLimted())
 	router.GET("/login", service.GetLogin)
 	router.GET("/logout", service.Logout)
 

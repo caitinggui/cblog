@@ -1,6 +1,6 @@
 listen: 0.0.0.0:8088
 mysql:
-  server: root:123456@(127.0.0.1:3306)/Blog?parseTime=true&charset=utf8mb4
+  server: root:123456@(127.0.0.1:3306)/cblog?parseTime=true&charset=utf8mb4
   maxidle: 20 # zero means defaultMaxIdleConns; negative means 0
   maxopen: 200 # <= 0 means unlimited
   maxlife: 6  # 单位为小时
@@ -23,3 +23,6 @@ searcher:
   istest: true  # when true, system only index in memory
   dictorypath: static/dict/dictionary.txt
   stopwordpath: static/dict/stop_tokens.txt
+admin:
+  name: test
+  password: test

@@ -300,7 +300,7 @@ func DeleteArticle(c *gin.Context) {
 	}
 	err := models.DeleteArticleById(intId)
 	if mc.CheckGormErr(err) != nil {
-		logger.Error("delete category error: ", err)
+		logger.Error("delete article error: ", err)
 		return
 	}
 	mc.WebJson(e.SUCCESS, nil)
@@ -434,6 +434,59 @@ func AdminIndex(c *gin.Context) {
 	c.HTML(http.StatusOK, "admin/index.html", mc.Res)
 }
 
+/**
+* @api {get} /v1/comment 获取评论列表
+* @apiGroup Article
+* @apiVersion 0.1.0
+*
+* @apiSuccessExample {json} Success-Response:
+*   {
+*     "errCode": "0",
+*     "errMsg": "请求成功",
+*     "data": [Object,]
+*}
+ */
+func GetComments(c *gin.Context) {
+	var (
+		err error
+	)
+	mc := NewAdvancedGinContext(c)
+	comments, err := models.GetCommentsWithTitleByCreatedAt(10000)
+	if mc.CheckGormErr(err) != nil {
+		return
+	}
+	mc.SuccessHtml("admin/comment-list.html", gin.H{"Comments": comments})
+}
+
+/**
+* @api {delete} /v1/comment/:id 删除某个评论
+* @apiGroup Article
+* @apiVersion 0.1.0
+*
+* @apiSuccessExample {json} Success-Response:
+*   {
+*     "errCode": "0",
+*     "errMsg": "请求成功",
+*     "data": null
+*}
+ */
+func DeleteComment(c *gin.Context) {
+	mc := NewAdvancedGinContext(c)
+	id := c.Param("id")
+	logger.Info("try to delete comment: ", id)
+	intId := utils.StrToUint64(id)
+	if intId == 0 {
+		mc.WebJson(e.ERR_INVALID_PARAM, nil)
+		return
+	}
+	err := models.DeleteCommentById(intId)
+	if mc.CheckGormErr(err) != nil {
+		logger.Error("delete comment error: ", err)
+		return
+	}
+	mc.WebJson(e.SUCCESS, nil)
+}
+
 func PostComment(c *gin.Context) {
 	mc := NewAdvancedGinContext(c)
 	articleId := c.Param("id")
@@ -447,10 +500,10 @@ func PostComment(c *gin.Context) {
 		mc.Redirect("/blog/article/" + articleId)
 		return
 	}
-	form := models.Comment{
+	form := models.ArticleComment{
 		ArticleId: utils.StrToUint64(articleId),
 		Body:      body,
-		Name:      utils.RandomName(),
+		UserName:  utils.RandomName(),
 	}
 	err := form.Insert()
 	if mc.CheckGormErr(err) != nil {

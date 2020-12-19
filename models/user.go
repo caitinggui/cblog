@@ -71,5 +71,8 @@ func GetAllUsers() (users []User, err error) {
 }
 
 func IsAdminByUid(uid string) bool {
+	if uid == "" {
+		return false
+	}
 	return true
 }

@@ -125,7 +125,6 @@ func RateLimted() gin.HandlerFunc {
 func AbortClientCache() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		c.Next()
-		logger.Debug("设置Cache-Control: no-cache")
 		c.Header("Cache-Control", "no-cache")
 	}
 }
