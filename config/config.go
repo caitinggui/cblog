@@ -112,7 +112,6 @@ func InitConfig() {
 
 	err = yaml.Unmarshal(content, &Config)
 	utils.PanicErr(err)
-	logger.Info("config.yaml: ", Config)
 
 	//password := utils.UidDecrypt(Config.Mysql.Password)
 	//if password == "" {
