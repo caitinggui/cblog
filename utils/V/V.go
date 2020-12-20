@@ -22,7 +22,8 @@ const (
 	PraseIpTimeout time.Duration = 3 * time.Second // 解析ip地区的超时时间
 
 	// cache keys
-	VisitorSum = "VisitorSum"
+	VisitorSum         = "VisitorSum"
+	OtherArticleDomain = "otherArticle.domain"
 
 	// 附件所在目录
 	AttachmentDirectory = "media/blog/attachments/"

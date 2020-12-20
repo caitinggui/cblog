@@ -2,17 +2,16 @@ package service
 
 import (
 	"cblog/config"
+	"cblog/models"
+	"cblog/utils"
 	"cblog/utils/V"
+	"cblog/utils/e"
 	logger "github.com/caitinggui/seelog"
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"os"
 	"path"
 	"strings"
-
-	"cblog/models"
-	"cblog/utils"
-	"cblog/utils/e"
 )
 
 type indexContext struct {
@@ -561,4 +560,51 @@ func getIndexContext(mc *Gin) (res indexContext, err error) {
 		Links:      links,
 	}
 	return res, err
+}
+
+func GetOtherArticles(c *gin.Context) {
+	var (
+		articles []*models.OtherArticle
+		err      error
+	)
+	mc := NewAdvancedGinContext(c)
+	articles, err = models.GetSomeOtherArticles()
+	if mc.CheckGormErr(err) != nil {
+		return
+	}
+	domain, _ := models.GetCache(V.OtherArticleDomain)
+	logger.Info(articles[0])
+	mc.SuccessHtml("admin/other-article-list.html", gin.H{"Article": articles, "Domain": domain})
+}
+
+func PutOtherArticle(c *gin.Context) {
+	mc := NewAdvancedGinContext(c)
+	id := c.Query("id")
+	ifVisited := c.Query("if_visited")
+	arti, err := models.GetOtherArticleById(id)
+	if mc.CheckGormErr(err) != nil {
+		return
+	}
+	if ifVisited == "1" {
+		arti.IfVisited = -1
+	} else {
+		arti.IfVisited = 1
+	}
+	err = arti.Update()
+	if mc.CheckGormErr(err) != nil {
+		return
+	}
+	mc.WebJson(e.SUCCESS, arti)
+}
+
+func PostOtherArticle(c *gin.Context) {
+	mc := NewAdvancedGinContext(c)
+	domain := c.PostForm("domain")
+	if domain == "" {
+		mc.Redirect(c.Request.URL.String())
+		return
+	}
+	// 保存一年
+	models.SetCache(V.OtherArticleDomain, domain, V.NoExpiration)
+	mc.WebJson(e.SUCCESS, nil)
 }

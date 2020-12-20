@@ -144,6 +144,6 @@ func InitDB() (db *gorm.DB) {
 	db.DB().SetMaxOpenConns(config.Config.Mysql.MaxOpen)
 	db.DB().SetConnMaxLifetime(time.Hour * config.Config.Mysql.MaxLife)
 	db.LogMode(config.Config.Mysql.LogMode)
-	db.AutoMigrate(&Article{}, &Category{}, &DeletedData{}, &ArticleComment{}, &Tag{}, &Link{}, &Visitor{}, &User{}, &Permission{}, &Role{})
+	db.AutoMigrate(&Article{}, &Category{}, &DeletedData{}, &ArticleComment{}, OtherArticle{}, &Tag{}, &Link{}, &Visitor{}, &User{}, &Permission{}, &Role{})
 	return
 }

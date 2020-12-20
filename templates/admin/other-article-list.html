@@ -1,0 +1,143 @@
+{{define "header"}}
+<link rel="stylesheet" href="/static/libs/AdminLTE/bower_components/datatables.net-bs/css/dataTables.bootstrap.min.css">
+{{end}}
+
+{{define "content"}}
+    <div class="content-wrapper">
+        <!-- Content Header (Page header) -->
+        <section class="content-header">
+            <h1>
+                外站文章
+                <small>其他外站的文章</small>
+            </h1>
+            <ol class="breadcrumb">
+                <li><a href="#"><i class="fa fa-dashboard"></i> 首页</a></li>
+                <li><a href="#">文章管理</a></li>
+                <li class="active">外站文章</li>
+            </ol>
+        </section>
+
+        <!-- Main content -->
+        <section class="content">
+            <div class="row">
+                <div class="col-xs-12">
+                    <div class="box">
+                        <!-- /.box-header -->
+                        <div class="box-body">
+                            <table id="articleList" class="table table-bordered table-striped">
+                                <thead>
+                                <tr>
+                                    <th>文章标题</th>
+                                    <th>作者</th>
+                                    <th>描述</th>
+                                    <th>短链接</th>
+                                    <th>状态</th>
+                                    <th>创建时间</th>
+                                    <th>修改时间</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+									{{range .Article}}
+									<tr id="{{ .ID | ToStr }}">
+                                        <td><a href="{{ .LongUrl }}" target="_blank">{{ .Title }}</a></td>
+                                        <td>{{ .CreatedBy }}</td>
+                                        <td>{{ .Desc }}</td>
+                                        <td><a href="{{$.Domain}}{{ .ShortUrl }}" target="_blank">{{ .ShortUrl }}</a></td>
+                                        <td>
+                                            {{ if eq .IfVisited 1}}
+                                                <button type="button" onclick="EditIfVisited({{ .ID | ToStr }}, {{ .IfVisited }})" class="btn btn-primary" style="font-size: 12px">已读</button>
+                                            {{ else }}
+                                                <button type="button" onclick="EditIfVisited({{ .ID | ToStr }}, {{ .IfVisited }})" class="btn btn-info" style="font-size: 12px">未读</button>
+                                            {{ end }}
+                                        </td>
+                                        <td>{{ .CreatedAt | FormatAsDate }}</td>
+                                        <td>{{ .UpdatedAt | ToStr }}</td>
+                                    </tr>
+                                  {{end}}
+                                </tbody>
+                            </table>
+                        </div>
+                        <!-- /.box-body -->
+                    </div>
+                    <!-- /.box -->
+                </div>
+                <div class="col-xs-12">
+                    <div class="box box-warning">
+                        <div class="box-header with-border">
+                            <h4 class="box-title">设置外站域名</h4>
+                        </div>
+                        <div class="box-body">
+                            <div class="form-group">
+                                <textarea id="OtherArticleUrl" class="form-control" rows="1" placeholder="添加单个类别" name="name">{{ .Domain }}</textarea>
+                            </div>
+                            <button onclick="CreateOtherArticleUrl()" class="btn btn-primary" type="button">添加</button>
+                        </div>
+                    </div>
+                </div>
+                <!-- /.col -->
+            </div>
+            <!-- /.row -->
+        </section>
+        <!-- /.content -->
+    </div>
+{{end}}
+
+{{define "footer"}}
+    <!-- DataTables -->
+<script src='/static/libs/AdminLTE/bower_components/datatables.net/js/jquery.dataTables.min.js'></script>
+<script src='/static/libs/AdminLTE/bower_components/datatables.net-bs/js/dataTables.bootstrap.min.js'></script>
+<!-- page script -->
+<script>
+  $(function () {
+    $("#articleList").DataTable({
+    'order': [[5, 'desc']], //第6列降序排序
+    'bStateSave': true, //记录所在页数
+    'aLengthMenu': [[20, 40, 80, -1], [20, 40, 80, "All"]], //定义每页显示数据数量
+    });
+  });
+  function EditIfVisited(ID, ifVisited) {
+      $.ajax({
+          type: "PUT",
+          url: "/admin/other-article?id=" + ID + "&if_visited=" + ifVisited,
+          headers: {
+              "X-CSRFToken": '{ csrf_token }}'
+          },
+          success: function () {
+              $('#' + ID).remove();
+          },
+          error: function (jqXHR, textStatus, errorThrown) {
+              alert(jqXHR, textStatus, errorThrown);
+          }
+      });
+  }
+
+  function CreateOtherArticleUrl() {
+      console.log("start create")
+      var name = $("#OtherArticleUrl").val()
+      if (name == "") {
+          alert("外站域名不能为空")
+          return
+      }
+      $.ajax({
+          type: "POST",
+          url: window.location.href,
+          data: {
+              domain: name
+          },
+          success: function (data) {
+              console.log("data: ", data);
+              if (data.errCode != 0) {
+                  alert(data.errMsg)
+              } else {
+                  window.location.href = window.location.href
+              }
+          },
+          error: function (jqXHR, textStatus, errorThrown) {
+              alert(jqXHR, textStatus, errorThrown);
+          }
+      })
+  }
+
+
+</script>
+{{end}}
