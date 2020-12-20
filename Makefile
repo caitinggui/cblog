@@ -11,6 +11,9 @@ test-bench:
 debug:
 	gin --appPort 8089 main.go
 
+mem:
+	go tool pprof -inuse_space http://127.0.0.1:8088/debug/pprof/heap
+
 run:
 	go build -o cblog main.go && ./cblog
 
