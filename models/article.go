@@ -121,7 +121,7 @@ func (self *Article) BeforeDelete() error {
 		return err
 	}
 	err := InsertToDeleteDataTable(self)
-	go RemoveIndexById(fmt.Sprint(self.ID))
+	go RemoveIndexById(self.ID)
 	return err
 }
 
