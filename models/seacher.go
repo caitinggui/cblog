@@ -1,18 +1,27 @@
 package models
 
 import (
-	"cblog/config"
-	"cblog/utils"
-	"encoding/gob"
 	"fmt"
 	logger "github.com/caitinggui/seelog"
 	"github.com/go-ego/riot"
 	"github.com/go-ego/riot/types"
+	"github.com/yanyiwu/gojieba"
 	"strings"
 )
 
 // searcher is coroutine safe
 var Searcher *riot.Engine
+var Tokenizer *gojieba.Jieba
+
+type IndexSearcher struct {
+	searcher  *riot.Engine
+	tokenizer *gojieba.Jieba
+}
+
+func (self *IndexSearcher) Close() {
+	self.searcher.Close()
+	self.tokenizer.Free()
+}
 
 func InitSearcher() {
 	if Searcher != nil {
@@ -20,19 +29,15 @@ func InitSearcher() {
 		return
 	}
 	Searcher = &riot.Engine{}
+	Tokenizer = gojieba.NewJieba()
 	opts := types.EngineOpts{
-		Using: 1,
+		NotUseGse: true,
 		IndexerOpts: &types.IndexerOpts{
-			IndexType: types.FrequenciesIndex,
+			IndexType: types.DocIdsIndex,
 		},
-		UseStore: !config.Config.Searcher.IsTest,
+		UseStore: true,
 		// StoreFolder: path,
-		StoreEngine: "bg", // bg: badger, lbd: leveldb, bolt: bolt
-	}
-	if utils.IfPathExist(config.Config.Searcher.DictoryPath) && utils.IfPathExist(config.Config.Searcher.StopWordPath) {
-		logger.Info("stopworkpath exists")
-		opts.StopTokenFile = config.Config.Searcher.StopWordPath
-		opts.GseDict = config.Config.Searcher.DictoryPath
+		//StoreEngine: "bg", // bg: badger, lbd: leveldb, bolt: bolt
 	}
 	Searcher.Init(opts)
 }
@@ -42,9 +47,22 @@ func IndexDoc(doc Article) {
 	if doc.ID == 0 || !doc.IsPublished() {
 		return
 	}
+	words := Tokenizer.Tokenize(doc.Title+doc.Abstract+doc.Body+doc.Category.Name, gojieba.SearchMode, false)
+	tokensMap := make(map[string][]int, len(words))
+	tokens := make([]types.TokenData, 0, len(words))
+	for i := 0; i < len(words); i++ {
+		if _, ok := tokensMap[words[i].Str]; ok {
+			tokensMap[words[i].Str] = append(tokensMap[words[i].Str], words[i].Start)
+			continue
+		}
+		tokensMap[words[i].Str] = []int{words[i].Start}
+	}
+	for k, v := range tokensMap {
+		tokens = append(tokens, types.TokenData{Text: k, Locations: v})
+	}
 	Searcher.Index(fmt.Sprint(doc.ID), types.DocData{
-		Content: fmt.Sprintf("%s %s %s %s", doc.Title, doc.Abstract, doc.Body, doc.Category.Name),
-		Attri:   doc,
+		Tokens: tokens,
+		Attri:  doc,
 	})
 	return
 }
@@ -79,9 +97,9 @@ func RemoveIndexById(id string) {
 	Searcher.RemoveDoc(id, true)
 }
 
-func InitIndex() *riot.Engine {
+func InitIndex() *IndexSearcher {
 	// gob.Register(MyAttriStruct{})
-	gob.Register(Article{})
+	//gob.Register(Article{})
 	// var path = "./riot-index"
 	InitSearcher()
 	// Searcher can't close here, otherwise we can't index doc to disk
@@ -101,27 +119,13 @@ func InitIndex() *riot.Engine {
 		logger.Info("Created index number: ", Searcher.NumDocsIndexed())
 	}()
 
-	return Searcher
-}
-
-// return *riot.Engine to close
-// must use *riot.Engine not riot.Engine
-func RestoreIndex() *riot.Engine {
-	gob.Register(Article{})
-	InitSearcher()
-	//defer Searcher.Close()
-
-	// Wait for the index to refresh
-	Searcher.Flush()
-
-	logger.Info("recover index number: ", Searcher.NumDocsIndexed())
-	return Searcher
+	return &IndexSearcher{searcher: Searcher, tokenizer: Tokenizer}
 }
 
 // search full article
 func SearchFullArticle(text string, page, pageSize int) ([]Article, int) {
 	se := Searcher.SearchDoc(types.SearchReq{
-		Text: text,
+		Tokens: Tokenizer.CutForSearch(text, true),
 		RankOpts: &types.RankOpts{
 			OutputOffset: (page - 1) * pageSize,
 			MaxOutputs:   pageSize,
@@ -138,25 +142,4 @@ func SearchFullArticle(text string, page, pageSize int) ([]Article, int) {
 		res = append(res, d)
 	}
 	return res, se.NumDocs
-}
-
-func TestSearch() {
-	InitIndex()
-	//RestoreIndex()
-
-	sea := Searcher.SearchDoc(types.SearchReq{
-		Text: "tupian",
-		RankOpts: &types.RankOpts{
-			OutputOffset: 0,
-			MaxOutputs:   100,
-		}})
-	res := []Article{}
-	for _, doc := range sea.Docs {
-		res = append(res, doc.Attri.(Article))
-	}
-	//_, data := Searcher.GetDBAllDocs()
-	//logger.Info("index data:", data)
-	logger.Info("search response: ", sea, "; docs = ", res)
-
-	// os.RemoveAll("riot-index")
 }

@@ -1,21 +1,24 @@
-listen: 0.0.0.0:8089
+listen: 0.0.0.0:8088
 mysql:
-  server: root:{password}@(127.0.0.1:3306)/redpacket?parseTime=true&charset=utf8mb4
+  server: root:123456@(127.0.0.1:3306)/cblog?parseTime=true&charset=utf8mb4&loc=Local
   maxidle: 20 # zero means defaultMaxIdleConns; negative means 0
   maxopen: 200 # <= 0 means unlimited
   maxlife: 6  # 单位为小时
-  logmode: true  # 记录sql语句
+  logmode: false # 记录sql语句
   password: 40d868bb2517dc94
 cachefile: "cache.dump"
 secret: 3697ae54f90811e8ba2c60f81dad53c8
+iscommentopen: true
 uniqueid:  # 用作雪花算法生成唯一id
-  workerid: 0
-  reserveid: 0
+  workerid: 1
+  reserveid: 1
 praseip:   # 解析来源IP的时间间隔
   interval: 30s
   capacity: 2
-  isopen: true
-searcher:
-  istest: true  # when true, system only index in memory
-  dictorypath: static/dict/dictionary.txt
-  stopwordpath: static/dict/stop_tokens.txt
+  isopen: false
+iplimiter:   # 根据IP控制访问频率
+  interval: 30s
+  capacity: 2
+admin:
+  name: test
+  password: test

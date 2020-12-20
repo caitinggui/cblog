@@ -14,6 +14,7 @@ echo "stop process"
 ps -ef | grep $file_name | grep -v grep | awk '{print $2}' | xargs kill
 sleep 2
 
+export GIN_MODE="release"
 cmd="(./$file_name > /dev/null 2>&1) &"
 eval $cmd  # 执行命令
 pid=$!

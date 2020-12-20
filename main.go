@@ -10,6 +10,7 @@ import (
 	"time"
 
 	logger "github.com/caitinggui/seelog"
+	"github.com/gin-contrib/pprof"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-contrib/sessions/cookie"
 	"github.com/gin-gonic/gin"
@@ -171,6 +172,10 @@ func InitRouterAndDb() (router *gin.Engine, db *gorm.DB) {
 	router.Use(service.AbortClientCache(), service.RecordClientIp())
 	BindRoute(router)
 
+	if os.Getenv("GIN_MODE") != gin.ReleaseMode {
+		pprof.Register(router)
+	}
+
 	err := models.InitCache(config.Config.CacheFile)
 	if err != nil {
 		logger.Warn("load cache file error: ", err)
@@ -198,7 +203,6 @@ func main() {
 
 	//models.Search()
 	se := models.InitIndex()
-	//se := models.RestoreIndex()
 	// will stop exit
 	defer se.Close()
 

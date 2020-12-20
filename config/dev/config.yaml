@@ -4,7 +4,7 @@ mysql:
   maxidle: 20 # zero means defaultMaxIdleConns; negative means 0
   maxopen: 200 # <= 0 means unlimited
   maxlife: 6  # 单位为小时
-  logmode: true # 记录sql语句
+  logmode: false # 记录sql语句
   password: 40d868bb2517dc94
 cachefile: "cache.dump"
 secret: 3697ae54f90811e8ba2c60f81dad53c8
@@ -19,10 +19,6 @@ praseip:   # 解析来源IP的时间间隔
 iplimiter:   # 根据IP控制访问频率
   interval: 30s
   capacity: 2
-searcher:
-  istest: true  # when true, system only index in memory
-  dictorypath: static/dict/dictionary.txt
-  stopwordpath: static/dict/stop_tokens.txt
 admin:
   name: test
   password: test
