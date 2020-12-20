@@ -36,12 +36,14 @@
                         <span class='likes_num'>{{ .Article.Likes}}</span>&nbsp;&nbsp;&nbsp;&nbsp;
                         <span>阅读量:{{ .Article.Views}}</span>
                     </div>
-                    <div class='upload' >
-                        <form class="form" action="/blog/article/{{ .Article.ID }}/upload" method="post" enctype="multipart/form-data">
-                            <input name='uploadfile' type='file'>
-                            <input type="submit" value="附件上传" >
-                        </form>
-                    </div>
+                    {{ if .IsLogin }}
+                        <div class='upload' >
+                            <form class="form" action="/blog/article/{{ .Article.ID }}/upload" method="post" enctype="multipart/form-data">
+                                <input name='uploadfile' type='file'>
+                                <input type="submit" value="附件上传" >
+                            </form>
+                        </div>
+                    {{ end }}
                     <div id="editormd">
                       <textarea style="display:none">{{ .Article.Body }}</textarea>
                     </div>

@@ -152,6 +152,7 @@ func GetArticle(c *gin.Context) {
 		"Comments":      comments,
 		"CommentsNum":   len(comments),
 		"IsCommentOpen": config.Config.IsCommentOpen,
+		"IsLogin":       mc.GetCurrentUser() != "",
 	}
 	mc.SuccessHtml("blog/detail.html", mc.Res)
 }
