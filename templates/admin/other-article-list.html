@@ -28,10 +28,10 @@
                                 <thead>
                                 <tr>
                                     <th>文章标题</th>
+                                    <th>状态</th>
                                     <th>作者</th>
                                     <th>描述</th>
                                     <th>短链接</th>
-                                    <th>状态</th>
                                     <th>创建时间</th>
                                     <th>修改时间</th>
                                 </tr>
@@ -40,9 +40,6 @@
 									{{range .Article}}
 									<tr id="{{ .ID | ToStr }}">
                                         <td><a href="{{ .LongUrl }}" target="_blank">{{ .Title }}</a></td>
-                                        <td>{{ .CreatedBy }}</td>
-                                        <td>{{ .Desc }}</td>
-                                        <td><a href="{{$.Domain}}{{ .ShortUrl }}" target="_blank">{{ .ShortUrl }}</a></td>
                                         <td>
                                             {{ if eq .IfVisited 1}}
                                                 <button type="button" onclick="EditIfVisited({{ .ID | ToStr }}, {{ .IfVisited }})" class="btn btn-primary" style="font-size: 12px">已读</button>
@@ -50,6 +47,9 @@
                                                 <button type="button" onclick="EditIfVisited({{ .ID | ToStr }}, {{ .IfVisited }})" class="btn btn-info" style="font-size: 12px">未读</button>
                                             {{ end }}
                                         </td>
+                                        <td>{{ .CreatedBy }}</td>
+                                        <td>{{ .Desc }}</td>
+                                        <td><a href="{{$.Domain}}{{ .ShortUrl }}" target="_blank">{{ .ShortUrl }}</a></td>
                                         <td>{{ .CreatedAt | FormatAsDate }}</td>
                                         <td>{{ .UpdatedAt | ToStr }}</td>
                                     </tr>
