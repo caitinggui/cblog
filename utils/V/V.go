@@ -10,7 +10,7 @@ const (
 	EmptyIntId uint64 = 0  // 用来做数据插入的空主键
 	EmptyStrId string = "" // 用来做数据插入的空主键
 
-	MaxPageSize     uint = 1000 // 分页的每页最大条数
+	MaxPageSize     uint = 2000 // 分页的每页最大条数
 	DefaultPageSize uint = 10   // 分页的每页默认条数
 
 	DefaultExpiration time.Duration = 8 * time.Hour      // cache过期时间
