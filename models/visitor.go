@@ -66,7 +66,7 @@ func (self *Visitor) PraseIp() error {
 	if self.IP == "" {
 		return ERR_EMPTY_IP
 	}
-	ip2Region := utils.Ip2Region{IP: self.IP}
+	ip2Region := utils.IpInfo{IP: self.IP}
 	err := ip2Region.PraseIp()
 	if err != nil {
 		return err
@@ -74,7 +74,7 @@ func (self *Visitor) PraseIp() error {
 	self.Country = ip2Region.Country
 	self.Province = ip2Region.Province
 	self.City = ip2Region.City
-	self.Isp = ip2Region.Isp
+	self.Isp = ip2Region.ISP
 	return nil
 }
 
