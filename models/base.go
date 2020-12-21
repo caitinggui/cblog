@@ -145,5 +145,10 @@ func InitDB() (db *gorm.DB) {
 	db.DB().SetConnMaxLifetime(time.Hour * config.Config.Mysql.MaxLife)
 	db.LogMode(config.Config.Mysql.LogMode)
 	db.AutoMigrate(&Article{}, &Category{}, &DeletedData{}, &ArticleComment{}, OtherArticle{}, &Tag{}, &Link{}, &Visitor{}, &User{}, &Permission{}, &Role{})
+	//ips, err := GetVisitors(0, 1000)
+	//for k, _ := range ips {
+	//	ips[k].PraseIp()
+	//	go ips[k].Update()
+	//}
 	return
 }

@@ -23,10 +23,12 @@ var ipInfo IpInfo
 
 func getIp2Region() *Ip2Region {
 	onceIp2Region.Do(func() {
-		ip2Region, _ = NewIp2Region(dataPath)
+		logger.Info("check if ip2region dataPath exist: ", dataPath)
 		if !IfPathExist(dataPath) {
 			return
 		}
+		logger.Info(dataPath, " exist")
+		ip2Region, _ = NewIp2Region(dataPath)
 	})
 	return ip2Region
 }
@@ -50,30 +52,43 @@ func (self *IpInfo) Url() string {
 }
 
 func (self *IpInfo) PraseIp() error {
-	if ip2Region = getIp2Region(); ip2Region != nil {
-		ipInfo, err := ip2Region.MemorySearch(self.IP)
-		if err != nil && ipInfo.Country != "" {
-			logger.Info("ip2region res: ", ipInfo.Country, ipInfo.Province)
-			self.Country = ipInfo.Country
-			self.City = ipInfo.City
-			self.ISP = ipInfo.ISP
-			self.Province = ipInfo.Province
-			return nil
-		}
-	}
-	url := self.Url() + self.IP
-	body, err := HttpRetryGet(url)
+	ipInfo, err := PraseIp(self.IP)
 	if err != nil {
-		logger.Error("ip2Region request ip error: ", err)
 		return err
 	}
-	json.Unmarshal([]byte(jsoniter.Get(body, "data").ToString()), &self)
-	logger.Infof("%s res: %s %s", self.Name(), self.Country, self.Province)
+	self.Country = ipInfo.Country
+	self.City = ipInfo.City
+	self.ISP = ipInfo.ISP
+	self.Province = ipInfo.Province
 	return nil
 }
 
 func (self *IpInfo) String() string {
 	return self.Country + "|" + self.Province + "|" + self.City + "|" + self.ISP
+}
+
+func PraseIp(IP string) (IpInfo, error) {
+	if IP == "::1" || IP == "127.0.0.1" {
+		return IpInfo{IP: IP, ISP: "内网IP"}, nil
+	}
+	if ip2Region = getIp2Region(); ip2Region != nil {
+		ipInfo, err := ip2Region.MemorySearch(IP)
+		if err == nil && ipInfo.Country != "" {
+			logger.Info("ip2region res: ", ipInfo.Country, ipInfo.Province)
+			return ipInfo, nil
+		}
+		logger.Warnf("ip2region %p prase ip failed: %v", ip2Region, err)
+	}
+	ipInfo := IpInfo{IP: IP}
+	url := ipInfo.Url() + ipInfo.IP
+	body, err := HttpRetryGet(url)
+	if err != nil {
+		logger.Error("ip2Region request ip error: ", err)
+		return ipInfo, err
+	}
+	json.Unmarshal([]byte(jsoniter.Get(body, "data").ToString()), &ipInfo)
+	logger.Infof("%s res: %s %s", ipInfo.Name(), ipInfo.Country, ipInfo.Province)
+	return IpInfo{}, nil
 }
 
 const (

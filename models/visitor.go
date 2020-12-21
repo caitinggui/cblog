@@ -66,8 +66,7 @@ func (self *Visitor) PraseIp() error {
 	if self.IP == "" {
 		return ERR_EMPTY_IP
 	}
-	ip2Region := utils.IpInfo{IP: self.IP}
-	err := ip2Region.PraseIp()
+	ip2Region, err := utils.PraseIp(self.IP)
 	if err != nil {
 		return err
 	}
@@ -92,7 +91,7 @@ func CreateVisitor(visitor *Visitor) error {
 }
 
 func GetAllVisitors() (visitors []Visitor, err error) {
-	err = DB.Order("CreatedAt desc").Find(&visitors).Error
+	err = DB.Order("id desc").Find(&visitors).Error
 	return
 }
 
