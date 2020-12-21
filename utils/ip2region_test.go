@@ -20,3 +20,8 @@ func TestIp2Region(t *testing.T) {
 	}
 	t.Log("ip2Region: ", ip2Region)
 }
+
+func TestPraseIp(t *testing.T) {
+	ipInfo, err := PraseIp("::1")
+	t.Log("PraseIp res: ", ipInfo, err)
+}

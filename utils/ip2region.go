@@ -67,28 +67,35 @@ func (self *IpInfo) String() string {
 	return self.Country + "|" + self.Province + "|" + self.City + "|" + self.ISP
 }
 
-func PraseIp(IP string) (IpInfo, error) {
+// 先用离线解析，如果离线解析失败或者省份为空，就用网络解析，如果网络解析，就用前面离线解析的结果
+func PraseIp(IP string) (ipInfo IpInfo, err error) {
+	ipInfo.IP = IP
 	if IP == "::1" || IP == "127.0.0.1" {
-		return IpInfo{IP: IP, ISP: "内网IP"}, nil
+		ipInfo.ISP = "内网IP"
+		return ipInfo, nil
 	}
 	if ip2Region = getIp2Region(); ip2Region != nil {
-		ipInfo, err := ip2Region.MemorySearch(IP)
-		if err == nil && ipInfo.Country != "" {
+		ipInfo, err = ip2Region.MemorySearch(IP)
+		if err == nil && ipInfo.Province != "" {
 			logger.Info("ip2region res: ", ipInfo.Country, ipInfo.Province)
 			return ipInfo, nil
 		}
 		logger.Warnf("ip2region %p prase ip failed: %v", ip2Region, err)
 	}
-	ipInfo := IpInfo{IP: IP}
-	url := ipInfo.Url() + ipInfo.IP
+	url := ipInfo.Url() + IP
 	body, err := HttpRetryGet(url)
 	if err != nil {
 		logger.Error("ip2Region request ip error: ", err)
 		return ipInfo, err
 	}
-	json.Unmarshal([]byte(jsoniter.Get(body, "data").ToString()), &ipInfo)
+	ipInfoFromNet := IpInfo{}
+	json.Unmarshal([]byte(jsoniter.Get(body, "data").ToString()), &ipInfoFromNet)
 	logger.Infof("%s res: %s %s", ipInfo.Name(), ipInfo.Country, ipInfo.Province)
-	return IpInfo{}, nil
+	if ipInfoFromNet.Country == "" {
+		return ipInfo, nil
+	}
+	ipInfoFromNet.IP = IP
+	return ipInfoFromNet, nil
 }
 
 const (
@@ -154,7 +161,7 @@ func (this *Ip2Region) Close() {
 }
 
 func (this *Ip2Region) MemorySearch(ipStr string) (ipInfo IpInfo, err error) {
-	ipInfo = IpInfo{}
+	ipInfo = IpInfo{IP: ipStr}
 
 	if this.totalBlocks == 0 {
 		this.dbBinStr, err = ioutil.ReadFile(this.dbFile)
@@ -200,12 +207,13 @@ func (this *Ip2Region) MemorySearch(ipStr string) (ipInfo IpInfo, err error) {
 	dataLen := ((dataPtr >> 24) & 0xFF)
 	dataPtr = (dataPtr & 0x00FFFFFF)
 	ipInfo = getIpInfo(getLong(this.dbBinStr, dataPtr), this.dbBinStr[(dataPtr)+4:dataPtr+dataLen])
+	ipInfo.IP = ipStr
 	return ipInfo, nil
 
 }
 
 func (this *Ip2Region) BinarySearch(ipStr string) (ipInfo IpInfo, err error) {
-	ipInfo = IpInfo{}
+	ipInfo = IpInfo{IP: ipStr}
 	if this.totalBlocks == 0 {
 		this.dbFileHandler.Seek(0, 0)
 		superBlock := make([]byte, 8)
@@ -268,12 +276,13 @@ func (this *Ip2Region) BinarySearch(ipStr string) (ipInfo IpInfo, err error) {
 	data := make([]byte, dataLen)
 	this.dbFileHandler.Read(data)
 	ipInfo = getIpInfo(getLong(data, 0), data[4:dataLen])
+	ipInfo.IP = ipStr
 	err = nil
 	return
 }
 
 func (this *Ip2Region) BtreeSearch(ipStr string) (ipInfo IpInfo, err error) {
-	ipInfo = IpInfo{}
+	ipInfo = IpInfo{IP: ipStr}
 	ip, err := ip2long(ipStr)
 
 	if this.headerLen == 0 {
@@ -382,6 +391,7 @@ func (this *Ip2Region) BtreeSearch(ipStr string) (ipInfo IpInfo, err error) {
 	data := make([]byte, dataLen)
 	this.dbFileHandler.Read(data)
 	ipInfo = getIpInfo(getLong(data, 0), data[4:])
+	ipInfo.IP = ipStr
 	return
 }
 
